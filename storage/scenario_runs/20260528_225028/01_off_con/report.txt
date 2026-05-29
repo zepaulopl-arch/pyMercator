@@ -1,0 +1,80 @@
+PYMERCATOR DAILY OPERATIONAL REPORT
+----------------------------------------------------------------------------------------------------------------------
+UNIVERSE             IBOV
+PROFILE              CON
+TODAY POSTURE        STAND_ASIDE
+
+1. MARKET REGIME
+----------------------------------------------------------------------------------------------------------------------
+REGIME               UNKNOWN
+PERMISSION           UNKNOWN
+HEADLINE RISK        OFF
+HEADLINE TAGS        -
+SCORE FACTOR         1.00
+EXPOSURE FACTOR      1.00
+- market regime could not be classified
+
+2. UNIVERSE HEALTH
+----------------------------------------------------------------------------------------------------------------------
+TOTAL ASSETS         78
+VALID ASSETS         78
+HEALTHY ASSETS       8
+HEALTH               NARROW
+BREADTH              WEAK
+CONCENTRATION        MEDIUM
+PERMISSION           CAUTION
+- few healthy assets
+
+3. ASSET RANKING + 4. VALIDATION + 5. PERMISSION
+----------------------------------------------------------------------------------------------------------------------
+RK TICKER SECTOR        RAW  FACT  FINAL R_SIG   C_SIG      RR EXEC      SIZE WHY                     
+----------------------------------------------------------------------------------------------------------------------
+ 1 USIM5  materials   75.06  1.00  75.06 BUY     BUY      1.58 BLOCKED   0.00 VOL_HIGH                
+ 2 ABEV3  consume...  64.83  1.00  64.83 NEUTRAL NEUTRAL  1.62 BLOCKED   0.00 VOL_HIGH                
+ 3 BRKM5  materials   61.82  1.00  61.82 NEUTRAL NEUTRAL  1.60 BLOCKED   0.00 ATR_HIGH+VOL_HIGH       
+ 4 GGBR4  materials   59.91  1.00  59.91 NEUTRAL NEUTRAL  1.59 WATCH     0.50 CAUTION                 
+ 5 BRAV3  energy      59.56  1.00  59.56 NEUTRAL NEUTRAL  1.59 WATCH     0.50 CAUTION                 
+ 6 HAPV3  health_...  59.26  1.00  59.26 NEUTRAL NEUTRAL  1.60 BLOCKED   0.00 VOL_HIGH                
+ 7 SMFT3  consume...  58.64  1.00  58.64 NEUTRAL NEUTRAL  1.60 BLOCKED   0.00 VOL_HIGH                
+ 8 GOAU4  materials   58.41  1.00  58.41 NEUTRAL NEUTRAL  1.59 WATCH     0.50 CAUTION                 
+ 9 LREN3  consume...  57.58  1.00  57.58 NEUTRAL NEUTRAL  1.60 WATCH     0.50 CAUTION                 
+10 VALE3  materials   56.53  1.00  56.53 NEUTRAL NEUTRAL  1.59 WATCH     0.50 CAUTION                 
+11 CURY3  real_es...  56.04  1.00  56.04 NEUTRAL NEUTRAL  1.60 WATCH     0.50 CAUTION                 
+12 CSNA3  materials   54.47  1.00  54.47 AVOID   AVOID    1.63 WATCH     0.00 CTX_LOW                 
+13 PRIO3  energy      53.30  1.00  53.30 AVOID   AVOID    1.60 WATCH     0.00 CTX_LOW                 
+14 ASAI3  consume...  52.66  1.00  52.66 AVOID   AVOID    1.62 WATCH     0.00 CTX_LOW                 
+15 HYPE3  health_...  51.99  1.00  51.99 AVOID   AVOID    1.60 WATCH     0.00 CTX_LOW                 
+16 NATU3  consume...  51.88  1.00  51.88 AVOID   AVOID    1.59 WATCH     0.00 CTX_LOW                 
+17 BBSE3  financials  51.05  1.00  51.05 AVOID   AVOID    1.61 WATCH     0.00 CTX_LOW                 
+18 CEAB3  consume...  50.69  1.00  50.69 AVOID   AVOID    1.60 BLOCKED   0.00 VOL_HIGH                
+19 DIRR3  real_es...  50.33  1.00  50.33 AVOID   AVOID    1.60 WATCH     0.00 CTX_LOW                 
+20 ENEV3  utilities   49.28  1.00  49.28 AVOID   AVOID    1.60 WATCH     0.00 CTX_LOW                 
+
+LEGEND
+----------------------------------------------------------------------------------------------------------------------
+HEADLINE    headline risk reduced score
+SECTOR      sector sensitivity changed context factor
+CAP         permission capped by policy
+CTX_LOW     context score below operational threshold
+REGIME_DENY market regime denied operation
+RR_LOW      risk/reward below minimum
+ATR_HIGH    ATR above maximum
+VOL_HIGH    volatility above maximum
+LIQ_LOW     liquidity below minimum
+NO_ENTRY    missing entry
+NO_STOP     missing stop
+NO_TARGET   missing target
+
+SUMMARY
+----------------------------------------------------------------------------------------------------------------------
+READY                0
+WATCH                69
+BLOCKED              9
+
+6. HUMAN CONFIRMATION
+----------------------------------------------------------------------------------------------------------------------
+No READY tickets generated.
+
+POSTURE REASONS
+----------------------------------------------------------------------------------------------------------------------
+- market regime is not permissive

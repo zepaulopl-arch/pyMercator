@@ -1,0 +1,3 @@
+ticker,sector,last_close,avg_volume_brl,trend_score,momentum_score,volatility_pct,atr_pct,liquidity_score,quality_score,news_score,entry,stop,target
+PRIO3,OilGas,42.10,250000000,78,72,5.2,4.1,92,60,45,42.10,40.80,44.40
+VALE3,Mining,62.30,800000000,63,58,4.1,3.5,95,74,48,62.30,60.50,65.40

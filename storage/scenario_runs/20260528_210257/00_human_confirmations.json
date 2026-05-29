@@ -1,0 +1,42 @@
+[
+  {
+    "created_at": "2026-05-28T21:12:39",
+    "pack": "C:\\Users\\zepau\\ML\\projetos\\pyMercator\\storage\\scenario_runs\\20260528_210257",
+    "ticker": "USIM5",
+    "human_decision": "REJECTED",
+    "notes": "Registro humano: mantido bloqueio operacional",
+    "operator": "ZP",
+    "found_in_pack": true,
+    "matches": [
+      {
+        "scenario": "01_off_con",
+        "ticker": "USIM5",
+        "permission_status": "BLOCKED",
+        "decision_label": "VOL_HIGH",
+        "report_path": "C:\\Users\\zepau\\ML\\projetos\\pyMercator\\storage\\scenario_runs\\20260528_210257\\01_off_con\\report.json"
+      },
+      {
+        "scenario": "02_watch_bal",
+        "ticker": "USIM5",
+        "permission_status": "BLOCKED",
+        "decision_label": "HEADLINE+VOL_HIGH",
+        "report_path": "C:\\Users\\zepau\\ML\\projetos\\pyMercator\\storage\\scenario_runs\\20260528_210257\\02_watch_bal\\report.json"
+      },
+      {
+        "scenario": "03_active_agr",
+        "ticker": "USIM5",
+        "permission_status": "BLOCKED",
+        "decision_label": "HEADLINE+VOL_HIGH",
+        "report_path": "C:\\Users\\zepau\\ML\\projetos\\pyMercator\\storage\\scenario_runs\\20260528_210257\\03_active_agr\\report.json"
+      },
+      {
+        "scenario": "04_extreme_agr",
+        "ticker": "USIM5",
+        "permission_status": "BLOCKED",
+        "decision_label": "HEADLINE+REGIME_DENY+VOL_HIGH",
+        "report_path": "C:\\Users\\zepau\\ML\\projetos\\pyMercator\\storage\\scenario_runs\\20260528_210257\\04_extreme_agr\\report.json"
+      }
+    ],
+    "execution_mode": "ANALYSIS_ONLY"
+  }
+]

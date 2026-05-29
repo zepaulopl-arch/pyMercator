@@ -1,0 +1,9 @@
+Metadata-Version: 2.4
+Name: pymercator
+Version: 0.1.0
+Summary: Operational market permission system: regime, universe health, ranking, validation, permission and human confirmation.
+Author: Jose Paulo Pereira Lima
+Requires-Python: >=3.10
+Requires-Dist: pandas
+Requires-Dist: yfinance
+Requires-Dist: PyYAML

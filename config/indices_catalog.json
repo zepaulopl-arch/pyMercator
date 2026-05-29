@@ -1,0 +1,58 @@
+{
+  "indices": [
+    {
+      "name": "Brent crude oil futures",
+      "symbol": "BZ=F",
+      "provider": "yfinance",
+      "category": "market",
+      "description": "",
+      "required": true,
+      "enabled": true
+    },
+    {
+      "name": "Financial sector index",
+      "symbol": "IFNC.SA",
+      "provider": "yfinance",
+      "category": "market",
+      "description": "",
+      "required": false,
+      "enabled": true
+    },
+    {
+      "name": "IBrX 50 B3",
+      "symbol": "^IBX50",
+      "provider": "yfinance",
+      "category": "market",
+      "description": "",
+      "required": true,
+      "enabled": true
+    },
+    {
+      "name": "Ibovespa",
+      "symbol": "^BVSP",
+      "provider": "yfinance",
+      "category": "market",
+      "description": "",
+      "required": true,
+      "enabled": true
+    },
+    {
+      "name": "Indice de Energia Eletrica B3",
+      "symbol": "^IEE",
+      "provider": "yfinance",
+      "category": "market",
+      "description": "",
+      "required": false,
+      "enabled": true
+    },
+    {
+      "name": "USD/BRL",
+      "symbol": "USDBRL=X",
+      "provider": "yfinance",
+      "category": "market",
+      "description": "",
+      "required": true,
+      "enabled": true
+    }
+  ]
+}

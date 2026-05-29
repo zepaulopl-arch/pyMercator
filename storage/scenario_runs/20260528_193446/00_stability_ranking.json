@@ -1,0 +1,248 @@
+[
+  {
+    "ticker": "PRIO3",
+    "sector": "OilGas",
+    "scenario_count": 4,
+    "survived": 0,
+    "ready": 0,
+    "watch": 0,
+    "blocked": 4,
+    "manual_only": 0,
+    "invalid": 0,
+    "avg_final": 43.81,
+    "avg_factor": 0.8458,
+    "survival_score": 0,
+    "labels": [
+      "HEADLINE+SECTOR+REGIME_DENY+VOL_HIGH",
+      "HEADLINE+SECTOR+VOL_HIGH",
+      "VOL_HIGH"
+    ],
+    "codes": [
+      "HEADLINE",
+      "REGIME_DENY",
+      "SECTOR",
+      "VOL_HIGH"
+    ],
+    "scenarios": [
+      {
+        "key": "01_off_con",
+        "headline_risk": "OFF",
+        "posture": "STAND_ASIDE",
+        "status": "BLOCKED",
+        "context_score": 51.8,
+        "context_factor": 1.0,
+        "decision_label": "VOL_HIGH",
+        "decision_codes": [
+          "VOL_HIGH"
+        ]
+      },
+      {
+        "key": "02_watch_bal",
+        "headline_risk": "WATCH",
+        "posture": "STAND_ASIDE",
+        "status": "BLOCKED",
+        "context_score": 50.5,
+        "context_factor": 0.975,
+        "decision_label": "HEADLINE+SECTOR+VOL_HIGH",
+        "decision_codes": [
+          "HEADLINE",
+          "SECTOR",
+          "VOL_HIGH"
+        ]
+      },
+      {
+        "key": "03_active_agr",
+        "headline_risk": "ACTIVE",
+        "posture": "STAND_ASIDE",
+        "status": "BLOCKED",
+        "context_score": 42.09,
+        "context_factor": 0.8125,
+        "decision_label": "HEADLINE+SECTOR+VOL_HIGH",
+        "decision_codes": [
+          "HEADLINE",
+          "SECTOR",
+          "VOL_HIGH"
+        ]
+      },
+      {
+        "key": "04_extreme_agr",
+        "headline_risk": "EXTREME",
+        "posture": "STAND_ASIDE",
+        "status": "BLOCKED",
+        "context_score": 30.86,
+        "context_factor": 0.5958,
+        "decision_label": "HEADLINE+SECTOR+REGIME_DENY+VOL_HIGH",
+        "decision_codes": [
+          "HEADLINE",
+          "SECTOR",
+          "REGIME_DENY",
+          "VOL_HIGH"
+        ]
+      }
+    ]
+  },
+  {
+    "ticker": "VALE3",
+    "sector": "Mining",
+    "scenario_count": 4,
+    "survived": 0,
+    "ready": 0,
+    "watch": 0,
+    "blocked": 4,
+    "manual_only": 0,
+    "invalid": 0,
+    "avg_final": 43.65,
+    "avg_factor": 0.7817,
+    "survival_score": 0,
+    "labels": [
+      "HEADLINE+SECTOR+REGIME_DENY+VOL_HIGH",
+      "HEADLINE+SECTOR+VOL_HIGH",
+      "VOL_HIGH"
+    ],
+    "codes": [
+      "HEADLINE",
+      "REGIME_DENY",
+      "SECTOR",
+      "VOL_HIGH"
+    ],
+    "scenarios": [
+      {
+        "key": "01_off_con",
+        "headline_risk": "OFF",
+        "posture": "STAND_ASIDE",
+        "status": "BLOCKED",
+        "context_score": 55.84,
+        "context_factor": 1.0,
+        "decision_label": "VOL_HIGH",
+        "decision_codes": [
+          "VOL_HIGH"
+        ]
+      },
+      {
+        "key": "02_watch_bal",
+        "headline_risk": "WATCH",
+        "posture": "STAND_ASIDE",
+        "status": "BLOCKED",
+        "context_score": 48.58,
+        "context_factor": 0.87,
+        "decision_label": "HEADLINE+SECTOR+VOL_HIGH",
+        "decision_codes": [
+          "HEADLINE",
+          "SECTOR",
+          "VOL_HIGH"
+        ]
+      },
+      {
+        "key": "03_active_agr",
+        "headline_risk": "ACTIVE",
+        "posture": "STAND_ASIDE",
+        "status": "BLOCKED",
+        "context_score": 40.48,
+        "context_factor": 0.725,
+        "decision_label": "HEADLINE+SECTOR+VOL_HIGH",
+        "decision_codes": [
+          "HEADLINE",
+          "SECTOR",
+          "VOL_HIGH"
+        ]
+      },
+      {
+        "key": "04_extreme_agr",
+        "headline_risk": "EXTREME",
+        "posture": "STAND_ASIDE",
+        "status": "BLOCKED",
+        "context_score": 29.69,
+        "context_factor": 0.5317,
+        "decision_label": "HEADLINE+SECTOR+REGIME_DENY+VOL_HIGH",
+        "decision_codes": [
+          "HEADLINE",
+          "SECTOR",
+          "REGIME_DENY",
+          "VOL_HIGH"
+        ]
+      }
+    ]
+  },
+  {
+    "ticker": "PETR4",
+    "sector": "OilGas",
+    "scenario_count": 4,
+    "survived": 0,
+    "ready": 0,
+    "watch": 0,
+    "blocked": 4,
+    "manual_only": 0,
+    "invalid": 0,
+    "avg_final": 36.74,
+    "avg_factor": 0.8458,
+    "survival_score": 0,
+    "labels": [
+      "HEADLINE+SECTOR+REGIME_DENY+VOL_HIGH",
+      "HEADLINE+SECTOR+VOL_HIGH",
+      "VOL_HIGH"
+    ],
+    "codes": [
+      "HEADLINE",
+      "REGIME_DENY",
+      "SECTOR",
+      "VOL_HIGH"
+    ],
+    "scenarios": [
+      {
+        "key": "01_off_con",
+        "headline_risk": "OFF",
+        "posture": "STAND_ASIDE",
+        "status": "BLOCKED",
+        "context_score": 43.44,
+        "context_factor": 1.0,
+        "decision_label": "VOL_HIGH",
+        "decision_codes": [
+          "VOL_HIGH"
+        ]
+      },
+      {
+        "key": "02_watch_bal",
+        "headline_risk": "WATCH",
+        "posture": "STAND_ASIDE",
+        "status": "BLOCKED",
+        "context_score": 42.35,
+        "context_factor": 0.975,
+        "decision_label": "HEADLINE+SECTOR+VOL_HIGH",
+        "decision_codes": [
+          "HEADLINE",
+          "SECTOR",
+          "VOL_HIGH"
+        ]
+      },
+      {
+        "key": "03_active_agr",
+        "headline_risk": "ACTIVE",
+        "posture": "STAND_ASIDE",
+        "status": "BLOCKED",
+        "context_score": 35.29,
+        "context_factor": 0.8125,
+        "decision_label": "HEADLINE+SECTOR+VOL_HIGH",
+        "decision_codes": [
+          "HEADLINE",
+          "SECTOR",
+          "VOL_HIGH"
+        ]
+      },
+      {
+        "key": "04_extreme_agr",
+        "headline_risk": "EXTREME",
+        "posture": "STAND_ASIDE",
+        "status": "BLOCKED",
+        "context_score": 25.88,
+        "context_factor": 0.5958,
+        "decision_label": "HEADLINE+SECTOR+REGIME_DENY+VOL_HIGH",
+        "decision_codes": [
+          "HEADLINE",
+          "SECTOR",
+          "REGIME_DENY",
+          "VOL_HIGH"
+        ]
+      }
+    ]
+  }
+]

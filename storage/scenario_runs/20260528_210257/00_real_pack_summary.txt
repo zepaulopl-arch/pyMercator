@@ -1,0 +1,35 @@
+PYMERCATOR REAL PACK SUMMARY
+----------------------------------------------------------------------------------------------------------------------
+STATUS               OK
+CREATED AT           2026-05-28T21:02:57
+TICKERS FILE         data/universes/ibov_tickers.csv
+PRICES DIR           data/prices
+UNIVERSE OUTPUT      data/universes/ibov_live.csv
+HEADLINE TAGS        -
+
+PRICES
+----------------------------------------------------------------------------------------------------------------------
+EXISTS               True
+FILES                78
+VALID FILES          78
+INVALID FILES        0
+
+UNIVERSE BUILD
+----------------------------------------------------------------------------------------------------------------------
+ASSETS               78
+ERRORS               0
+
+UNIVERSE VALIDATION
+----------------------------------------------------------------------------------------------------------------------
+VALID                True
+ROWS                 78
+
+UNIVERSE DIAGNOSIS
+----------------------------------------------------------------------------------------------------------------------
+DATA STATUS          PASS_WITH_WARNINGS
+WARNINGS             66
+CONCENTRATION        LOW
+
+SCENARIO PACK
+----------------------------------------------------------------------------------------------------------------------
+PACK DIR             storage\scenario_runs\20260528_210257

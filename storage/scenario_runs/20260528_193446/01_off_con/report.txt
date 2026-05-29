@@ -1,0 +1,63 @@
+PYMERCATOR DAILY OPERATIONAL REPORT
+----------------------------------------------------------------------------------------------------------------------
+UNIVERSE             IBOV
+PROFILE              CON
+TODAY POSTURE        STAND_ASIDE
+
+1. MARKET REGIME
+----------------------------------------------------------------------------------------------------------------------
+REGIME               CHOPPY
+PERMISSION           CAUTION
+HEADLINE RISK        OFF
+HEADLINE TAGS        -
+SCORE FACTOR         1.00
+EXPOSURE FACTOR      1.00
+- market trend is CHOPPY
+
+2. UNIVERSE HEALTH
+----------------------------------------------------------------------------------------------------------------------
+TOTAL ASSETS         3
+VALID ASSETS         3
+HEALTHY ASSETS       0
+HEALTH               BROKEN
+BREADTH              BROKEN
+CONCENTRATION        UNKNOWN
+PERMISSION           DENY
+- not enough valid assets
+
+3. ASSET RANKING + 4. VALIDATION + 5. PERMISSION
+----------------------------------------------------------------------------------------------------------------------
+RK TICKER SECTOR        RAW  FACT  FINAL R_SIG   C_SIG      RR EXEC      SIZE WHY                     
+----------------------------------------------------------------------------------------------------------------------
+ 1 VALE3  Mining      55.84  1.00  55.84 NEUTRAL NEUTRAL  1.59 BLOCKED   0.00 VOL_HIGH                
+ 2 PRIO3  OilGas      51.80  1.00  51.80 AVOID   AVOID    1.60 BLOCKED   0.00 VOL_HIGH                
+ 3 PETR4  OilGas      43.44  1.00  43.44 AVOID   AVOID    1.60 BLOCKED   0.00 VOL_HIGH                
+
+LEGEND
+----------------------------------------------------------------------------------------------------------------------
+HEADLINE    headline risk reduced score
+SECTOR      sector sensitivity changed context factor
+CAP         permission capped by policy
+CTX_LOW     context score below operational threshold
+REGIME_DENY market regime denied operation
+RR_LOW      risk/reward below minimum
+ATR_HIGH    ATR above maximum
+VOL_HIGH    volatility above maximum
+LIQ_LOW     liquidity below minimum
+NO_ENTRY    missing entry
+NO_STOP     missing stop
+NO_TARGET   missing target
+
+SUMMARY
+----------------------------------------------------------------------------------------------------------------------
+READY                0
+WATCH                0
+BLOCKED              3
+
+6. HUMAN CONFIRMATION
+----------------------------------------------------------------------------------------------------------------------
+No READY tickets generated.
+
+POSTURE REASONS
+----------------------------------------------------------------------------------------------------------------------
+- universe health is not permissive

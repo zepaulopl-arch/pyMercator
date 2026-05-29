@@ -1,0 +1,183 @@
+{
+  "profiles": {
+    "CON": {
+      "name": "Conservative",
+      "min_rr": 1.5,
+      "max_position_factor": 0.5,
+      "max_volatility_pct": 32.0,
+      "max_atr_pct": 5.0
+    },
+    "BAL": {
+      "name": "Balanced",
+      "min_rr": 1.3,
+      "max_position_factor": 0.75,
+      "max_volatility_pct": 42.0,
+      "max_atr_pct": 6.5
+    },
+    "AGR": {
+      "name": "Aggressive",
+      "min_rr": 1.1,
+      "max_position_factor": 1.0,
+      "max_volatility_pct": 55.0,
+      "max_atr_pct": 8.0
+    },
+    "RLX": {
+      "name": "Relaxed",
+      "min_rr": 1.0,
+      "max_position_factor": 1.0,
+      "max_volatility_pct": 65.0,
+      "max_atr_pct": 9.0
+    }
+  },
+  "market_regime": {
+    "unknown_permission": "DENY",
+    "crisis_permission": "DENY",
+    "event_risk_permission": "CAUTION",
+    "risk_off_permission": "CAUTION",
+    "risk_on_permission": "ALLOW"
+  },
+  "headline_risk": {
+    "OFF": {
+      "score_factor": 1.0,
+      "exposure_factor": 1.0,
+      "permission_cap": "READY"
+    },
+    "WATCH": {
+      "score_factor": 0.9,
+      "exposure_factor": 0.75,
+      "permission_cap": "READY"
+    },
+    "ACTIVE": {
+      "score_factor": 0.75,
+      "exposure_factor": 0.5,
+      "permission_cap": "WATCH"
+    },
+    "EXTREME": {
+      "score_factor": 0.55,
+      "exposure_factor": 0.25,
+      "permission_cap": "WATCH"
+    }
+  },
+  "sector_sensitivity": {
+    "enabled": true,
+    "default_factor": 1.0,
+    "min_context_factor": 0.35,
+    "max_context_factor": 1.2,
+    "rules": {
+      "IRAN": {
+        "OilGas": 1.08,
+        "Utilities": 1.02,
+        "Mining": 0.97,
+        "Steel": 0.96,
+        "Retail": 0.9,
+        "Tech": 0.92,
+        "Banks": 0.94,
+        "Consumer": 0.95,
+        "Industrial": 0.94,
+        "Holding": 0.96
+      },
+      "OIL": {
+        "OilGas": 1.12,
+        "Utilities": 1.03,
+        "Mining": 0.97,
+        "Steel": 0.95,
+        "Retail": 0.9,
+        "Tech": 0.92,
+        "Banks": 0.95,
+        "Consumer": 0.96,
+        "Industrial": 0.94,
+        "Holding": 0.96
+      },
+      "WAR": {
+        "OilGas": 1.05,
+        "Utilities": 1.02,
+        "Mining": 0.96,
+        "Steel": 0.95,
+        "Retail": 0.9,
+        "Tech": 0.92,
+        "Banks": 0.94,
+        "Consumer": 0.95,
+        "Industrial": 0.94,
+        "Holding": 0.96
+      },
+      "FED": {
+        "Banks": 1.03,
+        "Retail": 0.94,
+        "Tech": 0.93,
+        "Industrial": 0.96,
+        "Utilities": 0.98,
+        "OilGas": 0.98,
+        "Mining": 0.97,
+        "Steel": 0.96,
+        "Consumer": 0.96,
+        "Holding": 0.96
+      },
+      "COPOM": {
+        "Banks": 1.03,
+        "Retail": 0.94,
+        "Utilities": 0.98,
+        "Industrial": 0.96,
+        "Tech": 0.95,
+        "OilGas": 0.98,
+        "Mining": 0.97,
+        "Steel": 0.96,
+        "Consumer": 0.96,
+        "Holding": 0.96
+      },
+      "FISCAL": {
+        "Banks": 0.94,
+        "Retail": 0.92,
+        "Utilities": 0.95,
+        "Industrial": 0.94,
+        "Tech": 0.94,
+        "OilGas": 0.96,
+        "Mining": 0.95,
+        "Steel": 0.95,
+        "Consumer": 0.94,
+        "Holding": 0.94
+      }
+    }
+  },
+  "universe_health": {
+    "min_valid_assets": 3,
+    "healthy_pct_broad": 0.45,
+    "healthy_pct_normal": 0.25,
+    "healthy_pct_narrow": 0.1,
+    "min_avg_volume_brl": 10000000,
+    "max_volatility_pct": 55.0,
+    "max_atr_pct": 8.0
+  },
+  "ranking": {
+    "weights": {
+      "trend_score": 0.25,
+      "momentum_score": 0.2,
+      "liquidity_score": 0.2,
+      "quality_score": 0.15,
+      "news_score": 0.1,
+      "volatility_score": 0.1
+    }
+  },
+  "trade_validation": {
+    "require_entry": true,
+    "require_stop": true,
+    "require_target": true,
+    "min_liquidity_brl": 10000000,
+    "max_atr_pct": 8.0,
+    "max_volatility_pct": 55.0
+  },
+  "permission": {
+    "unknown_blocks": true,
+    "invalid_blocks": true,
+    "extreme_headline_caps_ready": true,
+    "require_human_confirmation": true
+  },
+  "calibration": {
+    "volatility_pct_basis": "annualized",
+    "atr_pct_basis": "daily_percent",
+    "notes": [
+      "volatility_pct is computed from daily returns annualized by sqrt(252)",
+      "atr_pct is computed as ATR / last_close * 100",
+      "thresholds were recalibrated after switching from sample data to real OHLCV data"
+    ]
+  }
+}

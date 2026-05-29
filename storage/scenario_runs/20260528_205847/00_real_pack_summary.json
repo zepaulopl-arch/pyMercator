@@ -1,0 +1,4520 @@
+{
+  "status": "OK",
+  "created_at": "2026-05-28T20:58:46",
+  "tickers_file": "data/universes/ibov_tickers.csv",
+  "start": "2025-01-01",
+  "end": null,
+  "prices_dir": "data/prices",
+  "universe_output": "data/universes/ibov_live.csv",
+  "headline_tags": [
+    "IRAN",
+    "OIL",
+    "WAR"
+  ],
+  "fetch": {
+    "skipped": true,
+    "reason": "skip_fetch enabled"
+  },
+  "prices_check": {
+    "prices_dir": "data\\prices",
+    "exists": true,
+    "files": 78,
+    "valid_files": 78,
+    "invalid_files": 0,
+    "results": [
+      {
+        "path": "data\\prices\\ABEV3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\ALOS3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\ASAI3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\AURE3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\AXIA3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\AXIA6.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\AZZA3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\BBAS3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\BBDC3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\BBDC4.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\BBSE3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\BEEF3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\BPAC11.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\BRAP4.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\BRAV3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\BRKM5.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\CEAB3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\CMIG4.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\CMIN3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\COGN3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\CPFE3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\CPLE3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\CSAN3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\CSMG3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\CSNA3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\CURY3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\CXSE3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\CYRE3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\DIRR3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\EGIE3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\EMBJ3.SA.csv",
+        "valid": true,
+        "rows": 144,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-10-27",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\ENEV3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\ENGI11.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\EQTL3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\FLRY3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\GGBR4.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\GOAU4.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\HAPV3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\HYPE3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\IGTI11.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\ISAE4.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\ITSA4.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\ITUB4.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\KLBN11.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\LREN3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\MBRF3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\MGLU3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\MOTV3.SA.csv",
+        "valid": true,
+        "rows": 275,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-04-23",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\MRVE3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\MULT3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\NATU3.SA.csv",
+        "valid": true,
+        "rows": 231,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-06-26",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\PETR3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\PETR4.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\POMO4.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\PRIO3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\PSSA3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\RADL3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\RAIL3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\RDOR3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\RECV3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\RENT3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\SANB11.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\SBSP3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\SLCE3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\SMFT3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\SUZB3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\TAEE11.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\TIMS3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\TOTS3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\UGPA3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\USIM5.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\VALE3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\VAMO3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\VBBR3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\VIVA3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\VIVT3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\WEGE3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\YDUQ3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      }
+    ]
+  },
+  "universe_build": {
+    "prices_dir": "data\\prices",
+    "tickers_file": "data/universes/ibov_tickers.csv",
+    "output": "data/universes/ibov_live.csv",
+    "asset_count": 78,
+    "error_count": 0,
+    "errors": [],
+    "assets": [
+      {
+        "ticker": "ABEV3",
+        "sector": "consumer_staples",
+        "last_close": 16.29,
+        "avg_volume_brl": 483738613.41,
+        "trend_score": 60.39,
+        "momentum_score": 89.09,
+        "volatility_pct": 56.86,
+        "atr_pct": 2.29,
+        "liquidity_score": 90.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 16.29,
+        "stop": 15.92,
+        "target": 16.89
+      },
+      {
+        "ticker": "ALOS3",
+        "sector": "real_estate",
+        "last_close": 28.63,
+        "avg_volume_brl": 148169239.92,
+        "trend_score": 37.96,
+        "momentum_score": 24.62,
+        "volatility_pct": 27.8,
+        "atr_pct": 2.72,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 28.63,
+        "stop": 27.85,
+        "target": 29.88
+      },
+      {
+        "ticker": "ASAI3",
+        "sector": "consumer_staples",
+        "last_close": 8.98,
+        "avg_volume_brl": 120448988.67,
+        "trend_score": 54.51,
+        "momentum_score": 48.15,
+        "volatility_pct": 48.0,
+        "atr_pct": 4.36,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 8.98,
+        "stop": 8.59,
+        "target": 9.61
+      },
+      {
+        "ticker": "AURE3",
+        "sector": "utilities",
+        "last_close": 12.4,
+        "avg_volume_brl": 38322273.57,
+        "trend_score": 42.9,
+        "momentum_score": 13.6,
+        "volatility_pct": 21.64,
+        "atr_pct": 3.29,
+        "liquidity_score": 50.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 12.4,
+        "stop": 11.99,
+        "target": 13.05
+      },
+      {
+        "ticker": "AXIA3",
+        "sector": "utilities",
+        "last_close": 52.7,
+        "avg_volume_brl": 540347445.1,
+        "trend_score": 26.15,
+        "momentum_score": 0.0,
+        "volatility_pct": 30.99,
+        "atr_pct": 2.76,
+        "liquidity_score": 100.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 52.7,
+        "stop": 51.25,
+        "target": 55.03
+      },
+      {
+        "ticker": "AXIA6",
+        "sector": "utilities",
+        "last_close": 57.9,
+        "avg_volume_brl": 106937621.45,
+        "trend_score": 26.5,
+        "momentum_score": 0.0,
+        "volatility_pct": 33.52,
+        "atr_pct": 2.77,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 57.9,
+        "stop": 56.3,
+        "target": 60.47
+      },
+      {
+        "ticker": "AZZA3",
+        "sector": "consumer_discretionary",
+        "last_close": 19.85,
+        "avg_volume_brl": 55604506.81,
+        "trend_score": 21.56,
+        "momentum_score": 24.42,
+        "volatility_pct": 49.82,
+        "atr_pct": 4.76,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 19.85,
+        "stop": 18.91,
+        "target": 21.36
+      },
+      {
+        "ticker": "BBAS3",
+        "sector": "financials",
+        "last_close": 20.61,
+        "avg_volume_brl": 511888098.41,
+        "trend_score": 28.87,
+        "momentum_score": 21.46,
+        "volatility_pct": 27.18,
+        "atr_pct": 2.8,
+        "liquidity_score": 100.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 20.61,
+        "stop": 20.03,
+        "target": 21.53
+      },
+      {
+        "ticker": "BBDC3",
+        "sector": "financials",
+        "last_close": 15.59,
+        "avg_volume_brl": 72461900.74,
+        "trend_score": 38.1,
+        "momentum_score": 24.71,
+        "volatility_pct": 22.21,
+        "atr_pct": 2.12,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 15.59,
+        "stop": 15.26,
+        "target": 16.12
+      },
+      {
+        "ticker": "BBDC4",
+        "sector": "financials",
+        "last_close": 17.9,
+        "avg_volume_brl": 555716764.72,
+        "trend_score": 37.03,
+        "momentum_score": 21.56,
+        "volatility_pct": 26.7,
+        "atr_pct": 2.37,
+        "liquidity_score": 100.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 17.9,
+        "stop": 17.48,
+        "target": 18.58
+      },
+      {
+        "ticker": "BBSE3",
+        "sector": "financials",
+        "last_close": 34.58,
+        "avg_volume_brl": 146038796.05,
+        "trend_score": 49.88,
+        "momentum_score": 55.29,
+        "volatility_pct": 15.12,
+        "atr_pct": 1.38,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 34.58,
+        "stop": 33.89,
+        "target": 35.69
+      },
+      {
+        "ticker": "BEEF3",
+        "sector": "consumer_staples",
+        "last_close": 3.97,
+        "avg_volume_brl": 82713741.0,
+        "trend_score": 40.08,
+        "momentum_score": 50.84,
+        "volatility_pct": 55.9,
+        "atr_pct": 5.7,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 3.97,
+        "stop": 3.74,
+        "target": 4.33
+      },
+      {
+        "ticker": "BPAC11",
+        "sector": "financials",
+        "last_close": 54.3,
+        "avg_volume_brl": 563925864.49,
+        "trend_score": 37.61,
+        "momentum_score": 17.43,
+        "volatility_pct": 30.78,
+        "atr_pct": 3.28,
+        "liquidity_score": 100.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 54.3,
+        "stop": 52.52,
+        "target": 57.15
+      },
+      {
+        "ticker": "BRAP4",
+        "sector": "materials",
+        "last_close": 23.35,
+        "avg_volume_brl": 45959821.16,
+        "trend_score": 51.88,
+        "momentum_score": 44.94,
+        "volatility_pct": 25.84,
+        "atr_pct": 2.64,
+        "liquidity_score": 50.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 23.35,
+        "stop": 22.73,
+        "target": 24.34
+      },
+      {
+        "ticker": "BRAV3",
+        "sector": "energy",
+        "last_close": 20.24,
+        "avg_volume_brl": 162232096.14,
+        "trend_score": 62.28,
+        "momentum_score": 71.01,
+        "volatility_pct": 31.77,
+        "atr_pct": 3.25,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 20.24,
+        "stop": 19.58,
+        "target": 21.29
+      },
+      {
+        "ticker": "BRKM5",
+        "sector": "materials",
+        "last_close": 11.13,
+        "avg_volume_brl": 63912803.0,
+        "trend_score": 63.37,
+        "momentum_score": 100.0,
+        "volatility_pct": 106.96,
+        "atr_pct": 8.55,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 11.13,
+        "stop": 10.18,
+        "target": 12.65
+      },
+      {
+        "ticker": "CEAB3",
+        "sector": "consumer_discretionary",
+        "last_close": 11.44,
+        "avg_volume_brl": 100957454.29,
+        "trend_score": 44.44,
+        "momentum_score": 52.64,
+        "volatility_pct": 63.68,
+        "atr_pct": 5.27,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 11.44,
+        "stop": 10.84,
+        "target": 12.4
+      },
+      {
+        "ticker": "CMIG4",
+        "sector": "utilities",
+        "last_close": 11.05,
+        "avg_volume_brl": 167025973.14,
+        "trend_score": 29.49,
+        "momentum_score": 4.65,
+        "volatility_pct": 23.14,
+        "atr_pct": 2.29,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 11.05,
+        "stop": 10.8,
+        "target": 11.45
+      },
+      {
+        "ticker": "CMIN3",
+        "sector": "materials",
+        "last_close": 4.7,
+        "avg_volume_brl": 41186862.62,
+        "trend_score": 45.06,
+        "momentum_score": 52.14,
+        "volatility_pct": 57.71,
+        "atr_pct": 4.51,
+        "liquidity_score": 50.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 4.7,
+        "stop": 4.49,
+        "target": 5.04
+      },
+      {
+        "ticker": "COGN3",
+        "sector": "consumer_discretionary",
+        "last_close": 2.53,
+        "avg_volume_brl": 70438058.57,
+        "trend_score": 22.49,
+        "momentum_score": 8.48,
+        "volatility_pct": 42.88,
+        "atr_pct": 4.38,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 2.53,
+        "stop": 2.42,
+        "target": 2.71
+      },
+      {
+        "ticker": "CPFE3",
+        "sector": "utilities",
+        "last_close": 43.03,
+        "avg_volume_brl": 92119869.01,
+        "trend_score": 24.91,
+        "momentum_score": 0.0,
+        "volatility_pct": 27.3,
+        "atr_pct": 2.64,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 43.03,
+        "stop": 41.89,
+        "target": 44.85
+      },
+      {
+        "ticker": "CPLE3",
+        "sector": "utilities",
+        "last_close": 14.45,
+        "avg_volume_brl": 392892778.67,
+        "trend_score": 36.29,
+        "momentum_score": 15.28,
+        "volatility_pct": 24.44,
+        "atr_pct": 2.59,
+        "liquidity_score": 90.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 14.45,
+        "stop": 14.08,
+        "target": 15.05
+      },
+      {
+        "ticker": "CSAN3",
+        "sector": "energy",
+        "last_close": 3.94,
+        "avg_volume_brl": 174464779.1,
+        "trend_score": 0.0,
+        "momentum_score": 0.0,
+        "volatility_pct": 49.59,
+        "atr_pct": 6.44,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 3.94,
+        "stop": 3.69,
+        "target": 4.35
+      },
+      {
+        "ticker": "CSMG3",
+        "sector": "utilities",
+        "last_close": 52.94,
+        "avg_volume_brl": 270974171.83,
+        "trend_score": 43.52,
+        "momentum_score": 36.29,
+        "volatility_pct": 36.46,
+        "atr_pct": 3.69,
+        "liquidity_score": 90.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 52.94,
+        "stop": 50.99,
+        "target": 56.07
+      },
+      {
+        "ticker": "CSNA3",
+        "sector": "materials",
+        "last_close": 6.8,
+        "avg_volume_brl": 69347743.81,
+        "trend_score": 59.59,
+        "momentum_score": 69.73,
+        "volatility_pct": 54.68,
+        "atr_pct": 4.75,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 6.8,
+        "stop": 6.48,
+        "target": 7.32
+      },
+      {
+        "ticker": "CURY3",
+        "sector": "real_estate",
+        "last_close": 32.18,
+        "avg_volume_brl": 155555279.89,
+        "trend_score": 44.96,
+        "momentum_score": 77.23,
+        "volatility_pct": 47.45,
+        "atr_pct": 4.24,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 32.18,
+        "stop": 30.82,
+        "target": 34.36
+      },
+      {
+        "ticker": "CXSE3",
+        "sector": "financials",
+        "last_close": 17.44,
+        "avg_volume_brl": 60337122.07,
+        "trend_score": 43.3,
+        "momentum_score": 36.78,
+        "volatility_pct": 21.83,
+        "atr_pct": 1.99,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 17.44,
+        "stop": 17.09,
+        "target": 18.0
+      },
+      {
+        "ticker": "CYRE3",
+        "sector": "real_estate",
+        "last_close": 22.5,
+        "avg_volume_brl": 182111278.22,
+        "trend_score": 28.19,
+        "momentum_score": 26.58,
+        "volatility_pct": 40.98,
+        "atr_pct": 4.24,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 22.5,
+        "stop": 21.55,
+        "target": 24.03
+      },
+      {
+        "ticker": "DIRR3",
+        "sector": "real_estate",
+        "last_close": 13.37,
+        "avg_volume_brl": 95839557.95,
+        "trend_score": 46.45,
+        "momentum_score": 59.22,
+        "volatility_pct": 46.38,
+        "atr_pct": 4.24,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 13.37,
+        "stop": 12.8,
+        "target": 14.28
+      },
+      {
+        "ticker": "EGIE3",
+        "sector": "utilities",
+        "last_close": 32.32,
+        "avg_volume_brl": 78188636.89,
+        "trend_score": 41.88,
+        "momentum_score": 23.25,
+        "volatility_pct": 19.97,
+        "atr_pct": 2.22,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 32.32,
+        "stop": 31.6,
+        "target": 33.47
+      },
+      {
+        "ticker": "EMBJ3",
+        "sector": "industrials",
+        "last_close": 73.6,
+        "avg_volume_brl": 430420509.88,
+        "trend_score": 37.98,
+        "momentum_score": 28.52,
+        "volatility_pct": 51.91,
+        "atr_pct": 3.0,
+        "liquidity_score": 90.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 73.6,
+        "stop": 71.39,
+        "target": 77.13
+      },
+      {
+        "ticker": "ENEV3",
+        "sector": "utilities",
+        "last_close": 25.0,
+        "avg_volume_brl": 269132711.34,
+        "trend_score": 49.03,
+        "momentum_score": 24.4,
+        "volatility_pct": 29.02,
+        "atr_pct": 3.36,
+        "liquidity_score": 90.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 25.0,
+        "stop": 24.16,
+        "target": 26.34
+      },
+      {
+        "ticker": "ENGI11",
+        "sector": "utilities",
+        "last_close": 48.4,
+        "avg_volume_brl": 125032725.43,
+        "trend_score": 33.86,
+        "momentum_score": 16.93,
+        "volatility_pct": 26.89,
+        "atr_pct": 2.61,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 48.4,
+        "stop": 47.14,
+        "target": 50.42
+      },
+      {
+        "ticker": "EQTL3",
+        "sector": "utilities",
+        "last_close": 38.2,
+        "avg_volume_brl": 326866048.88,
+        "trend_score": 33.91,
+        "momentum_score": 15.29,
+        "volatility_pct": 27.48,
+        "atr_pct": 2.78,
+        "liquidity_score": 90.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 38.2,
+        "stop": 37.14,
+        "target": 39.9
+      },
+      {
+        "ticker": "FLRY3",
+        "sector": "health_care",
+        "last_close": 15.74,
+        "avg_volume_brl": 33785588.28,
+        "trend_score": 45.55,
+        "momentum_score": 46.23,
+        "volatility_pct": 26.3,
+        "atr_pct": 2.7,
+        "liquidity_score": 50.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 15.74,
+        "stop": 15.32,
+        "target": 16.42
+      },
+      {
+        "ticker": "GGBR4",
+        "sector": "materials",
+        "last_close": 23.5,
+        "avg_volume_brl": 227112322.65,
+        "trend_score": 72.26,
+        "momentum_score": 63.89,
+        "volatility_pct": 25.76,
+        "atr_pct": 2.72,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 23.5,
+        "stop": 22.86,
+        "target": 24.52
+      },
+      {
+        "ticker": "GOAU4",
+        "sector": "materials",
+        "last_close": 10.22,
+        "avg_volume_brl": 102472972.81,
+        "trend_score": 68.96,
+        "momentum_score": 61.47,
+        "volatility_pct": 24.76,
+        "atr_pct": 2.63,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 10.22,
+        "stop": 9.95,
+        "target": 10.65
+      },
+      {
+        "ticker": "HAPV3",
+        "sector": "health_care",
+        "last_close": 12.48,
+        "avg_volume_brl": 129894221.95,
+        "trend_score": 70.48,
+        "momentum_score": 62.18,
+        "volatility_pct": 64.24,
+        "atr_pct": 7.33,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 12.48,
+        "stop": 11.57,
+        "target": 13.94
+      },
+      {
+        "ticker": "HYPE3",
+        "sector": "health_care",
+        "last_close": 22.41,
+        "avg_volume_brl": 101495475.11,
+        "trend_score": 46.68,
+        "momentum_score": 56.06,
+        "volatility_pct": 30.58,
+        "atr_pct": 3.2,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 22.41,
+        "stop": 21.69,
+        "target": 23.56
+      },
+      {
+        "ticker": "IGTI11",
+        "sector": "real_estate",
+        "last_close": 26.19,
+        "avg_volume_brl": 57065944.53,
+        "trend_score": 38.94,
+        "momentum_score": 28.12,
+        "volatility_pct": 30.38,
+        "atr_pct": 2.74,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 26.19,
+        "stop": 25.47,
+        "target": 27.34
+      },
+      {
+        "ticker": "ISAE4",
+        "sector": "utilities",
+        "last_close": 27.09,
+        "avg_volume_brl": 74628589.55,
+        "trend_score": 35.04,
+        "momentum_score": 26.23,
+        "volatility_pct": 27.33,
+        "atr_pct": 2.46,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 27.09,
+        "stop": 26.42,
+        "target": 28.16
+      },
+      {
+        "ticker": "ITSA4",
+        "sector": "financials",
+        "last_close": 12.97,
+        "avg_volume_brl": 391659251.57,
+        "trend_score": 39.82,
+        "momentum_score": 24.6,
+        "volatility_pct": 25.25,
+        "atr_pct": 2.22,
+        "liquidity_score": 90.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 12.97,
+        "stop": 12.68,
+        "target": 13.43
+      },
+      {
+        "ticker": "ITUB4",
+        "sector": "financials",
+        "last_close": 40.0,
+        "avg_volume_brl": 1278599042.21,
+        "trend_score": 37.23,
+        "momentum_score": 19.01,
+        "volatility_pct": 24.75,
+        "atr_pct": 2.27,
+        "liquidity_score": 100.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 40.0,
+        "stop": 39.09,
+        "target": 41.45
+      },
+      {
+        "ticker": "KLBN11",
+        "sector": "materials",
+        "last_close": 16.67,
+        "avg_volume_brl": 102476725.01,
+        "trend_score": 32.94,
+        "momentum_score": 28.49,
+        "volatility_pct": 17.42,
+        "atr_pct": 1.94,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 16.67,
+        "stop": 16.34,
+        "target": 17.2
+      },
+      {
+        "ticker": "LREN3",
+        "sector": "consumer_discretionary",
+        "last_close": 15.0,
+        "avg_volume_brl": 244078877.81,
+        "trend_score": 55.51,
+        "momentum_score": 73.55,
+        "volatility_pct": 49.97,
+        "atr_pct": 4.0,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 15.0,
+        "stop": 14.4,
+        "target": 15.96
+      },
+      {
+        "ticker": "MBRF3",
+        "sector": "consumer_staples",
+        "last_close": 16.29,
+        "avg_volume_brl": 106056193.15,
+        "trend_score": 26.49,
+        "momentum_score": 16.83,
+        "volatility_pct": 42.93,
+        "atr_pct": 4.3,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 16.29,
+        "stop": 15.59,
+        "target": 17.41
+      },
+      {
+        "ticker": "MGLU3",
+        "sector": "consumer_discretionary",
+        "last_close": 6.35,
+        "avg_volume_brl": 122225354.57,
+        "trend_score": 0.0,
+        "momentum_score": 0.0,
+        "volatility_pct": 47.12,
+        "atr_pct": 4.95,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 6.35,
+        "stop": 6.04,
+        "target": 6.85
+      },
+      {
+        "ticker": "MOTV3",
+        "sector": "industrials",
+        "last_close": 14.13,
+        "avg_volume_brl": 125773628.33,
+        "trend_score": 28.14,
+        "momentum_score": 11.23,
+        "volatility_pct": 31.11,
+        "atr_pct": 3.07,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 14.13,
+        "stop": 13.7,
+        "target": 14.82
+      },
+      {
+        "ticker": "MRVE3",
+        "sector": "real_estate",
+        "last_close": 5.97,
+        "avg_volume_brl": 59020020.14,
+        "trend_score": 9.36,
+        "momentum_score": 3.0,
+        "volatility_pct": 47.81,
+        "atr_pct": 5.07,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 5.97,
+        "stop": 5.67,
+        "target": 6.45
+      },
+      {
+        "ticker": "MULT3",
+        "sector": "real_estate",
+        "last_close": 29.92,
+        "avg_volume_brl": 102479121.87,
+        "trend_score": 38.88,
+        "momentum_score": 26.01,
+        "volatility_pct": 32.62,
+        "atr_pct": 2.91,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 29.92,
+        "stop": 29.05,
+        "target": 31.31
+      },
+      {
+        "ticker": "NATU3",
+        "sector": "consumer_staples",
+        "last_close": 10.1,
+        "avg_volume_brl": 129587763.9,
+        "trend_score": 54.59,
+        "momentum_score": 46.41,
+        "volatility_pct": 38.69,
+        "atr_pct": 4.52,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 10.1,
+        "stop": 9.64,
+        "target": 10.83
+      },
+      {
+        "ticker": "PETR3",
+        "sector": "energy",
+        "last_close": 47.54,
+        "avg_volume_brl": 615957989.28,
+        "trend_score": 34.74,
+        "momentum_score": 16.79,
+        "volatility_pct": 30.48,
+        "atr_pct": 3.09,
+        "liquidity_score": 100.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 47.54,
+        "stop": 46.07,
+        "target": 49.89
+      },
+      {
+        "ticker": "PETR4",
+        "sector": "energy",
+        "last_close": 42.51,
+        "avg_volume_brl": 2219145445.6,
+        "trend_score": 31.86,
+        "momentum_score": 14.86,
+        "volatility_pct": 26.7,
+        "atr_pct": 2.73,
+        "liquidity_score": 100.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 42.51,
+        "stop": 41.35,
+        "target": 44.37
+      },
+      {
+        "ticker": "POMO4",
+        "sector": "industrials",
+        "last_close": 6.18,
+        "avg_volume_brl": 51131246.24,
+        "trend_score": 46.48,
+        "momentum_score": 36.05,
+        "volatility_pct": 32.83,
+        "atr_pct": 3.06,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 6.18,
+        "stop": 5.99,
+        "target": 6.48
+      },
+      {
+        "ticker": "PRIO3",
+        "sector": "energy",
+        "last_close": 62.97,
+        "avg_volume_brl": 658026416.93,
+        "trend_score": 43.11,
+        "momentum_score": 42.6,
+        "volatility_pct": 40.61,
+        "atr_pct": 3.45,
+        "liquidity_score": 100.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 62.97,
+        "stop": 60.8,
+        "target": 66.45
+      },
+      {
+        "ticker": "PSSA3",
+        "sector": "financials",
+        "last_close": 48.28,
+        "avg_volume_brl": 79489439.01,
+        "trend_score": 42.15,
+        "momentum_score": 31.48,
+        "volatility_pct": 26.25,
+        "atr_pct": 2.54,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 48.28,
+        "stop": 47.05,
+        "target": 50.24
+      },
+      {
+        "ticker": "RADL3",
+        "sector": "health_care",
+        "last_close": 18.95,
+        "avg_volume_brl": 230354643.2,
+        "trend_score": 20.47,
+        "momentum_score": 3.14,
+        "volatility_pct": 37.77,
+        "atr_pct": 3.66,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 18.95,
+        "stop": 18.26,
+        "target": 20.06
+      },
+      {
+        "ticker": "RAIL3",
+        "sector": "industrials",
+        "last_close": 13.85,
+        "avg_volume_brl": 209571697.93,
+        "trend_score": 21.44,
+        "momentum_score": 12.8,
+        "volatility_pct": 35.85,
+        "atr_pct": 3.52,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 13.85,
+        "stop": 13.36,
+        "target": 14.63
+      },
+      {
+        "ticker": "RDOR3",
+        "sector": "health_care",
+        "last_close": 34.47,
+        "avg_volume_brl": 306774899.88,
+        "trend_score": 31.03,
+        "momentum_score": 15.65,
+        "volatility_pct": 40.74,
+        "atr_pct": 3.26,
+        "liquidity_score": 90.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 34.47,
+        "stop": 33.35,
+        "target": 36.27
+      },
+      {
+        "ticker": "RECV3",
+        "sector": "energy",
+        "last_close": 11.58,
+        "avg_volume_brl": 29159103.86,
+        "trend_score": 26.96,
+        "momentum_score": 14.74,
+        "volatility_pct": 34.8,
+        "atr_pct": 3.6,
+        "liquidity_score": 50.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 11.58,
+        "stop": 11.16,
+        "target": 12.25
+      },
+      {
+        "ticker": "RENT3",
+        "sector": "consumer_discretionary",
+        "last_close": 42.82,
+        "avg_volume_brl": 420768044.95,
+        "trend_score": 32.74,
+        "momentum_score": 18.36,
+        "volatility_pct": 55.51,
+        "atr_pct": 4.55,
+        "liquidity_score": 90.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 42.82,
+        "stop": 40.87,
+        "target": 45.94
+      },
+      {
+        "ticker": "SANB11",
+        "sector": "financials",
+        "last_close": 27.22,
+        "avg_volume_brl": 79161354.15,
+        "trend_score": 32.8,
+        "momentum_score": 25.07,
+        "volatility_pct": 25.2,
+        "atr_pct": 2.16,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 27.22,
+        "stop": 26.63,
+        "target": 28.16
+      },
+      {
+        "ticker": "SBSP3",
+        "sector": "utilities",
+        "last_close": 28.16,
+        "avg_volume_brl": 430324069.9,
+        "trend_score": 29.64,
+        "momentum_score": 0.0,
+        "volatility_pct": 24.83,
+        "atr_pct": 2.65,
+        "liquidity_score": 90.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 28.16,
+        "stop": 27.41,
+        "target": 29.35
+      },
+      {
+        "ticker": "SLCE3",
+        "sector": "consumer_staples",
+        "last_close": 15.9,
+        "avg_volume_brl": 54264478.93,
+        "trend_score": 29.57,
+        "momentum_score": 31.21,
+        "volatility_pct": 19.1,
+        "atr_pct": 2.97,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 15.9,
+        "stop": 15.43,
+        "target": 16.66
+      },
+      {
+        "ticker": "SMFT3",
+        "sector": "consumer_discretionary",
+        "last_close": 18.73,
+        "avg_volume_brl": 152946639.93,
+        "trend_score": 49.81,
+        "momentum_score": 81.77,
+        "volatility_pct": 56.63,
+        "atr_pct": 3.84,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 18.73,
+        "stop": 18.01,
+        "target": 19.88
+      },
+      {
+        "ticker": "SUZB3",
+        "sector": "materials",
+        "last_close": 41.69,
+        "avg_volume_brl": 283962671.28,
+        "trend_score": 25.07,
+        "momentum_score": 22.42,
+        "volatility_pct": 22.34,
+        "atr_pct": 2.52,
+        "liquidity_score": 90.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 41.69,
+        "stop": 40.64,
+        "target": 43.37
+      },
+      {
+        "ticker": "TAEE11",
+        "sector": "utilities",
+        "last_close": 39.22,
+        "avg_volume_brl": 80437054.07,
+        "trend_score": 36.62,
+        "momentum_score": 19.71,
+        "volatility_pct": 25.68,
+        "atr_pct": 2.15,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 39.22,
+        "stop": 38.38,
+        "target": 40.57
+      },
+      {
+        "ticker": "TIMS3",
+        "sector": "communication",
+        "last_close": 22.34,
+        "avg_volume_brl": 124682271.62,
+        "trend_score": 24.25,
+        "momentum_score": 11.93,
+        "volatility_pct": 39.93,
+        "atr_pct": 1.88,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 22.34,
+        "stop": 21.89,
+        "target": 23.05
+      },
+      {
+        "ticker": "TOTS3",
+        "sector": "technology",
+        "last_close": 31.75,
+        "avg_volume_brl": 228860243.42,
+        "trend_score": 36.99,
+        "momentum_score": 51.69,
+        "volatility_pct": 49.08,
+        "atr_pct": 3.83,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 31.75,
+        "stop": 30.53,
+        "target": 33.7
+      },
+      {
+        "ticker": "UGPA3",
+        "sector": "energy",
+        "last_close": 26.91,
+        "avg_volume_brl": 202170732.88,
+        "trend_score": 36.62,
+        "momentum_score": 21.25,
+        "volatility_pct": 26.62,
+        "atr_pct": 3.62,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 26.91,
+        "stop": 25.94,
+        "target": 28.47
+      },
+      {
+        "ticker": "USIM5",
+        "sector": "materials",
+        "last_close": 10.65,
+        "avg_volume_brl": 164640897.71,
+        "trend_score": 100.0,
+        "momentum_score": 100.0,
+        "volatility_pct": 58.27,
+        "atr_pct": 4.93,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 10.65,
+        "stop": 10.12,
+        "target": 11.49
+      },
+      {
+        "ticker": "VALE3",
+        "sector": "materials",
+        "last_close": 83.96,
+        "avg_volume_brl": 1623366213.26,
+        "trend_score": 54.72,
+        "momentum_score": 48.3,
+        "volatility_pct": 32.77,
+        "atr_pct": 2.4,
+        "liquidity_score": 100.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 83.96,
+        "stop": 81.94,
+        "target": 87.18
+      },
+      {
+        "ticker": "VAMO3",
+        "sector": "industrials",
+        "last_close": 3.19,
+        "avg_volume_brl": 44981790.0,
+        "trend_score": 15.95,
+        "momentum_score": 0.0,
+        "volatility_pct": 47.37,
+        "atr_pct": 4.46,
+        "liquidity_score": 50.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 3.19,
+        "stop": 3.05,
+        "target": 3.42
+      },
+      {
+        "ticker": "VBBR3",
+        "sector": "energy",
+        "last_close": 30.91,
+        "avg_volume_brl": 252088328.74,
+        "trend_score": 41.47,
+        "momentum_score": 29.27,
+        "volatility_pct": 29.15,
+        "atr_pct": 3.15,
+        "liquidity_score": 90.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 30.91,
+        "stop": 29.94,
+        "target": 32.47
+      },
+      {
+        "ticker": "VIVA3",
+        "sector": "consumer_discretionary",
+        "last_close": 22.15,
+        "avg_volume_brl": 77678823.15,
+        "trend_score": 18.9,
+        "momentum_score": 13.19,
+        "volatility_pct": 52.38,
+        "atr_pct": 3.62,
+        "liquidity_score": 65.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 22.15,
+        "stop": 21.35,
+        "target": 23.43
+      },
+      {
+        "ticker": "VIVT3",
+        "sector": "communication",
+        "last_close": 33.6,
+        "avg_volume_brl": 168045858.15,
+        "trend_score": 18.62,
+        "momentum_score": 4.44,
+        "volatility_pct": 32.46,
+        "atr_pct": 3.0,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 33.6,
+        "stop": 32.59,
+        "target": 35.21
+      },
+      {
+        "ticker": "WEGE3",
+        "sector": "industrials",
+        "last_close": 43.72,
+        "avg_volume_brl": 303120796.37,
+        "trend_score": 38.14,
+        "momentum_score": 24.84,
+        "volatility_pct": 33.94,
+        "atr_pct": 2.39,
+        "liquidity_score": 90.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 43.72,
+        "stop": 42.68,
+        "target": 45.39
+      },
+      {
+        "ticker": "YDUQ3",
+        "sector": "consumer_discretionary",
+        "last_close": 9.58,
+        "avg_volume_brl": 44721099.76,
+        "trend_score": 26.82,
+        "momentum_score": 38.58,
+        "volatility_pct": 43.29,
+        "atr_pct": 4.54,
+        "liquidity_score": 50.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 9.58,
+        "stop": 9.15,
+        "target": 10.28
+      }
+    ]
+  },
+  "universe_validation": {
+    "path": "data/universes/ibov_live.csv",
+    "valid": true,
+    "rows": 78,
+    "columns": [
+      "ticker",
+      "sector",
+      "last_close",
+      "avg_volume_brl",
+      "trend_score",
+      "momentum_score",
+      "volatility_pct",
+      "atr_pct",
+      "liquidity_score",
+      "quality_score",
+      "news_score",
+      "entry",
+      "stop",
+      "target"
+    ],
+    "required_columns": [
+      "ticker",
+      "sector",
+      "last_close",
+      "avg_volume_brl",
+      "trend_score",
+      "momentum_score",
+      "volatility_pct",
+      "atr_pct",
+      "liquidity_score",
+      "quality_score",
+      "news_score",
+      "entry",
+      "stop",
+      "target"
+    ],
+    "missing_columns": [],
+    "extra_columns": [],
+    "duplicate_tickers": [],
+    "row_errors": []
+  },
+  "universe_diagnosis": {
+    "path": "data/universes/ibov_live.csv",
+    "policy": "config/policy.json",
+    "assets": 78,
+    "min_assets": 3,
+    "data_status": "PASS_WITH_WARNINGS",
+    "asset_count_status": "OK",
+    "warning_count": 66,
+    "liquidity_low": 0,
+    "volatility_high": 9,
+    "atr_high": 1,
+    "weak_trend": 57,
+    "weak_momentum": 56,
+    "missing_trade_plan": 0,
+    "sector_concentration": {
+      "status": "LOW",
+      "top_sector": "utilities",
+      "top_sector_count": 14,
+      "top_sector_pct": 17.95,
+      "sectors": {
+        "communication": 2,
+        "consumer_discretionary": 9,
+        "consumer_staples": 6,
+        "energy": 8,
+        "financials": 10,
+        "health_care": 5,
+        "industrials": 6,
+        "materials": 10,
+        "real_estate": 7,
+        "technology": 1,
+        "utilities": 14
+      }
+    },
+    "diagnostics": [
+      {
+        "ticker": "ABEV3",
+        "sector": "consumer_staples",
+        "avg_volume_brl": 483738613.41,
+        "volatility_pct": 56.86,
+        "atr_pct": 2.29,
+        "trend_score": 60.39,
+        "momentum_score": 89.09,
+        "codes": [
+          "VOL_HIGH"
+        ],
+        "label": "VOL_HIGH"
+      },
+      {
+        "ticker": "ALOS3",
+        "sector": "real_estate",
+        "avg_volume_brl": 148169239.92,
+        "volatility_pct": 27.8,
+        "atr_pct": 2.72,
+        "trend_score": 37.96,
+        "momentum_score": 24.62,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "ASAI3",
+        "sector": "consumer_staples",
+        "avg_volume_brl": 120448988.67,
+        "volatility_pct": 48.0,
+        "atr_pct": 4.36,
+        "trend_score": 54.51,
+        "momentum_score": 48.15,
+        "codes": [],
+        "label": "OK"
+      },
+      {
+        "ticker": "AURE3",
+        "sector": "utilities",
+        "avg_volume_brl": 38322273.57,
+        "volatility_pct": 21.64,
+        "atr_pct": 3.29,
+        "trend_score": 42.9,
+        "momentum_score": 13.6,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "AXIA3",
+        "sector": "utilities",
+        "avg_volume_brl": 540347445.1,
+        "volatility_pct": 30.99,
+        "atr_pct": 2.76,
+        "trend_score": 26.15,
+        "momentum_score": 0.0,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "AXIA6",
+        "sector": "utilities",
+        "avg_volume_brl": 106937621.45,
+        "volatility_pct": 33.52,
+        "atr_pct": 2.77,
+        "trend_score": 26.5,
+        "momentum_score": 0.0,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "AZZA3",
+        "sector": "consumer_discretionary",
+        "avg_volume_brl": 55604506.81,
+        "volatility_pct": 49.82,
+        "atr_pct": 4.76,
+        "trend_score": 21.56,
+        "momentum_score": 24.42,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "BBAS3",
+        "sector": "financials",
+        "avg_volume_brl": 511888098.41,
+        "volatility_pct": 27.18,
+        "atr_pct": 2.8,
+        "trend_score": 28.87,
+        "momentum_score": 21.46,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "BBDC3",
+        "sector": "financials",
+        "avg_volume_brl": 72461900.74,
+        "volatility_pct": 22.21,
+        "atr_pct": 2.12,
+        "trend_score": 38.1,
+        "momentum_score": 24.71,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "BBDC4",
+        "sector": "financials",
+        "avg_volume_brl": 555716764.72,
+        "volatility_pct": 26.7,
+        "atr_pct": 2.37,
+        "trend_score": 37.03,
+        "momentum_score": 21.56,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "BBSE3",
+        "sector": "financials",
+        "avg_volume_brl": 146038796.05,
+        "volatility_pct": 15.12,
+        "atr_pct": 1.38,
+        "trend_score": 49.88,
+        "momentum_score": 55.29,
+        "codes": [],
+        "label": "OK"
+      },
+      {
+        "ticker": "BEEF3",
+        "sector": "consumer_staples",
+        "avg_volume_brl": 82713741.0,
+        "volatility_pct": 55.9,
+        "atr_pct": 5.7,
+        "trend_score": 40.08,
+        "momentum_score": 50.84,
+        "codes": [
+          "VOL_HIGH",
+          "WEAK_TREND"
+        ],
+        "label": "VOL_HIGH+WEAK_TREND"
+      },
+      {
+        "ticker": "BPAC11",
+        "sector": "financials",
+        "avg_volume_brl": 563925864.49,
+        "volatility_pct": 30.78,
+        "atr_pct": 3.28,
+        "trend_score": 37.61,
+        "momentum_score": 17.43,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "BRAP4",
+        "sector": "materials",
+        "avg_volume_brl": 45959821.16,
+        "volatility_pct": 25.84,
+        "atr_pct": 2.64,
+        "trend_score": 51.88,
+        "momentum_score": 44.94,
+        "codes": [
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_MOM"
+      },
+      {
+        "ticker": "BRAV3",
+        "sector": "energy",
+        "avg_volume_brl": 162232096.14,
+        "volatility_pct": 31.77,
+        "atr_pct": 3.25,
+        "trend_score": 62.28,
+        "momentum_score": 71.01,
+        "codes": [],
+        "label": "OK"
+      },
+      {
+        "ticker": "BRKM5",
+        "sector": "materials",
+        "avg_volume_brl": 63912803.0,
+        "volatility_pct": 106.96,
+        "atr_pct": 8.55,
+        "trend_score": 63.37,
+        "momentum_score": 100.0,
+        "codes": [
+          "VOL_HIGH",
+          "ATR_HIGH"
+        ],
+        "label": "VOL_HIGH+ATR_HIGH"
+      },
+      {
+        "ticker": "CEAB3",
+        "sector": "consumer_discretionary",
+        "avg_volume_brl": 100957454.29,
+        "volatility_pct": 63.68,
+        "atr_pct": 5.27,
+        "trend_score": 44.44,
+        "momentum_score": 52.64,
+        "codes": [
+          "VOL_HIGH",
+          "WEAK_TREND"
+        ],
+        "label": "VOL_HIGH+WEAK_TREND"
+      },
+      {
+        "ticker": "CMIG4",
+        "sector": "utilities",
+        "avg_volume_brl": 167025973.14,
+        "volatility_pct": 23.14,
+        "atr_pct": 2.29,
+        "trend_score": 29.49,
+        "momentum_score": 4.65,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "CMIN3",
+        "sector": "materials",
+        "avg_volume_brl": 41186862.62,
+        "volatility_pct": 57.71,
+        "atr_pct": 4.51,
+        "trend_score": 45.06,
+        "momentum_score": 52.14,
+        "codes": [
+          "VOL_HIGH"
+        ],
+        "label": "VOL_HIGH"
+      },
+      {
+        "ticker": "COGN3",
+        "sector": "consumer_discretionary",
+        "avg_volume_brl": 70438058.57,
+        "volatility_pct": 42.88,
+        "atr_pct": 4.38,
+        "trend_score": 22.49,
+        "momentum_score": 8.48,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "CPFE3",
+        "sector": "utilities",
+        "avg_volume_brl": 92119869.01,
+        "volatility_pct": 27.3,
+        "atr_pct": 2.64,
+        "trend_score": 24.91,
+        "momentum_score": 0.0,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "CPLE3",
+        "sector": "utilities",
+        "avg_volume_brl": 392892778.67,
+        "volatility_pct": 24.44,
+        "atr_pct": 2.59,
+        "trend_score": 36.29,
+        "momentum_score": 15.28,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "CSAN3",
+        "sector": "energy",
+        "avg_volume_brl": 174464779.1,
+        "volatility_pct": 49.59,
+        "atr_pct": 6.44,
+        "trend_score": 0.0,
+        "momentum_score": 0.0,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "CSMG3",
+        "sector": "utilities",
+        "avg_volume_brl": 270974171.83,
+        "volatility_pct": 36.46,
+        "atr_pct": 3.69,
+        "trend_score": 43.52,
+        "momentum_score": 36.29,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "CSNA3",
+        "sector": "materials",
+        "avg_volume_brl": 69347743.81,
+        "volatility_pct": 54.68,
+        "atr_pct": 4.75,
+        "trend_score": 59.59,
+        "momentum_score": 69.73,
+        "codes": [],
+        "label": "OK"
+      },
+      {
+        "ticker": "CURY3",
+        "sector": "real_estate",
+        "avg_volume_brl": 155555279.89,
+        "volatility_pct": 47.45,
+        "atr_pct": 4.24,
+        "trend_score": 44.96,
+        "momentum_score": 77.23,
+        "codes": [
+          "WEAK_TREND"
+        ],
+        "label": "WEAK_TREND"
+      },
+      {
+        "ticker": "CXSE3",
+        "sector": "financials",
+        "avg_volume_brl": 60337122.07,
+        "volatility_pct": 21.83,
+        "atr_pct": 1.99,
+        "trend_score": 43.3,
+        "momentum_score": 36.78,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "CYRE3",
+        "sector": "real_estate",
+        "avg_volume_brl": 182111278.22,
+        "volatility_pct": 40.98,
+        "atr_pct": 4.24,
+        "trend_score": 28.19,
+        "momentum_score": 26.58,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "DIRR3",
+        "sector": "real_estate",
+        "avg_volume_brl": 95839557.95,
+        "volatility_pct": 46.38,
+        "atr_pct": 4.24,
+        "trend_score": 46.45,
+        "momentum_score": 59.22,
+        "codes": [],
+        "label": "OK"
+      },
+      {
+        "ticker": "EGIE3",
+        "sector": "utilities",
+        "avg_volume_brl": 78188636.89,
+        "volatility_pct": 19.97,
+        "atr_pct": 2.22,
+        "trend_score": 41.88,
+        "momentum_score": 23.25,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "EMBJ3",
+        "sector": "industrials",
+        "avg_volume_brl": 430420509.88,
+        "volatility_pct": 51.91,
+        "atr_pct": 3.0,
+        "trend_score": 37.98,
+        "momentum_score": 28.52,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "ENEV3",
+        "sector": "utilities",
+        "avg_volume_brl": 269132711.34,
+        "volatility_pct": 29.02,
+        "atr_pct": 3.36,
+        "trend_score": 49.03,
+        "momentum_score": 24.4,
+        "codes": [
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_MOM"
+      },
+      {
+        "ticker": "ENGI11",
+        "sector": "utilities",
+        "avg_volume_brl": 125032725.43,
+        "volatility_pct": 26.89,
+        "atr_pct": 2.61,
+        "trend_score": 33.86,
+        "momentum_score": 16.93,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "EQTL3",
+        "sector": "utilities",
+        "avg_volume_brl": 326866048.88,
+        "volatility_pct": 27.48,
+        "atr_pct": 2.78,
+        "trend_score": 33.91,
+        "momentum_score": 15.29,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "FLRY3",
+        "sector": "health_care",
+        "avg_volume_brl": 33785588.28,
+        "volatility_pct": 26.3,
+        "atr_pct": 2.7,
+        "trend_score": 45.55,
+        "momentum_score": 46.23,
+        "codes": [],
+        "label": "OK"
+      },
+      {
+        "ticker": "GGBR4",
+        "sector": "materials",
+        "avg_volume_brl": 227112322.65,
+        "volatility_pct": 25.76,
+        "atr_pct": 2.72,
+        "trend_score": 72.26,
+        "momentum_score": 63.89,
+        "codes": [],
+        "label": "OK"
+      },
+      {
+        "ticker": "GOAU4",
+        "sector": "materials",
+        "avg_volume_brl": 102472972.81,
+        "volatility_pct": 24.76,
+        "atr_pct": 2.63,
+        "trend_score": 68.96,
+        "momentum_score": 61.47,
+        "codes": [],
+        "label": "OK"
+      },
+      {
+        "ticker": "HAPV3",
+        "sector": "health_care",
+        "avg_volume_brl": 129894221.95,
+        "volatility_pct": 64.24,
+        "atr_pct": 7.33,
+        "trend_score": 70.48,
+        "momentum_score": 62.18,
+        "codes": [
+          "VOL_HIGH"
+        ],
+        "label": "VOL_HIGH"
+      },
+      {
+        "ticker": "HYPE3",
+        "sector": "health_care",
+        "avg_volume_brl": 101495475.11,
+        "volatility_pct": 30.58,
+        "atr_pct": 3.2,
+        "trend_score": 46.68,
+        "momentum_score": 56.06,
+        "codes": [],
+        "label": "OK"
+      },
+      {
+        "ticker": "IGTI11",
+        "sector": "real_estate",
+        "avg_volume_brl": 57065944.53,
+        "volatility_pct": 30.38,
+        "atr_pct": 2.74,
+        "trend_score": 38.94,
+        "momentum_score": 28.12,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "ISAE4",
+        "sector": "utilities",
+        "avg_volume_brl": 74628589.55,
+        "volatility_pct": 27.33,
+        "atr_pct": 2.46,
+        "trend_score": 35.04,
+        "momentum_score": 26.23,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "ITSA4",
+        "sector": "financials",
+        "avg_volume_brl": 391659251.57,
+        "volatility_pct": 25.25,
+        "atr_pct": 2.22,
+        "trend_score": 39.82,
+        "momentum_score": 24.6,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "ITUB4",
+        "sector": "financials",
+        "avg_volume_brl": 1278599042.21,
+        "volatility_pct": 24.75,
+        "atr_pct": 2.27,
+        "trend_score": 37.23,
+        "momentum_score": 19.01,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "KLBN11",
+        "sector": "materials",
+        "avg_volume_brl": 102476725.01,
+        "volatility_pct": 17.42,
+        "atr_pct": 1.94,
+        "trend_score": 32.94,
+        "momentum_score": 28.49,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "LREN3",
+        "sector": "consumer_discretionary",
+        "avg_volume_brl": 244078877.81,
+        "volatility_pct": 49.97,
+        "atr_pct": 4.0,
+        "trend_score": 55.51,
+        "momentum_score": 73.55,
+        "codes": [],
+        "label": "OK"
+      },
+      {
+        "ticker": "MBRF3",
+        "sector": "consumer_staples",
+        "avg_volume_brl": 106056193.15,
+        "volatility_pct": 42.93,
+        "atr_pct": 4.3,
+        "trend_score": 26.49,
+        "momentum_score": 16.83,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "MGLU3",
+        "sector": "consumer_discretionary",
+        "avg_volume_brl": 122225354.57,
+        "volatility_pct": 47.12,
+        "atr_pct": 4.95,
+        "trend_score": 0.0,
+        "momentum_score": 0.0,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "MOTV3",
+        "sector": "industrials",
+        "avg_volume_brl": 125773628.33,
+        "volatility_pct": 31.11,
+        "atr_pct": 3.07,
+        "trend_score": 28.14,
+        "momentum_score": 11.23,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "MRVE3",
+        "sector": "real_estate",
+        "avg_volume_brl": 59020020.14,
+        "volatility_pct": 47.81,
+        "atr_pct": 5.07,
+        "trend_score": 9.36,
+        "momentum_score": 3.0,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "MULT3",
+        "sector": "real_estate",
+        "avg_volume_brl": 102479121.87,
+        "volatility_pct": 32.62,
+        "atr_pct": 2.91,
+        "trend_score": 38.88,
+        "momentum_score": 26.01,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "NATU3",
+        "sector": "consumer_staples",
+        "avg_volume_brl": 129587763.9,
+        "volatility_pct": 38.69,
+        "atr_pct": 4.52,
+        "trend_score": 54.59,
+        "momentum_score": 46.41,
+        "codes": [],
+        "label": "OK"
+      },
+      {
+        "ticker": "PETR3",
+        "sector": "energy",
+        "avg_volume_brl": 615957989.28,
+        "volatility_pct": 30.48,
+        "atr_pct": 3.09,
+        "trend_score": 34.74,
+        "momentum_score": 16.79,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "PETR4",
+        "sector": "energy",
+        "avg_volume_brl": 2219145445.6,
+        "volatility_pct": 26.7,
+        "atr_pct": 2.73,
+        "trend_score": 31.86,
+        "momentum_score": 14.86,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "POMO4",
+        "sector": "industrials",
+        "avg_volume_brl": 51131246.24,
+        "volatility_pct": 32.83,
+        "atr_pct": 3.06,
+        "trend_score": 46.48,
+        "momentum_score": 36.05,
+        "codes": [
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_MOM"
+      },
+      {
+        "ticker": "PRIO3",
+        "sector": "energy",
+        "avg_volume_brl": 658026416.93,
+        "volatility_pct": 40.61,
+        "atr_pct": 3.45,
+        "trend_score": 43.11,
+        "momentum_score": 42.6,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "PSSA3",
+        "sector": "financials",
+        "avg_volume_brl": 79489439.01,
+        "volatility_pct": 26.25,
+        "atr_pct": 2.54,
+        "trend_score": 42.15,
+        "momentum_score": 31.48,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "RADL3",
+        "sector": "health_care",
+        "avg_volume_brl": 230354643.2,
+        "volatility_pct": 37.77,
+        "atr_pct": 3.66,
+        "trend_score": 20.47,
+        "momentum_score": 3.14,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "RAIL3",
+        "sector": "industrials",
+        "avg_volume_brl": 209571697.93,
+        "volatility_pct": 35.85,
+        "atr_pct": 3.52,
+        "trend_score": 21.44,
+        "momentum_score": 12.8,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "RDOR3",
+        "sector": "health_care",
+        "avg_volume_brl": 306774899.88,
+        "volatility_pct": 40.74,
+        "atr_pct": 3.26,
+        "trend_score": 31.03,
+        "momentum_score": 15.65,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "RECV3",
+        "sector": "energy",
+        "avg_volume_brl": 29159103.86,
+        "volatility_pct": 34.8,
+        "atr_pct": 3.6,
+        "trend_score": 26.96,
+        "momentum_score": 14.74,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "RENT3",
+        "sector": "consumer_discretionary",
+        "avg_volume_brl": 420768044.95,
+        "volatility_pct": 55.51,
+        "atr_pct": 4.55,
+        "trend_score": 32.74,
+        "momentum_score": 18.36,
+        "codes": [
+          "VOL_HIGH",
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "VOL_HIGH+WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "SANB11",
+        "sector": "financials",
+        "avg_volume_brl": 79161354.15,
+        "volatility_pct": 25.2,
+        "atr_pct": 2.16,
+        "trend_score": 32.8,
+        "momentum_score": 25.07,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "SBSP3",
+        "sector": "utilities",
+        "avg_volume_brl": 430324069.9,
+        "volatility_pct": 24.83,
+        "atr_pct": 2.65,
+        "trend_score": 29.64,
+        "momentum_score": 0.0,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "SLCE3",
+        "sector": "consumer_staples",
+        "avg_volume_brl": 54264478.93,
+        "volatility_pct": 19.1,
+        "atr_pct": 2.97,
+        "trend_score": 29.57,
+        "momentum_score": 31.21,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "SMFT3",
+        "sector": "consumer_discretionary",
+        "avg_volume_brl": 152946639.93,
+        "volatility_pct": 56.63,
+        "atr_pct": 3.84,
+        "trend_score": 49.81,
+        "momentum_score": 81.77,
+        "codes": [
+          "VOL_HIGH"
+        ],
+        "label": "VOL_HIGH"
+      },
+      {
+        "ticker": "SUZB3",
+        "sector": "materials",
+        "avg_volume_brl": 283962671.28,
+        "volatility_pct": 22.34,
+        "atr_pct": 2.52,
+        "trend_score": 25.07,
+        "momentum_score": 22.42,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "TAEE11",
+        "sector": "utilities",
+        "avg_volume_brl": 80437054.07,
+        "volatility_pct": 25.68,
+        "atr_pct": 2.15,
+        "trend_score": 36.62,
+        "momentum_score": 19.71,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "TIMS3",
+        "sector": "communication",
+        "avg_volume_brl": 124682271.62,
+        "volatility_pct": 39.93,
+        "atr_pct": 1.88,
+        "trend_score": 24.25,
+        "momentum_score": 11.93,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "TOTS3",
+        "sector": "technology",
+        "avg_volume_brl": 228860243.42,
+        "volatility_pct": 49.08,
+        "atr_pct": 3.83,
+        "trend_score": 36.99,
+        "momentum_score": 51.69,
+        "codes": [
+          "WEAK_TREND"
+        ],
+        "label": "WEAK_TREND"
+      },
+      {
+        "ticker": "UGPA3",
+        "sector": "energy",
+        "avg_volume_brl": 202170732.88,
+        "volatility_pct": 26.62,
+        "atr_pct": 3.62,
+        "trend_score": 36.62,
+        "momentum_score": 21.25,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "USIM5",
+        "sector": "materials",
+        "avg_volume_brl": 164640897.71,
+        "volatility_pct": 58.27,
+        "atr_pct": 4.93,
+        "trend_score": 100.0,
+        "momentum_score": 100.0,
+        "codes": [
+          "VOL_HIGH"
+        ],
+        "label": "VOL_HIGH"
+      },
+      {
+        "ticker": "VALE3",
+        "sector": "materials",
+        "avg_volume_brl": 1623366213.26,
+        "volatility_pct": 32.77,
+        "atr_pct": 2.4,
+        "trend_score": 54.72,
+        "momentum_score": 48.3,
+        "codes": [],
+        "label": "OK"
+      },
+      {
+        "ticker": "VAMO3",
+        "sector": "industrials",
+        "avg_volume_brl": 44981790.0,
+        "volatility_pct": 47.37,
+        "atr_pct": 4.46,
+        "trend_score": 15.95,
+        "momentum_score": 0.0,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "VBBR3",
+        "sector": "energy",
+        "avg_volume_brl": 252088328.74,
+        "volatility_pct": 29.15,
+        "atr_pct": 3.15,
+        "trend_score": 41.47,
+        "momentum_score": 29.27,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "VIVA3",
+        "sector": "consumer_discretionary",
+        "avg_volume_brl": 77678823.15,
+        "volatility_pct": 52.38,
+        "atr_pct": 3.62,
+        "trend_score": 18.9,
+        "momentum_score": 13.19,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "VIVT3",
+        "sector": "communication",
+        "avg_volume_brl": 168045858.15,
+        "volatility_pct": 32.46,
+        "atr_pct": 3.0,
+        "trend_score": 18.62,
+        "momentum_score": 4.44,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "WEGE3",
+        "sector": "industrials",
+        "avg_volume_brl": 303120796.37,
+        "volatility_pct": 33.94,
+        "atr_pct": 2.39,
+        "trend_score": 38.14,
+        "momentum_score": 24.84,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "YDUQ3",
+        "sector": "consumer_discretionary",
+        "avg_volume_brl": 44721099.76,
+        "volatility_pct": 43.29,
+        "atr_pct": 4.54,
+        "trend_score": 26.82,
+        "momentum_score": 38.58,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      }
+    ]
+  },
+  "pack_dir": "storage\\scenario_runs\\20260528_205847",
+  "scenario_summary_text": "PYMERCATOR SCENARIO PACK SUMMARY\n----------------------------------------------------------------------------------------------------------------------\nPACK DIR         storage\\scenario_runs\\20260528_205847\n\nSCENARIO         POSTURE      READY WATCH BLOCK TOP    TOP_EXEC TOP_LABEL                   \n----------------------------------------------------------------------------------------------------------------------\n01_off_con       WATCH_ONLY       0    69     9 USIM5  BLOCKED  VOL_HIGH                    \n02_watch_bal     WATCH_ONLY       0    69     9 USIM5  BLOCKED  HEADLINE+SECTOR+VOL_HIGH    \n03_active_agr    WATCH_ONLY       0    69     9 USIM5  BLOCKED  HEADLINE+SECTOR+VOL_HIGH    \n04_extreme_agr   STAND_ASIDE      0     0    78 USIM5  BLOCKED  HEADLINE+SECTOR+REGIME_DENY+VOL_HIGH\n\nFILES\n----------------------------------------------------------------------------------------------------------------------\n01_off_con/report.txt\n01_off_con/report.json\n02_watch_bal/report.txt\n02_watch_bal/report.json\n03_active_agr/report.txt\n03_active_agr/report.json\n04_extreme_agr/report.txt\n04_extreme_agr/report.json",
+  "stability_text": "PYMERCATOR STABILITY RANKING\n----------------------------------------------------------------------------------------------------------------------\nRK TICKER SECTOR     SURV READY WATCH BLOCK    AVG FACTOR SCORE CODES                             \n----------------------------------------------------------------------------------------------------------------------\n 1 GGBR4  materials     3     0     3     1  47.47   0.80     6 CAUTION,CTX_LOW,HEADLINE,REGIME...\n 2 BRAV3  energy        3     0     3     1  46.62   0.80     6 CAUTION,CTX_LOW,HEADLINE,REGIME...\n 3 GOAU4  materials     3     0     3     1  46.43   0.80     6 CAUTION,CTX_LOW,HEADLINE,REGIME...\n 4 LREN3  consumer_discretionary    3     0     3     1  45.67   0.80     6 CAUTION,CTX_LOW,HEADLINE,REGIME...\n 5 VALE3  materials     3     0     3     1  44.67   0.80     6 CAUTION,CTX_LOW,HEADLINE,REGIME...\n 6 CURY3  real_estate    3     0     3     1  44.15   0.80     6 CAUTION,CTX_LOW,HEADLINE,REGIME...\n 7 CSNA3  materials     3     0     3     1  43.47   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n 8 BBSE3  financials    3     0     3     1  41.62   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n 9 PRIO3  energy        3     0     3     1  41.44   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n10 ASAI3  consumer_staples    3     0     3     1  41.41   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n11 NATU3  consumer_staples    3     0     3     1  41.14   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n12 HYPE3  health_care    3     0     3     1  41.10   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n13 DIRR3  real_estate    3     0     3     1  39.17   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n14 CSMG3  utilities     3     0     3     1  38.91   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n15 TOTS3  technology    3     0     3     1  38.47   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n16 ENEV3  utilities     3     0     3     1  38.11   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n17 VBBR3  energy        3     0     3     1  37.38   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n18 BBDC4  financials    3     0     3     1  36.85   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n19 EMBJ3  industrials    3     0     3     1  36.56   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n20 ITUB4  financials    3     0     3     1  36.49   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n21 BPAC11 financials    3     0     3     1  36.31   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n22 ITSA4  financials    3     0     3     1  36.30   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n23 WEGE3  industrials    3     0     3     1  36.00   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n24 PETR3  energy        3     0     3     1  35.63   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n25 BRAP4  materials     3     0     3     1  35.56   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n26 POMO4  industrials    3     0     3     1  35.46   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n27 BBAS3  financials    3     0     3     1  35.21   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n28 CXSE3  financials    3     0     3     1  34.94   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n29 PETR4  energy        3     0     3     1  34.75   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n30 MULT3  real_estate    3     0     3     1  34.74   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n31 FLRY3  health_care    3     0     3     1  34.51   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n32 ALOS3  real_estate    3     0     3     1  34.33   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n33 CPLE3  utilities     3     0     3     1  34.10   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n34 KLBN11 materials     3     0     3     1  33.95   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n35 PSSA3  financials    3     0     3     1  33.87   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n36 EQTL3  utilities     3     0     3     1  33.63   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n37 UGPA3  energy        3     0     3     1  33.53   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n38 RDOR3  health_care    3     0     3     1  33.11   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n39 SUZB3  materials     3     0     3     1  33.00   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n40 CYRE3  real_estate    3     0     3     1  32.69   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n41 IGTI11 real_estate    3     0     3     1  32.69   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n42 EGIE3  utilities     3     0     3     1  32.50   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n43 ENGI11 utilities     3     0     3     1  32.28   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n44 BBDC3  financials    3     0     3     1  31.98   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n45 ISAE4  utilities     3     0     3     1  31.61   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n46 SLCE3  consumer_staples    3     0     3     1  31.30   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n47 AXIA3  utilities     3     0     3     1  31.23   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n48 SANB11 financials    3     0     3     1  30.97   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n49 TAEE11 utilities     3     0     3     1  30.88   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n50 MBRF3  consumer_staples    3     0     3     1  30.79   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n51 SBSP3  utilities     3     0     3     1  30.33   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n52 MOTV3  industrials    3     0     3     1  30.23   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n53 TIMS3  communication    3     0     3     1  29.56   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n54 YDUQ3  consumer_discretionary    3     0     3     1  29.54   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n55 CMIG4  utilities     3     0     3     1  29.44   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n56 RAIL3  industrials    3     0     3     1  29.14   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n57 AURE3  utilities     3     0     3     1  28.76   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n58 AZZA3  consumer_discretionary    3     0     3     1  28.62   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n59 AXIA6  utilities     3     0     3     1  28.10   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n60 RADL3  health_care    3     0     3     1  27.40   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n61 VIVT3  communication    3     0     3     1  27.23   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n62 VIVA3  consumer_discretionary    3     0     3     1  26.29   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n63 COGN3  consumer_discretionary    3     0     3     1  26.25   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n64 RECV3  energy        3     0     3     1  25.75   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n65 CPFE3  utilities     3     0     3     1  25.38   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n66 CSAN3  energy        3     0     3     1  22.80   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n67 MGLU3  consumer_discretionary    3     0     3     1  22.80   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n68 MRVE3  real_estate    3     0     3     1  22.75   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n69 VAMO3  industrials    3     0     3     1  21.19   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n70 USIM5  materials     0     0     0     4  58.80   0.80     0 HEADLINE,REGIME_DENY,SECTOR,VOL...\n71 ABEV3  consumer_staples    0     0     0     4  50.73   0.80     0 HEADLINE,REGIME_DENY,SECTOR,VOL...\n72 BRKM5  materials     0     0     0     4  49.08   0.80     0 ATR_HIGH,HEADLINE,REGIME_DENY,S...\n73 HAPV3  health_care    0     0     0     4  46.85   0.80     0 HEADLINE,REGIME_DENY,SECTOR,VOL...\n74 SMFT3  consumer_discretionary    0     0     0     4  45.85   0.80     0 HEADLINE,REGIME_DENY,SECTOR,VOL...\n75 CEAB3  consumer_discretionary    0     0     0     4  40.11   0.80     0 HEADLINE,REGIME_DENY,SECTOR,VOL...\n76 BEEF3  consumer_staples    0     0     0     4  36.55   0.80     0 HEADLINE,REGIME_DENY,SECTOR,VOL...\n77 CMIN3  materials     0     0     0     4  35.35   0.80     0 HEADLINE,REGIME_DENY,SECTOR,VOL...\n78 RENT3  consumer_discretionary    0     0     0     4  33.89   0.80     0 HEADLINE,REGIME_DENY,SECTOR,VOL...",
+  "errors": [],
+  "summary_text": "PYMERCATOR REAL PACK SUMMARY\n----------------------------------------------------------------------------------------------------------------------\nSTATUS               OK\nCREATED AT           2026-05-28T20:58:46\nTICKERS FILE         data/universes/ibov_tickers.csv\nPRICES DIR           data/prices\nUNIVERSE OUTPUT      data/universes/ibov_live.csv\nHEADLINE TAGS        IRAN, OIL, WAR\n\nPRICES\n----------------------------------------------------------------------------------------------------------------------\nEXISTS               True\nFILES                78\nVALID FILES          78\nINVALID FILES        0\n\nUNIVERSE BUILD\n----------------------------------------------------------------------------------------------------------------------\nASSETS               78\nERRORS               0\n\nUNIVERSE VALIDATION\n----------------------------------------------------------------------------------------------------------------------\nVALID                True\nROWS                 78\n\nUNIVERSE DIAGNOSIS\n----------------------------------------------------------------------------------------------------------------------\nDATA STATUS          PASS_WITH_WARNINGS\nWARNINGS             66\nCONCENTRATION        LOW\n\nSCENARIO PACK\n----------------------------------------------------------------------------------------------------------------------\nPACK DIR             storage\\scenario_runs\\20260528_205847\n"
+}

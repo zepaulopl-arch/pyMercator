@@ -1,0 +1,2 @@
+ticker,sector,return_1d,return_5d,return_20d,volatility_20d,atr_pct,trend_score,momentum_score,news_score,market_trend,market_volatility
+PRIO3,energy,0.2646,1.3369,5.571,0.07,1.06,66.62,69.55,64.98,UP,LOW

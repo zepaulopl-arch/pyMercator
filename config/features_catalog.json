@@ -1,0 +1,75 @@
+{
+  "source": "pymercator",
+  "features": [
+    {
+      "name": "return_1d",
+      "group": "price",
+      "enabled": true,
+      "required": true,
+      "description": "One-day close-to-close return."
+    },
+    {
+      "name": "return_5d",
+      "group": "price",
+      "enabled": true,
+      "required": true,
+      "description": "Five-day close-to-close return."
+    },
+    {
+      "name": "return_20d",
+      "group": "price",
+      "enabled": true,
+      "required": true,
+      "description": "Twenty-day close-to-close return."
+    },
+    {
+      "name": "volatility_20d",
+      "group": "risk",
+      "enabled": true,
+      "required": true,
+      "description": "Twenty-day annualized volatility proxy."
+    },
+    {
+      "name": "atr_pct",
+      "group": "risk",
+      "enabled": true,
+      "required": true,
+      "description": "Average true range as percentage of close."
+    },
+    {
+      "name": "trend_score",
+      "group": "technical",
+      "enabled": true,
+      "required": true,
+      "description": "Operational trend score already used by pyMercator."
+    },
+    {
+      "name": "momentum_score",
+      "group": "technical",
+      "enabled": true,
+      "required": true,
+      "description": "Operational momentum score already used by pyMercator."
+    },
+    {
+      "name": "news_score",
+      "group": "sentiment",
+      "enabled": true,
+      "required": false,
+      "description": "News/sentiment score from migrated sentiment CSV files."
+    },
+    {
+      "name": "market_trend",
+      "group": "macro",
+      "enabled": true,
+      "required": false,
+      "description": "Automatic market trend context."
+    },
+    {
+      "name": "market_volatility",
+      "group": "macro",
+      "enabled": true,
+      "required": false,
+      "description": "Automatic market volatility context."
+    }
+  ]
+}

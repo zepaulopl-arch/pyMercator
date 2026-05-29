@@ -1,0 +1,109 @@
+{
+  "pack_dir": "storage\\scenario_runs\\20260528_185528",
+  "universe_name": "IBOV",
+  "universe": "data\\universes\\ibov_sample.csv",
+  "market_trend": "CHOPPY",
+  "market_volatility": "NORMAL",
+  "scenarios": [
+    {
+      "key": "01_off_con",
+      "title": "OFF / CON",
+      "profile": "CON",
+      "headline_risk": "OFF",
+      "headline_tags": [],
+      "posture": "WATCH_ONLY",
+      "ready": 0,
+      "watch": 12,
+      "blocked": 3,
+      "top": {
+        "ticker": "PRIO3",
+        "sector": "OilGas",
+        "raw_score": 70.6,
+        "context_factor": 1.0,
+        "context_score": 70.6,
+        "raw_signal": "BUY",
+        "context_signal": "BUY",
+        "permission": "WATCH",
+        "decision_label": "OK"
+      }
+    },
+    {
+      "key": "02_watch_bal",
+      "title": "WATCH / BAL",
+      "profile": "BAL",
+      "headline_risk": "WATCH",
+      "headline_tags": [
+        "IRAN",
+        "OIL",
+        "WAR"
+      ],
+      "posture": "WATCH_ONLY",
+      "ready": 0,
+      "watch": 13,
+      "blocked": 2,
+      "top": {
+        "ticker": "PRIO3",
+        "sector": "OilGas",
+        "raw_score": 70.6,
+        "context_factor": 0.975,
+        "context_score": 68.83,
+        "raw_signal": "BUY",
+        "context_signal": "NEUTRAL",
+        "permission": "WATCH",
+        "decision_label": "HEADLINE+SECTOR"
+      }
+    },
+    {
+      "key": "03_active_agr",
+      "title": "ACTIVE / AGR",
+      "profile": "AGR",
+      "headline_risk": "ACTIVE",
+      "headline_tags": [
+        "IRAN",
+        "OIL",
+        "WAR"
+      ],
+      "posture": "WATCH_ONLY",
+      "ready": 0,
+      "watch": 13,
+      "blocked": 2,
+      "top": {
+        "ticker": "PRIO3",
+        "sector": "OilGas",
+        "raw_score": 70.6,
+        "context_factor": 0.8125,
+        "context_score": 57.36,
+        "raw_signal": "BUY",
+        "context_signal": "NEUTRAL",
+        "permission": "WATCH",
+        "decision_label": "HEADLINE+SECTOR+CAP"
+      }
+    },
+    {
+      "key": "04_extreme_agr",
+      "title": "EXTREME / AGR",
+      "profile": "AGR",
+      "headline_risk": "EXTREME",
+      "headline_tags": [
+        "IRAN",
+        "OIL",
+        "WAR"
+      ],
+      "posture": "STAND_ASIDE",
+      "ready": 0,
+      "watch": 0,
+      "blocked": 15,
+      "top": {
+        "ticker": "PRIO3",
+        "sector": "OilGas",
+        "raw_score": 70.6,
+        "context_factor": 0.5958,
+        "context_score": 42.06,
+        "raw_signal": "BUY",
+        "context_signal": "AVOID",
+        "permission": "BLOCKED",
+        "decision_label": "HEADLINE+SECTOR+REGIME_DENY"
+      }
+    }
+  ]
+}

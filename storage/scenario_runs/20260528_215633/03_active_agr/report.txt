@@ -1,0 +1,80 @@
+PYMERCATOR DAILY OPERATIONAL REPORT
+----------------------------------------------------------------------------------------------------------------------
+UNIVERSE             IBOV
+PROFILE              AGR
+TODAY POSTURE        WATCH_ONLY
+
+1. MARKET REGIME
+----------------------------------------------------------------------------------------------------------------------
+REGIME               EVENT_RISK
+PERMISSION           CAUTION
+HEADLINE RISK        ACTIVE
+HEADLINE TAGS        RISK_OFF
+SCORE FACTOR         0.75
+EXPOSURE FACTOR      0.50
+- headline risk is ACTIVE
+
+2. UNIVERSE HEALTH
+----------------------------------------------------------------------------------------------------------------------
+TOTAL ASSETS         78
+VALID ASSETS         78
+HEALTHY ASSETS       8
+HEALTH               NARROW
+BREADTH              WEAK
+CONCENTRATION        MEDIUM
+PERMISSION           CAUTION
+- few healthy assets
+
+3. ASSET RANKING + 4. VALIDATION + 5. PERMISSION
+----------------------------------------------------------------------------------------------------------------------
+RK TICKER SECTOR        RAW  FACT  FINAL R_SIG   C_SIG      RR EXEC      SIZE WHY                     
+----------------------------------------------------------------------------------------------------------------------
+ 1 USIM5  materials   73.50  0.75  55.12 BUY     NEUTRAL  1.58 BLOCKED   0.00 HEADLINE+VOL_HIGH       
+ 2 ABEV3  consume...  63.42  0.75  47.56 NEUTRAL AVOID    1.62 BLOCKED   0.00 HEADLINE+VOL_HIGH       
+ 3 BRKM5  materials   61.34  0.75  46.01 NEUTRAL AVOID    1.60 BLOCKED   0.00 HEADLINE+ATR_HIGH+VOL...
+ 4 GGBR4  materials   59.34  0.75  44.51 NEUTRAL AVOID    1.59 WATCH     0.00 HEADLINE+CTX_LOW        
+ 5 HAPV3  health_...  58.56  0.75  43.92 NEUTRAL AVOID    1.60 BLOCKED   0.00 HEADLINE+VOL_HIGH       
+ 6 BRAV3  energy      58.27  0.75  43.70 NEUTRAL AVOID    1.59 WATCH     0.00 HEADLINE+CTX_LOW        
+ 7 GOAU4  materials   58.03  0.75  43.53 NEUTRAL AVOID    1.59 WATCH     0.00 HEADLINE+CTX_LOW        
+ 8 SMFT3  consume...  57.31  0.75  42.98 NEUTRAL AVOID    1.60 BLOCKED   0.00 HEADLINE+VOL_HIGH       
+ 9 LREN3  consume...  57.09  0.75  42.82 NEUTRAL AVOID    1.60 WATCH     0.00 HEADLINE+CTX_LOW        
+10 VALE3  materials   55.84  0.75  41.88 NEUTRAL AVOID    1.59 WATCH     0.00 HEADLINE+CTX_LOW        
+11 CURY3  real_es...  55.19  0.75  41.39 NEUTRAL AVOID    1.60 WATCH     0.00 HEADLINE+CTX_LOW        
+12 CSNA3  materials   54.34  0.75  40.76 AVOID   AVOID    1.63 WATCH     0.00 HEADLINE+CTX_LOW        
+13 BBSE3  financials  52.03  0.75  39.02 AVOID   AVOID    1.61 WATCH     0.00 HEADLINE+CTX_LOW        
+14 PRIO3  energy      51.80  0.75  38.85 AVOID   AVOID    1.60 WATCH     0.00 HEADLINE+CTX_LOW        
+15 ASAI3  consume...  51.76  0.75  38.82 AVOID   AVOID    1.62 WATCH     0.00 HEADLINE+CTX_LOW        
+16 NATU3  consume...  51.43  0.75  38.57 AVOID   AVOID    1.59 WATCH     0.00 HEADLINE+CTX_LOW        
+17 HYPE3  health_...  51.38  0.75  38.54 AVOID   AVOID    1.60 WATCH     0.00 HEADLINE+CTX_LOW        
+18 CEAB3  consume...  50.14  0.75  37.60 AVOID   AVOID    1.60 BLOCKED   0.00 HEADLINE+VOL_HIGH       
+19 DIRR3  real_es...  48.96  0.75  36.72 AVOID   AVOID    1.60 WATCH     0.00 HEADLINE+CTX_LOW        
+20 CSMG3  utilities   48.64  0.75  36.48 AVOID   AVOID    1.61 WATCH     0.00 HEADLINE+CTX_LOW        
+
+LEGEND
+----------------------------------------------------------------------------------------------------------------------
+HEADLINE    headline risk reduced score
+SECTOR      sector sensitivity changed context factor
+CAP         permission capped by policy
+CTX_LOW     context score below operational threshold
+REGIME_DENY market regime denied operation
+RR_LOW      risk/reward below minimum
+ATR_HIGH    ATR above maximum
+VOL_HIGH    volatility above maximum
+LIQ_LOW     liquidity below minimum
+NO_ENTRY    missing entry
+NO_STOP     missing stop
+NO_TARGET   missing target
+
+SUMMARY
+----------------------------------------------------------------------------------------------------------------------
+READY                0
+WATCH                69
+BLOCKED              9
+
+6. HUMAN CONFIRMATION
+----------------------------------------------------------------------------------------------------------------------
+No READY tickets generated.
+
+POSTURE REASONS
+----------------------------------------------------------------------------------------------------------------------
+- watch candidates exist but no ready trades

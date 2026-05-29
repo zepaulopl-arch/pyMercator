@@ -1,0 +1,18 @@
+{
+  "headline_tags": [
+    "RISK_OFF"
+  ],
+  "market_trend": "DOWN",
+  "market_volatility": "NORMAL",
+  "notes": "IBOV trend/volatility supports caution",
+  "source": "auto_indices",
+  "metrics": {
+    "ibov_return_5d_pct": -1.46,
+    "ibov_return_20d_pct": -5.24,
+    "ibov_volatility_20d_annualized_pct": 16.84,
+    "brent_return_5d_pct": -12.25,
+    "brent_return_20d_pct": -21.92,
+    "usdbrl_return_5d_pct": 0.52,
+    "usdbrl_return_20d_pct": 1.48
+  }
+}

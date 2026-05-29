@@ -1,0 +1,345 @@
+{
+  "created_at": "2026-05-28T23:20:50",
+  "command": "scenario-pack",
+  "pack_dir": "storage\\scenario_runs\\20260528_232050",
+  "universe": "data/universes/ibov_live.csv",
+  "universe_name": "IBOV",
+  "headline_tags": [
+    "RISK_OFF"
+  ],
+  "market_trend": "DOWN",
+  "market_volatility": "NORMAL",
+  "policy": "config/policy.json",
+  "limit": 20,
+  "scenario_count": 4,
+  "scenarios": [
+    {
+      "key": "01_off_con",
+      "title": "OFF / CON",
+      "profile": "CON",
+      "headline_risk": "OFF",
+      "headline_tags": []
+    },
+    {
+      "key": "02_watch_bal",
+      "title": "WATCH / BAL",
+      "profile": "BAL",
+      "headline_risk": "WATCH",
+      "headline_tags": [
+        "RISK_OFF"
+      ]
+    },
+    {
+      "key": "03_active_agr",
+      "title": "ACTIVE / AGR",
+      "profile": "AGR",
+      "headline_risk": "ACTIVE",
+      "headline_tags": [
+        "RISK_OFF"
+      ]
+    },
+    {
+      "key": "04_extreme_agr",
+      "title": "EXTREME / AGR",
+      "profile": "AGR",
+      "headline_risk": "EXTREME",
+      "headline_tags": [
+        "RISK_OFF"
+      ]
+    }
+  ],
+  "files": [
+    "00_manifest.txt",
+    "00_manifest.json",
+    "00_pack_summary.txt",
+    "00_pack_summary.json",
+    "00_stability_ranking.txt",
+    "00_stability_ranking.json",
+    "01_off_con/report.txt",
+    "01_off_con/report.json",
+    "02_watch_bal/report.txt",
+    "02_watch_bal/report.json",
+    "03_active_agr/report.txt",
+    "03_active_agr/report.json",
+    "04_extreme_agr/report.txt",
+    "04_extreme_agr/report.json",
+    "00_real_pack_summary.txt",
+    "00_real_pack_summary.json"
+  ],
+  "source_command": "real-pack",
+  "real_pack": true,
+  "real_pack_created_at": "2026-05-28T23:20:50",
+  "tickers_file": "data/universes/ibov_tickers.csv",
+  "sentiment_dir": "data/sentiment",
+  "sentiment_snapshot": {
+    "assets": 78,
+    "assets_with_news_score": 78,
+    "avg_news_score": 58.27,
+    "min_news_score": 33.21,
+    "max_news_score": 76.06,
+    "top_news": [
+      {
+        "ticker": "SBSP3",
+        "sector": "utilities",
+        "news_score": 76.06
+      },
+      {
+        "ticker": "VAMO3",
+        "sector": "industrials",
+        "news_score": 74.16
+      },
+      {
+        "ticker": "MRVE3",
+        "sector": "real_estate",
+        "news_score": 71.59
+      },
+      {
+        "ticker": "CPFE3",
+        "sector": "utilities",
+        "news_score": 71.08
+      },
+      {
+        "ticker": "RDOR3",
+        "sector": "health_care",
+        "news_score": 70.33
+      },
+      {
+        "ticker": "TIMS3",
+        "sector": "communication",
+        "news_score": 69.53
+      },
+      {
+        "ticker": "ISAE4",
+        "sector": "utilities",
+        "news_score": 69.19
+      },
+      {
+        "ticker": "ITSA4",
+        "sector": "financials",
+        "news_score": 68.19
+      },
+      {
+        "ticker": "VIVT3",
+        "sector": "communication",
+        "news_score": 68.04
+      },
+      {
+        "ticker": "ENEV3",
+        "sector": "utilities",
+        "news_score": 66.47
+      }
+    ],
+    "bottom_news": [
+      {
+        "ticker": "SANB11",
+        "sector": "financials",
+        "news_score": 33.21
+      },
+      {
+        "ticker": "BBSE3",
+        "sector": "financials",
+        "news_score": 40.23
+      },
+      {
+        "ticker": "EGIE3",
+        "sector": "utilities",
+        "news_score": 43.75
+      },
+      {
+        "ticker": "EMBJ3",
+        "sector": "industrials",
+        "news_score": 44.84
+      },
+      {
+        "ticker": "SLCE3",
+        "sector": "consumer_staples",
+        "news_score": 45.79
+      },
+      {
+        "ticker": "AZZA3",
+        "sector": "consumer_discretionary",
+        "news_score": 47.87
+      },
+      {
+        "ticker": "BBAS3",
+        "sector": "financials",
+        "news_score": 49.08
+      },
+      {
+        "ticker": "BBDC4",
+        "sector": "financials",
+        "news_score": 49.78
+      },
+      {
+        "ticker": "TAEE11",
+        "sector": "utilities",
+        "news_score": 50.52
+      },
+      {
+        "ticker": "VIVA3",
+        "sector": "consumer_discretionary",
+        "news_score": 50.74
+      }
+    ]
+  },
+  "features_file": "config/features_catalog.json",
+  "features_snapshot": {
+    "file": "config\\features_catalog.json",
+    "valid": true,
+    "features": 10,
+    "enabled": 10,
+    "required": 7,
+    "groups": {
+      "macro": 2,
+      "price": 3,
+      "risk": 2,
+      "sentiment": 1,
+      "technical": 2
+    },
+    "errors": []
+  },
+  "prices_dir": "data/prices",
+  "universe_output": "data/universes/ibov_live.csv",
+  "skip_fetch": true,
+  "prices_files": 78,
+  "prices_valid_files": 78,
+  "prices_invalid_files": 0,
+  "universe_assets": 78,
+  "universe_errors": 0,
+  "diagnosis_status": "PASS_WITH_WARNINGS",
+  "diagnosis_warnings": 66,
+  "context_source": "file",
+  "context_file": "config/market_context_auto.json",
+  "context_preset": "",
+  "context_notes": "IBOV trend/volatility supports caution",
+  "context_snapshot": {
+    "headline_tags": [
+      "RISK_OFF"
+    ],
+    "market_trend": "DOWN",
+    "market_volatility": "NORMAL",
+    "notes": "IBOV trend/volatility supports caution",
+    "source": "auto_indices",
+    "metrics": {
+      "ibov_return_5d_pct": -1.46,
+      "ibov_return_20d_pct": -5.24,
+      "ibov_volatility_20d_annualized_pct": 16.84,
+      "brent_return_5d_pct": -12.25,
+      "brent_return_20d_pct": -21.92,
+      "usdbrl_return_5d_pct": 0.52,
+      "usdbrl_return_20d_pct": 1.48
+    },
+    "context_source": "file",
+    "context_file": "config/market_context_auto.json",
+    "context_preset": ""
+  },
+  "execution_mode": "ANALYSIS_ONLY",
+  "allow_order_routing": false,
+  "require_human_confirmation": true,
+  "feature_matrix": {
+    "file": "storage\\features\\latest_feature_matrix.csv",
+    "rows": 78,
+    "columns": 12,
+    "missing_price_files": 0
+  },
+  "prediction_lab": {
+    "status": "OK",
+    "dataset": {
+      "file": "storage\\prediction\\latest_prediction_dataset.csv",
+      "rows": 24950,
+      "columns": 15,
+      "missing_price_files": 0
+    },
+    "evaluation": {
+      "file": "storage\\prediction\\latest_evaluation.json",
+      "rows": 24950,
+      "evaluated_rows": 24800,
+      "models": {
+        "rolling_majority": {
+          "observations": 24800,
+          "accuracy": 0.5266,
+          "precision": 0.5304,
+          "recall": 0.9473,
+          "target_up_rate": 0.5311,
+          "predicted_up_rate": 0.9486,
+          "true_positive": 12478,
+          "true_negative": 581,
+          "false_positive": 11047,
+          "false_negative": 694
+        },
+        "momentum_rule": {
+          "observations": 24800,
+          "accuracy": 0.4804,
+          "precision": 0.5427,
+          "recall": 0.1384,
+          "target_up_rate": 0.5311,
+          "predicted_up_rate": 0.1354,
+          "true_positive": 1823,
+          "true_negative": 10092,
+          "false_positive": 1536,
+          "false_negative": 11349
+        },
+        "logistic_baseline": {
+          "observations": 24800,
+          "accuracy": 0.6725,
+          "precision": 0.6842,
+          "recall": 0.7118,
+          "target_up_rate": 0.5311,
+          "predicted_up_rate": 0.5525,
+          "true_positive": 9376,
+          "true_negative": 7301,
+          "false_positive": 4327,
+          "false_negative": 3796
+        },
+        "tree_stump": {
+          "observations": 24800,
+          "accuracy": 0.532,
+          "precision": 0.5384,
+          "recall": 0.8331,
+          "target_up_rate": 0.5311,
+          "predicted_up_rate": 0.8219,
+          "true_positive": 10974,
+          "true_negative": 2220,
+          "false_positive": 9408,
+          "false_negative": 2198
+        },
+        "bagged_stumps": {
+          "observations": 24800,
+          "accuracy": 0.5251,
+          "precision": 0.5317,
+          "recall": 0.8879,
+          "target_up_rate": 0.5311,
+          "predicted_up_rate": 0.887,
+          "true_positive": 11696,
+          "true_negative": 1327,
+          "false_positive": 10301,
+          "false_negative": 1476
+        },
+        "boosted_stumps": {
+          "observations": 24800,
+          "accuracy": 0.5389,
+          "precision": 0.5442,
+          "recall": 0.8115,
+          "target_up_rate": 0.5311,
+          "predicted_up_rate": 0.792,
+          "true_positive": 10689,
+          "true_negative": 2675,
+          "false_positive": 8953,
+          "false_negative": 2483
+        },
+        "ensemble_vote": {
+          "observations": 24800,
+          "accuracy": 0.5421,
+          "precision": 0.5419,
+          "recall": 0.8925,
+          "target_up_rate": 0.5311,
+          "predicted_up_rate": 0.8748,
+          "true_positive": 11756,
+          "true_negative": 1688,
+          "false_positive": 9940,
+          "false_negative": 1416
+        }
+      }
+    }
+  }
+}

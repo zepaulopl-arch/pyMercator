@@ -1,0 +1,75 @@
+PYMERCATOR DAILY OPERATIONAL REPORT
+----------------------------------------------------------------------------------------------------------------------
+UNIVERSE             IBOV
+PROFILE              BAL
+TODAY POSTURE        WATCH_ONLY
+
+1. MARKET REGIME
+----------------------------------------------------------------------------------------------------------------------
+REGIME               CHOPPY
+PERMISSION           CAUTION
+HEADLINE RISK        WATCH
+HEADLINE TAGS        -
+SCORE FACTOR         0.90
+EXPOSURE FACTOR      0.75
+- market trend is CHOPPY
+
+2. UNIVERSE HEALTH
+----------------------------------------------------------------------------------------------------------------------
+TOTAL ASSETS         15
+VALID ASSETS         15
+HEALTHY ASSETS       6
+HEALTH               NORMAL
+BREADTH              NORMAL
+CONCENTRATION        LOW
+PERMISSION           ALLOW
+- normal quantity of healthy assets
+
+3. ASSET RANKING + 4. VALIDATION + 5. PERMISSION
+----------------------------------------------------------------------------------------------------------------------
+RK TICKER SECTOR        RAW  FACT  FINAL R_SIG   C_SIG      RR EXEC      SIZE WHY                     
+----------------------------------------------------------------------------------------------------------------------
+ 1 PRIO3  OilGas      70.60  0.90  63.54 BUY     NEUTRAL  1.77 WATCH     0.56 HEADLINE+CAUTION        
+ 2 VALE3  Mining      68.15  0.90  61.34 NEUTRAL NEUTRAL  1.72 WATCH     0.56 HEADLINE+CAUTION        
+ 3 LREN3  Retail      66.80  0.90  60.12 NEUTRAL NEUTRAL  1.50 WATCH     0.56 HEADLINE+CAUTION        
+ 4 GGBR4  Steel       64.30  0.90  57.87 NEUTRAL NEUTRAL  1.71 WATCH     0.56 HEADLINE+CAUTION        
+ 5 SBSP3  Utilities   63.35  0.90  57.02 NEUTRAL NEUTRAL  1.60 WATCH     0.56 HEADLINE+CAUTION        
+ 6 ABEV3  Consumer    60.90  0.90  54.81 NEUTRAL AVOID    1.75 WATCH     0.00 HEADLINE+CTX_LOW        
+ 7 PETR4  OilGas      60.80  0.90  54.72 NEUTRAL AVOID    1.33 WATCH     0.00 HEADLINE+CTX_LOW        
+ 8 TOTS3  Tech        60.75  0.90  54.68 NEUTRAL AVOID    1.67 WATCH     0.00 HEADLINE+CTX_LOW        
+ 9 ITUB4  Banks       59.80  0.90  53.82 NEUTRAL AVOID    1.50 WATCH     0.00 HEADLINE+CTX_LOW        
+10 WEGE3  Industrial  59.55  0.90  53.59 NEUTRAL AVOID    1.78 WATCH     0.00 HEADLINE+CTX_LOW        
+11 BBDC4  Banks       55.25  0.90  49.73 NEUTRAL AVOID    1.75 WATCH     0.00 HEADLINE+CTX_LOW        
+12 CMIG4  Utilities   49.10  0.90  44.19 AVOID   AVOID    1.67 WATCH     0.00 HEADLINE+CTX_LOW        
+13 BRAP4  Holding     42.75  0.90  38.48 AVOID   AVOID    2.00 WATCH     0.00 HEADLINE+CTX_LOW        
+14 ASAI3  Retail      37.75  0.90  33.98 AVOID   AVOID    1.00 BLOCKED   0.00 HEADLINE+RR_LOW+ATR_HIGH
+15 MGLU3  Retail      33.45  0.90  30.11 AVOID   AVOID    2.00 BLOCKED   0.00 HEADLINE+ATR_HIGH+VOL...
+
+LEGEND
+----------------------------------------------------------------------------------------------------------------------
+HEADLINE    headline risk reduced score
+SECTOR      sector sensitivity changed context factor
+CAP         permission capped by policy
+CTX_LOW     context score below operational threshold
+REGIME_DENY market regime denied operation
+RR_LOW      risk/reward below minimum
+ATR_HIGH    ATR above maximum
+VOL_HIGH    volatility above maximum
+LIQ_LOW     liquidity below minimum
+NO_ENTRY    missing entry
+NO_STOP     missing stop
+NO_TARGET   missing target
+
+SUMMARY
+----------------------------------------------------------------------------------------------------------------------
+READY                0
+WATCH                13
+BLOCKED              2
+
+6. HUMAN CONFIRMATION
+----------------------------------------------------------------------------------------------------------------------
+No READY tickets generated.
+
+POSTURE REASONS
+----------------------------------------------------------------------------------------------------------------------
+- watch candidates exist but no ready trades

@@ -1,0 +1,222 @@
+{
+  "universe_name": "IBOV",
+  "profile": "BAL",
+  "market_regime": {
+    "regime": "CHOPPY",
+    "permission": "CAUTION",
+    "headline_risk": "WATCH",
+    "headline_tags": [
+      "IRAN",
+      "OIL",
+      "WAR"
+    ],
+    "score_factor": 0.9,
+    "exposure_factor": 0.75,
+    "reasons": [
+      "market trend is CHOPPY"
+    ]
+  },
+  "universe_health": {
+    "universe_name": "IBOV",
+    "total_assets": 3,
+    "valid_assets": 3,
+    "healthy_assets": 1,
+    "health": "NORMAL",
+    "breadth_label": "NORMAL",
+    "sector_concentration": "HIGH",
+    "permission": "ALLOW",
+    "reasons": [
+      "normal quantity of healthy assets",
+      "healthy assets are concentrated in one sector"
+    ]
+  },
+  "decisions": [
+    {
+      "asset": {
+        "ticker": "PRIO3",
+        "sector": "OilGas",
+        "last_close": 62.97,
+        "avg_volume_brl": 658026416.93,
+        "trend_score": 43.11,
+        "momentum_score": 42.6,
+        "volatility_pct": 40.61,
+        "atr_pct": 3.45,
+        "liquidity_score": 100.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 62.97,
+        "stop": 60.8,
+        "target": 66.45
+      },
+      "ranking": {
+        "ticker": "PRIO3",
+        "sector": "OilGas",
+        "raw_score": 51.8,
+        "context_score": 50.5,
+        "context_factor": 0.975,
+        "rank": 1,
+        "raw_signal": "AVOID",
+        "context_signal": "AVOID",
+        "reasons": [
+          "headline factor 0.90",
+          "sector factor 1.08",
+          "sector sensitivity OilGas=1.08 tags=IRAN,OIL,WAR"
+        ]
+      },
+      "validation": {
+        "ticker": "PRIO3",
+        "valid": true,
+        "entry": 62.97,
+        "stop": 60.8,
+        "target": 66.45,
+        "rr": 1.6,
+        "liquidity_ok": true,
+        "volatility_ok": true,
+        "atr_ok": true,
+        "status": "READY",
+        "reasons": []
+      },
+      "permission": {
+        "ticker": "PRIO3",
+        "status": "WATCH",
+        "max_position_factor": 0.0,
+        "requires_human_confirmation": true,
+        "reasons": [
+          "context score below operational threshold"
+        ]
+      },
+      "decision_codes": [
+        "HEADLINE",
+        "SECTOR",
+        "CTX_LOW"
+      ],
+      "decision_label": "HEADLINE+SECTOR+CTX_LOW"
+    },
+    {
+      "asset": {
+        "ticker": "VALE3",
+        "sector": "Mining",
+        "last_close": 83.96,
+        "avg_volume_brl": 1623366213.26,
+        "trend_score": 54.72,
+        "momentum_score": 48.3,
+        "volatility_pct": 32.77,
+        "atr_pct": 2.4,
+        "liquidity_score": 100.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 83.96,
+        "stop": 81.94,
+        "target": 87.18
+      },
+      "ranking": {
+        "ticker": "VALE3",
+        "sector": "Mining",
+        "raw_score": 55.84,
+        "context_score": 48.58,
+        "context_factor": 0.87,
+        "rank": 2,
+        "raw_signal": "NEUTRAL",
+        "context_signal": "AVOID",
+        "reasons": [
+          "headline factor 0.90",
+          "sector factor 0.97",
+          "sector sensitivity Mining=0.97 tags=IRAN,OIL,WAR"
+        ]
+      },
+      "validation": {
+        "ticker": "VALE3",
+        "valid": true,
+        "entry": 83.96,
+        "stop": 81.94,
+        "target": 87.18,
+        "rr": 1.59,
+        "liquidity_ok": true,
+        "volatility_ok": true,
+        "atr_ok": true,
+        "status": "READY",
+        "reasons": []
+      },
+      "permission": {
+        "ticker": "VALE3",
+        "status": "WATCH",
+        "max_position_factor": 0.0,
+        "requires_human_confirmation": true,
+        "reasons": [
+          "context score below operational threshold"
+        ]
+      },
+      "decision_codes": [
+        "HEADLINE",
+        "SECTOR",
+        "CTX_LOW"
+      ],
+      "decision_label": "HEADLINE+SECTOR+CTX_LOW"
+    },
+    {
+      "asset": {
+        "ticker": "PETR4",
+        "sector": "OilGas",
+        "last_close": 42.51,
+        "avg_volume_brl": 2219145445.6,
+        "trend_score": 31.86,
+        "momentum_score": 14.86,
+        "volatility_pct": 26.7,
+        "atr_pct": 2.73,
+        "liquidity_score": 100.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 42.51,
+        "stop": 41.35,
+        "target": 44.37
+      },
+      "ranking": {
+        "ticker": "PETR4",
+        "sector": "OilGas",
+        "raw_score": 43.44,
+        "context_score": 42.35,
+        "context_factor": 0.975,
+        "rank": 3,
+        "raw_signal": "AVOID",
+        "context_signal": "AVOID",
+        "reasons": [
+          "headline factor 0.90",
+          "sector factor 1.08",
+          "sector sensitivity OilGas=1.08 tags=IRAN,OIL,WAR"
+        ]
+      },
+      "validation": {
+        "ticker": "PETR4",
+        "valid": true,
+        "entry": 42.51,
+        "stop": 41.35,
+        "target": 44.37,
+        "rr": 1.6,
+        "liquidity_ok": true,
+        "volatility_ok": true,
+        "atr_ok": true,
+        "status": "READY",
+        "reasons": []
+      },
+      "permission": {
+        "ticker": "PETR4",
+        "status": "WATCH",
+        "max_position_factor": 0.0,
+        "requires_human_confirmation": true,
+        "reasons": [
+          "context score below operational threshold"
+        ]
+      },
+      "decision_codes": [
+        "HEADLINE",
+        "SECTOR",
+        "CTX_LOW"
+      ],
+      "decision_label": "HEADLINE+SECTOR+CTX_LOW"
+    }
+  ],
+  "posture": "WATCH_ONLY",
+  "reasons": [
+    "watch candidates exist but no ready trades"
+  ]
+}

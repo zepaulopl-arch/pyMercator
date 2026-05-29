@@ -1,0 +1,76 @@
+PYMERCATOR DAILY OPERATIONAL REPORT
+----------------------------------------------------------------------------------------------------------------------
+UNIVERSE             IBOV
+PROFILE              AGR
+TODAY POSTURE        STAND_ASIDE
+
+1. MARKET REGIME
+----------------------------------------------------------------------------------------------------------------------
+REGIME               CRISIS
+PERMISSION           DENY
+HEADLINE RISK        EXTREME
+HEADLINE TAGS        IRAN, OIL, WAR
+SCORE FACTOR         0.55
+EXPOSURE FACTOR      0.25
+- headline risk is EXTREME
+
+2. UNIVERSE HEALTH
+----------------------------------------------------------------------------------------------------------------------
+TOTAL ASSETS         16
+VALID ASSETS         16
+HEALTHY ASSETS       4
+HEALTH               NORMAL
+BREADTH              NORMAL
+CONCENTRATION        MEDIUM
+PERMISSION           ALLOW
+- normal quantity of healthy assets
+
+3. ASSET RANKING + 4. VALIDATION + 5. PERMISSION
+----------------------------------------------------------------------------------------------------------------------
+RK TICKER SECTOR        RAW  FACT  FINAL R_SIG   C_SIG      RR EXEC      SIZE WHY                     
+----------------------------------------------------------------------------------------------------------------------
+ 1 ABEV3  Consumer    63.42  0.52  33.25 NEUTRAL AVOID    1.62 BLOCKED   0.00 HEADLINE+SECTOR+REGIM...
+ 2 GGBR4  Steel       59.34  0.52  31.11 NEUTRAL AVOID    1.59 BLOCKED   0.00 HEADLINE+SECTOR+REGIM...
+ 3 PRIO3  OilGas      51.80  0.60  30.86 AVOID   AVOID    1.60 BLOCKED   0.00 HEADLINE+SECTOR+REGIM...
+ 4 VALE3  Mining      55.84  0.53  29.69 NEUTRAL AVOID    1.59 BLOCKED   0.00 HEADLINE+SECTOR+REGIM...
+ 5 LREN3  Retail      57.09  0.49  28.26 NEUTRAL AVOID    1.60 BLOCKED   0.00 HEADLINE+SECTOR+REGIM...
+ 6 PETR4  OilGas      43.44  0.60  25.88 AVOID   AVOID    1.60 BLOCKED   0.00 HEADLINE+SECTOR+REGIM...
+ 7 ASAI3  Retail      51.76  0.49  25.62 AVOID   AVOID    1.62 BLOCKED   0.00 HEADLINE+SECTOR+REGIM...
+ 8 TOTS3  Tech        48.09  0.51  24.33 AVOID   AVOID    1.60 BLOCKED   0.00 HEADLINE+SECTOR+REGIM...
+ 9 BBDC4  Banks       46.07  0.52  23.90 AVOID   AVOID    1.62 BLOCKED   0.00 HEADLINE+SECTOR+REGIM...
+10 ITUB4  Banks       45.61  0.52  23.66 AVOID   AVOID    1.59 BLOCKED   0.00 HEADLINE+SECTOR+REGIM...
+11 BRAP4  Holding     44.46  0.53  23.47 AVOID   AVOID    1.60 BLOCKED   0.00 HEADLINE+SECTOR+REGIM...
+12 WEGE3  Industrial  45.00  0.52  23.27 AVOID   AVOID    1.61 BLOCKED   0.00 HEADLINE+SECTOR+REGIM...
+13 BBAS3  Banks       44.01  0.52  22.83 AVOID   AVOID    1.59 BLOCKED   0.00 HEADLINE+SECTOR+REGIM...
+14 SBSP3  Utilities   37.91  0.56  21.34 AVOID   AVOID    1.59 BLOCKED   0.00 HEADLINE+SECTOR+REGIM...
+15 CMIG4  Utilities   36.80  0.56  20.71 AVOID   AVOID    1.60 BLOCKED   0.00 HEADLINE+SECTOR+REGIM...
+16 MGLU3  Retail      28.50  0.49  14.11 AVOID   AVOID    1.61 BLOCKED   0.00 HEADLINE+SECTOR+REGIM...
+
+LEGEND
+----------------------------------------------------------------------------------------------------------------------
+HEADLINE    headline risk reduced score
+SECTOR      sector sensitivity changed context factor
+CAP         permission capped by policy
+CTX_LOW     context score below operational threshold
+REGIME_DENY market regime denied operation
+RR_LOW      risk/reward below minimum
+ATR_HIGH    ATR above maximum
+VOL_HIGH    volatility above maximum
+LIQ_LOW     liquidity below minimum
+NO_ENTRY    missing entry
+NO_STOP     missing stop
+NO_TARGET   missing target
+
+SUMMARY
+----------------------------------------------------------------------------------------------------------------------
+READY                0
+WATCH                0
+BLOCKED              16
+
+6. HUMAN CONFIRMATION
+----------------------------------------------------------------------------------------------------------------------
+No READY tickets generated.
+
+POSTURE REASONS
+----------------------------------------------------------------------------------------------------------------------
+- market regime is not permissive

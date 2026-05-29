@@ -1,0 +1,110 @@
+{
+  "dataset": "storage/prediction/latest_prediction_dataset.csv",
+  "horizon": 5,
+  "min_train_rows": 100,
+  "n_jobs": 4,
+  "autotune": {
+    "enabled": false,
+    "n_iter": 15,
+    "cv": 3,
+    "scoring": "neg_mean_absolute_error",
+    "tuned_params": {}
+  },
+  "engines": [
+    "rolling_majority",
+    "momentum_rule",
+    "xgb",
+    "catboost",
+    "extratrees",
+    "ridge_arbiter"
+  ],
+  "engine_status": {},
+  "rows": 55,
+  "evaluated_rows": 0,
+  "models": {
+    "rolling_majority": {
+      "observations": 0,
+      "accuracy": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "mae_return": 0.0,
+      "target_up_rate": 0.0,
+      "predicted_up_rate": 0.0,
+      "mean_predicted_return": 0.0,
+      "true_positive": 0,
+      "true_negative": 0,
+      "false_positive": 0,
+      "false_negative": 0
+    },
+    "momentum_rule": {
+      "observations": 0,
+      "accuracy": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "mae_return": 0.0,
+      "target_up_rate": 0.0,
+      "predicted_up_rate": 0.0,
+      "mean_predicted_return": 0.0,
+      "true_positive": 0,
+      "true_negative": 0,
+      "false_positive": 0,
+      "false_negative": 0
+    },
+    "xgb": {
+      "observations": 0,
+      "accuracy": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "mae_return": 0.0,
+      "target_up_rate": 0.0,
+      "predicted_up_rate": 0.0,
+      "mean_predicted_return": 0.0,
+      "true_positive": 0,
+      "true_negative": 0,
+      "false_positive": 0,
+      "false_negative": 0
+    },
+    "catboost": {
+      "observations": 0,
+      "accuracy": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "mae_return": 0.0,
+      "target_up_rate": 0.0,
+      "predicted_up_rate": 0.0,
+      "mean_predicted_return": 0.0,
+      "true_positive": 0,
+      "true_negative": 0,
+      "false_positive": 0,
+      "false_negative": 0
+    },
+    "extratrees": {
+      "observations": 0,
+      "accuracy": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "mae_return": 0.0,
+      "target_up_rate": 0.0,
+      "predicted_up_rate": 0.0,
+      "mean_predicted_return": 0.0,
+      "true_positive": 0,
+      "true_negative": 0,
+      "false_positive": 0,
+      "false_negative": 0
+    },
+    "ridge_arbiter": {
+      "observations": 0,
+      "accuracy": 0.0,
+      "precision": 0.0,
+      "recall": 0.0,
+      "mae_return": 0.0,
+      "target_up_rate": 0.0,
+      "predicted_up_rate": 0.0,
+      "mean_predicted_return": 0.0,
+      "true_positive": 0,
+      "true_negative": 0,
+      "false_positive": 0,
+      "false_negative": 0
+    }
+  }
+}

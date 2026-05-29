@@ -1,0 +1,21 @@
+PYMERCATOR SCENARIO PACK SUMMARY
+----------------------------------------------------------------------------------------------------------------------
+PACK DIR         storage\scenario_runs\20260528_191543
+
+SCENARIO         POSTURE      READY WATCH BLOCK TOP    TOP_EXEC TOP_LABEL                   
+----------------------------------------------------------------------------------------------------------------------
+01_off_con       WATCH_ONLY       0    12     3 PRIO3  WATCH    CAUTION                     
+02_watch_bal     WATCH_ONLY       0    13     2 PRIO3  WATCH    HEADLINE+SECTOR+CAUTION     
+03_active_agr    WATCH_ONLY       0    13     2 PRIO3  WATCH    HEADLINE+SECTOR+CAP         
+04_extreme_agr   STAND_ASIDE      0     0    15 PRIO3  BLOCKED  HEADLINE+SECTOR+REGIME_DENY 
+
+FILES
+----------------------------------------------------------------------------------------------------------------------
+01_off_con/report.txt
+01_off_con/report.json
+02_watch_bal/report.txt
+02_watch_bal/report.json
+03_active_agr/report.txt
+03_active_agr/report.json
+04_extreme_agr/report.txt
+04_extreme_agr/report.json

@@ -1,0 +1,76 @@
+PYMERCATOR DAILY OPERATIONAL REPORT
+----------------------------------------------------------------------------------------------------------------------
+UNIVERSE             IBOV
+PROFILE              CON
+TODAY POSTURE        WATCH_ONLY
+
+1. MARKET REGIME
+----------------------------------------------------------------------------------------------------------------------
+REGIME               CHOPPY
+PERMISSION           CAUTION
+HEADLINE RISK        OFF
+HEADLINE TAGS        -
+SCORE FACTOR         1.00
+EXPOSURE FACTOR      1.00
+- market trend is CHOPPY
+
+2. UNIVERSE HEALTH
+----------------------------------------------------------------------------------------------------------------------
+TOTAL ASSETS         16
+VALID ASSETS         16
+HEALTHY ASSETS       4
+HEALTH               NORMAL
+BREADTH              NORMAL
+CONCENTRATION        MEDIUM
+PERMISSION           ALLOW
+- normal quantity of healthy assets
+
+3. ASSET RANKING + 4. VALIDATION + 5. PERMISSION
+----------------------------------------------------------------------------------------------------------------------
+RK TICKER SECTOR        RAW  FACT  FINAL R_SIG   C_SIG      RR EXEC      SIZE WHY                     
+----------------------------------------------------------------------------------------------------------------------
+ 1 ABEV3  Consumer    63.42  1.00  63.42 NEUTRAL NEUTRAL  1.62 BLOCKED   0.00 VOL_HIGH                
+ 2 GGBR4  Steel       59.34  1.00  59.34 NEUTRAL NEUTRAL  1.59 WATCH     0.50 CAUTION                 
+ 3 LREN3  Retail      57.09  1.00  57.09 NEUTRAL NEUTRAL  1.60 WATCH     0.50 CAUTION                 
+ 4 VALE3  Mining      55.84  1.00  55.84 NEUTRAL NEUTRAL  1.59 WATCH     0.50 CAUTION                 
+ 5 PRIO3  OilGas      51.80  1.00  51.80 AVOID   AVOID    1.60 WATCH     0.00 CTX_LOW                 
+ 6 ASAI3  Retail      51.76  1.00  51.76 AVOID   AVOID    1.62 WATCH     0.00 CTX_LOW                 
+ 7 TOTS3  Tech        48.09  1.00  48.09 AVOID   AVOID    1.60 WATCH     0.00 CTX_LOW                 
+ 8 BBDC4  Banks       46.07  1.00  46.07 AVOID   AVOID    1.62 WATCH     0.00 CTX_LOW                 
+ 9 ITUB4  Banks       45.61  1.00  45.61 AVOID   AVOID    1.59 WATCH     0.00 CTX_LOW                 
+10 WEGE3  Industrial  45.00  1.00  45.00 AVOID   AVOID    1.61 WATCH     0.00 CTX_LOW                 
+11 BRAP4  Holding     44.46  1.00  44.46 AVOID   AVOID    1.60 WATCH     0.00 CTX_LOW                 
+12 BBAS3  Banks       44.01  1.00  44.01 AVOID   AVOID    1.59 WATCH     0.00 CTX_LOW                 
+13 PETR4  OilGas      43.44  1.00  43.44 AVOID   AVOID    1.60 WATCH     0.00 CTX_LOW                 
+14 SBSP3  Utilities   37.91  1.00  37.91 AVOID   AVOID    1.59 WATCH     0.00 CTX_LOW                 
+15 CMIG4  Utilities   36.80  1.00  36.80 AVOID   AVOID    1.60 WATCH     0.00 CTX_LOW                 
+16 MGLU3  Retail      28.50  1.00  28.50 AVOID   AVOID    1.61 WATCH     0.00 CTX_LOW                 
+
+LEGEND
+----------------------------------------------------------------------------------------------------------------------
+HEADLINE    headline risk reduced score
+SECTOR      sector sensitivity changed context factor
+CAP         permission capped by policy
+CTX_LOW     context score below operational threshold
+REGIME_DENY market regime denied operation
+RR_LOW      risk/reward below minimum
+ATR_HIGH    ATR above maximum
+VOL_HIGH    volatility above maximum
+LIQ_LOW     liquidity below minimum
+NO_ENTRY    missing entry
+NO_STOP     missing stop
+NO_TARGET   missing target
+
+SUMMARY
+----------------------------------------------------------------------------------------------------------------------
+READY                0
+WATCH                15
+BLOCKED              1
+
+6. HUMAN CONFIRMATION
+----------------------------------------------------------------------------------------------------------------------
+No READY tickets generated.
+
+POSTURE REASONS
+----------------------------------------------------------------------------------------------------------------------
+- watch candidates exist but no ready trades

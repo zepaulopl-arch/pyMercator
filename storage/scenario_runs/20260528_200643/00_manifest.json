@@ -1,0 +1,91 @@
+{
+  "created_at": "2026-05-28T20:06:43",
+  "command": "scenario-pack",
+  "pack_dir": "storage\\scenario_runs\\20260528_200643",
+  "universe": "data\\universes\\ibov_live.csv",
+  "universe_name": "IBOV",
+  "headline_tags": [
+    "IRAN",
+    "OIL",
+    "WAR"
+  ],
+  "market_trend": "CHOPPY",
+  "market_volatility": "NORMAL",
+  "policy": "config/policy.json",
+  "limit": 20,
+  "scenario_count": 4,
+  "scenarios": [
+    {
+      "key": "01_off_con",
+      "title": "OFF / CON",
+      "profile": "CON",
+      "headline_risk": "OFF",
+      "headline_tags": []
+    },
+    {
+      "key": "02_watch_bal",
+      "title": "WATCH / BAL",
+      "profile": "BAL",
+      "headline_risk": "WATCH",
+      "headline_tags": [
+        "IRAN",
+        "OIL",
+        "WAR"
+      ]
+    },
+    {
+      "key": "03_active_agr",
+      "title": "ACTIVE / AGR",
+      "profile": "AGR",
+      "headline_risk": "ACTIVE",
+      "headline_tags": [
+        "IRAN",
+        "OIL",
+        "WAR"
+      ]
+    },
+    {
+      "key": "04_extreme_agr",
+      "title": "EXTREME / AGR",
+      "profile": "AGR",
+      "headline_risk": "EXTREME",
+      "headline_tags": [
+        "IRAN",
+        "OIL",
+        "WAR"
+      ]
+    }
+  ],
+  "files": [
+    "00_manifest.txt",
+    "00_manifest.json",
+    "00_pack_summary.txt",
+    "00_pack_summary.json",
+    "00_stability_ranking.txt",
+    "00_stability_ranking.json",
+    "01_off_con/report.txt",
+    "01_off_con/report.json",
+    "02_watch_bal/report.txt",
+    "02_watch_bal/report.json",
+    "03_active_agr/report.txt",
+    "03_active_agr/report.json",
+    "04_extreme_agr/report.txt",
+    "04_extreme_agr/report.json",
+    "00_real_pack_summary.txt",
+    "00_real_pack_summary.json"
+  ],
+  "source_command": "real-pack",
+  "real_pack": true,
+  "real_pack_created_at": "2026-05-28T20:06:42",
+  "tickers_file": "data\\universes\\ibov_tickers.csv",
+  "prices_dir": "data\\prices",
+  "universe_output": "data\\universes\\ibov_live.csv",
+  "skip_fetch": true,
+  "prices_files": 16,
+  "prices_valid_files": 16,
+  "prices_invalid_files": 0,
+  "universe_assets": 16,
+  "universe_errors": 0,
+  "diagnosis_status": "PASS_WITH_WARNINGS",
+  "diagnosis_warnings": 12
+}

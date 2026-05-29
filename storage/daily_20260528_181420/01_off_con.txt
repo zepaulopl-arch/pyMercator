@@ -1,0 +1,60 @@
+PYMERCATOR DAILY OPERATIONAL REPORT
+--------------------------------------------------------------------------------------------------------------------------------
+UNIVERSE             IBOV
+PROFILE              CON
+TODAY POSTURE        WATCH_ONLY
+
+1. MARKET REGIME
+--------------------------------------------------------------------------------------------------------------------------------
+REGIME               CHOPPY
+PERMISSION           CAUTION
+HEADLINE RISK        OFF
+HEADLINE TAGS        -
+SCORE FACTOR         1.00
+EXPOSURE FACTOR      1.00
+- market trend is CHOPPY
+
+2. UNIVERSE HEALTH
+--------------------------------------------------------------------------------------------------------------------------------
+TOTAL ASSETS         15
+VALID ASSETS         15
+HEALTHY ASSETS       6
+HEALTH               NORMAL
+BREADTH              NORMAL
+CONCENTRATION        LOW
+PERMISSION           ALLOW
+- normal quantity of healthy assets
+
+3. ASSET RANKING + 4. TRADE VALIDATION + 5. EXECUTION PERMISSION
+--------------------------------------------------------------------------------------------------------------------------------
+ RK  TICKER  SECTOR       RAW_SIG  CTX_SIG      RAW   FINAL     RR EXEC         SIZE REASON                                    
+--------------------------------------------------------------------------------------------------------------------------------
+  1  PRIO3   OilGas       BUY      BUY        70.60   70.60   1.77 WATCH        0.50 regime or universe requires caution       
+  2  VALE3   Mining       NEUTRAL  NEUTRAL    68.15   68.15   1.72 WATCH        0.50 regime or universe requires caution       
+  3  LREN3   Retail       NEUTRAL  NEUTRAL    66.80   66.80   1.50 WATCH        0.50 regime or universe requires caution       
+  4  GGBR4   Steel        NEUTRAL  NEUTRAL    64.30   64.30   1.71 WATCH        0.50 regime or universe requires caution       
+  5  SBSP3   Utilities    NEUTRAL  NEUTRAL    63.35   63.35   1.60 WATCH        0.50 regime or universe requires caution       
+  6  ABEV3   Consumer     NEUTRAL  NEUTRAL    60.90   60.90   1.75 WATCH        0.50 regime or universe requires caution       
+  7  PETR4   OilGas       NEUTRAL  NEUTRAL    60.80   60.80   1.33 BLOCKED      0.00 RR below minimum: 1.33 < 1.50             
+  8  TOTS3   Tech         NEUTRAL  NEUTRAL    60.75   60.75   1.67 WATCH        0.50 regime or universe requires caution       
+  9  ITUB4   Banks        NEUTRAL  NEUTRAL    59.80   59.80   1.50 WATCH        0.50 regime or universe requires caution       
+ 10  WEGE3   Industrial   NEUTRAL  NEUTRAL    59.55   59.55   1.78 WATCH        0.50 regime or universe requires caution       
+ 11  BBDC4   Banks        NEUTRAL  NEUTRAL    55.25   55.25   1.75 WATCH        0.50 regime or universe requires caution       
+ 12  CMIG4   Utilities    AVOID    AVOID      49.10   49.10   1.67 WATCH        0.00 context score below operational threshold 
+ 13  BRAP4   Holding      AVOID    AVOID      42.75   42.75   2.00 WATCH        0.00 context score below operational threshold 
+ 14  ASAI3   Retail       AVOID    AVOID      37.75   37.75   1.00 BLOCKED      0.00 ATR above maximum; RR below minimum: 1....
+ 15  MGLU3   Retail       AVOID    AVOID      33.45   33.45   2.00 BLOCKED      0.00 volatility above maximum; ATR above max...
+
+SUMMARY
+--------------------------------------------------------------------------------------------------------------------------------
+READY                0
+WATCH                12
+BLOCKED              3
+
+6. HUMAN CONFIRMATION
+--------------------------------------------------------------------------------------------------------------------------------
+No READY tickets generated.
+
+POSTURE REASONS
+--------------------------------------------------------------------------------------------------------------------------------
+- watch candidates exist but no ready trades

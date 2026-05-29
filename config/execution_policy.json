@@ -1,0 +1,5 @@
+﻿{
+  "execution_mode": "ANALYSIS_ONLY",
+  "allow_order_routing": false,
+  "require_human_confirmation": true
+}

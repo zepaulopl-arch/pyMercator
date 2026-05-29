@@ -1,0 +1,60 @@
+PYMERCATOR DAILY OPERATIONAL REPORT
+--------------------------------------------------------------------------------------------------------------------------------
+UNIVERSE             IBOV
+PROFILE              AGR
+TODAY POSTURE        WATCH_ONLY
+
+1. MARKET REGIME
+--------------------------------------------------------------------------------------------------------------------------------
+REGIME               EVENT_RISK
+PERMISSION           CAUTION
+HEADLINE RISK        ACTIVE
+HEADLINE TAGS        IRAN, OIL, WAR
+SCORE FACTOR         0.75
+EXPOSURE FACTOR      0.50
+- headline risk is ACTIVE
+
+2. UNIVERSE HEALTH
+--------------------------------------------------------------------------------------------------------------------------------
+TOTAL ASSETS         15
+VALID ASSETS         15
+HEALTHY ASSETS       6
+HEALTH               NORMAL
+BREADTH              NORMAL
+CONCENTRATION        LOW
+PERMISSION           ALLOW
+- normal quantity of healthy assets
+
+3. ASSET RANKING + 4. TRADE VALIDATION + 5. EXECUTION PERMISSION
+--------------------------------------------------------------------------------------------------------------------------------
+ RK  TICKER  SECTOR       RAW_SIG  CTX_SIG      RAW   FINAL     RR EXEC         SIZE REASON                                    
+--------------------------------------------------------------------------------------------------------------------------------
+  1  PRIO3   OilGas       BUY      AVOID      70.60   52.95   1.77 WATCH        0.00 context score below operational threshold 
+  2  VALE3   Mining       NEUTRAL  AVOID      68.15   51.11   1.72 WATCH        0.00 context score below operational threshold 
+  3  LREN3   Retail       NEUTRAL  AVOID      66.80   50.10   1.50 WATCH        0.00 context score below operational threshold 
+  4  GGBR4   Steel        NEUTRAL  AVOID      64.30   48.22   1.71 WATCH        0.00 context score below operational threshold 
+  5  SBSP3   Utilities    NEUTRAL  AVOID      63.35   47.51   1.60 WATCH        0.00 context score below operational threshold 
+  6  ABEV3   Consumer     NEUTRAL  AVOID      60.90   45.67   1.75 WATCH        0.00 context score below operational threshold 
+  7  PETR4   OilGas       NEUTRAL  AVOID      60.80   45.60   1.33 WATCH        0.00 context score below operational threshold 
+  8  TOTS3   Tech         NEUTRAL  AVOID      60.75   45.56   1.67 WATCH        0.00 context score below operational threshold 
+  9  ITUB4   Banks        NEUTRAL  AVOID      59.80   44.85   1.50 WATCH        0.00 context score below operational threshold 
+ 10  WEGE3   Industrial   NEUTRAL  AVOID      59.55   44.66   1.78 WATCH        0.00 context score below operational threshold 
+ 11  BBDC4   Banks        NEUTRAL  AVOID      55.25   41.44   1.75 WATCH        0.00 context score below operational threshold 
+ 12  CMIG4   Utilities    AVOID    AVOID      49.10   36.83   1.67 WATCH        0.00 context score below operational threshold 
+ 13  BRAP4   Holding      AVOID    AVOID      42.75   32.06   2.00 WATCH        0.00 context score below operational threshold 
+ 14  ASAI3   Retail       AVOID    AVOID      37.75   28.31   1.00 BLOCKED      0.00 ATR above maximum; RR below minimum: 1....
+ 15  MGLU3   Retail       AVOID    AVOID      33.45   25.09   2.00 BLOCKED      0.00 volatility above maximum; ATR above max...
+
+SUMMARY
+--------------------------------------------------------------------------------------------------------------------------------
+READY                0
+WATCH                13
+BLOCKED              2
+
+6. HUMAN CONFIRMATION
+--------------------------------------------------------------------------------------------------------------------------------
+No READY tickets generated.
+
+POSTURE REASONS
+--------------------------------------------------------------------------------------------------------------------------------
+- watch candidates exist but no ready trades

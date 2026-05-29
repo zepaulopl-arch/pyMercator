@@ -1,0 +1,35 @@
+PYMERCATOR REAL PACK SUMMARY
+----------------------------------------------------------------------------------------------------------------------
+STATUS               OK
+CREATED AT           2026-05-28T20:06:42
+TICKERS FILE         data\universes\ibov_tickers.csv
+PRICES DIR           data\prices
+UNIVERSE OUTPUT      data\universes\ibov_live.csv
+HEADLINE TAGS        IRAN, OIL, WAR
+
+PRICES
+----------------------------------------------------------------------------------------------------------------------
+EXISTS               True
+FILES                16
+VALID FILES          16
+INVALID FILES        0
+
+UNIVERSE BUILD
+----------------------------------------------------------------------------------------------------------------------
+ASSETS               16
+ERRORS               0
+
+UNIVERSE VALIDATION
+----------------------------------------------------------------------------------------------------------------------
+VALID                True
+ROWS                 16
+
+UNIVERSE DIAGNOSIS
+----------------------------------------------------------------------------------------------------------------------
+DATA STATUS          PASS_WITH_WARNINGS
+WARNINGS             12
+CONCENTRATION        LOW
+
+SCENARIO PACK
+----------------------------------------------------------------------------------------------------------------------
+PACK DIR             storage\scenario_runs\20260528_200643

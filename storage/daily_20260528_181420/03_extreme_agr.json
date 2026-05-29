@@ -1,0 +1,840 @@
+{
+  "universe_name": "IBOV",
+  "profile": "AGR",
+  "market_regime": {
+    "regime": "CRISIS",
+    "permission": "DENY",
+    "headline_risk": "EXTREME",
+    "headline_tags": [
+      "IRAN",
+      "OIL",
+      "WAR",
+      "HORMUZ"
+    ],
+    "score_factor": 0.55,
+    "exposure_factor": 0.25,
+    "reasons": [
+      "headline risk is EXTREME"
+    ]
+  },
+  "universe_health": {
+    "universe_name": "IBOV",
+    "total_assets": 15,
+    "valid_assets": 15,
+    "healthy_assets": 6,
+    "health": "NORMAL",
+    "breadth_label": "NORMAL",
+    "sector_concentration": "LOW",
+    "permission": "ALLOW",
+    "reasons": [
+      "normal quantity of healthy assets"
+    ]
+  },
+  "decisions": [
+    {
+      "asset": {
+        "ticker": "PRIO3",
+        "sector": "OilGas",
+        "last_close": 42.1,
+        "avg_volume_brl": 250000000.0,
+        "trend_score": 78.0,
+        "momentum_score": 72.0,
+        "volatility_pct": 5.2,
+        "atr_pct": 4.1,
+        "liquidity_score": 92.0,
+        "quality_score": 60.0,
+        "news_score": 45.0,
+        "entry": 42.1,
+        "stop": 40.8,
+        "target": 44.4
+      },
+      "ranking": {
+        "ticker": "PRIO3",
+        "sector": "OilGas",
+        "raw_score": 70.6,
+        "context_score": 38.83,
+        "rank": 1,
+        "raw_signal": "BUY",
+        "context_signal": "AVOID",
+        "reasons": [
+          "context score reduced by headline factor 0.55"
+        ]
+      },
+      "validation": {
+        "ticker": "PRIO3",
+        "valid": true,
+        "entry": 42.1,
+        "stop": 40.8,
+        "target": 44.4,
+        "rr": 1.77,
+        "liquidity_ok": true,
+        "volatility_ok": true,
+        "atr_ok": true,
+        "status": "READY",
+        "reasons": []
+      },
+      "permission": {
+        "ticker": "PRIO3",
+        "status": "BLOCKED",
+        "max_position_factor": 0.0,
+        "requires_human_confirmation": true,
+        "reasons": [
+          "market regime denied operation",
+          "headline risk is EXTREME"
+        ]
+      }
+    },
+    {
+      "asset": {
+        "ticker": "VALE3",
+        "sector": "Mining",
+        "last_close": 62.3,
+        "avg_volume_brl": 800000000.0,
+        "trend_score": 63.0,
+        "momentum_score": 58.0,
+        "volatility_pct": 4.1,
+        "atr_pct": 3.5,
+        "liquidity_score": 95.0,
+        "quality_score": 74.0,
+        "news_score": 48.0,
+        "entry": 62.3,
+        "stop": 60.5,
+        "target": 65.4
+      },
+      "ranking": {
+        "ticker": "VALE3",
+        "sector": "Mining",
+        "raw_score": 68.15,
+        "context_score": 37.48,
+        "rank": 2,
+        "raw_signal": "NEUTRAL",
+        "context_signal": "AVOID",
+        "reasons": [
+          "context score reduced by headline factor 0.55"
+        ]
+      },
+      "validation": {
+        "ticker": "VALE3",
+        "valid": true,
+        "entry": 62.3,
+        "stop": 60.5,
+        "target": 65.4,
+        "rr": 1.72,
+        "liquidity_ok": true,
+        "volatility_ok": true,
+        "atr_ok": true,
+        "status": "READY",
+        "reasons": []
+      },
+      "permission": {
+        "ticker": "VALE3",
+        "status": "BLOCKED",
+        "max_position_factor": 0.0,
+        "requires_human_confirmation": true,
+        "reasons": [
+          "market regime denied operation",
+          "headline risk is EXTREME"
+        ]
+      }
+    },
+    {
+      "asset": {
+        "ticker": "LREN3",
+        "sector": "Retail",
+        "last_close": 16.2,
+        "avg_volume_brl": 120000000.0,
+        "trend_score": 70.0,
+        "momentum_score": 64.0,
+        "volatility_pct": 6.0,
+        "atr_pct": 4.8,
+        "liquidity_score": 88.0,
+        "quality_score": 66.0,
+        "news_score": 50.0,
+        "entry": 16.2,
+        "stop": 15.8,
+        "target": 16.8
+      },
+      "ranking": {
+        "ticker": "LREN3",
+        "sector": "Retail",
+        "raw_score": 66.8,
+        "context_score": 36.74,
+        "rank": 3,
+        "raw_signal": "NEUTRAL",
+        "context_signal": "AVOID",
+        "reasons": [
+          "context score reduced by headline factor 0.55"
+        ]
+      },
+      "validation": {
+        "ticker": "LREN3",
+        "valid": true,
+        "entry": 16.2,
+        "stop": 15.8,
+        "target": 16.8,
+        "rr": 1.5,
+        "liquidity_ok": true,
+        "volatility_ok": true,
+        "atr_ok": true,
+        "status": "READY",
+        "reasons": []
+      },
+      "permission": {
+        "ticker": "LREN3",
+        "status": "BLOCKED",
+        "max_position_factor": 0.0,
+        "requires_human_confirmation": true,
+        "reasons": [
+          "market regime denied operation",
+          "headline risk is EXTREME"
+        ]
+      }
+    },
+    {
+      "asset": {
+        "ticker": "GGBR4",
+        "sector": "Steel",
+        "last_close": 19.8,
+        "avg_volume_brl": 180000000.0,
+        "trend_score": 61.0,
+        "momentum_score": 59.0,
+        "volatility_pct": 4.7,
+        "atr_pct": 3.9,
+        "liquidity_score": 86.0,
+        "quality_score": 65.0,
+        "news_score": 50.0,
+        "entry": 19.8,
+        "stop": 19.1,
+        "target": 21.0
+      },
+      "ranking": {
+        "ticker": "GGBR4",
+        "sector": "Steel",
+        "raw_score": 64.3,
+        "context_score": 35.37,
+        "rank": 4,
+        "raw_signal": "NEUTRAL",
+        "context_signal": "AVOID",
+        "reasons": [
+          "context score reduced by headline factor 0.55"
+        ]
+      },
+      "validation": {
+        "ticker": "GGBR4",
+        "valid": true,
+        "entry": 19.8,
+        "stop": 19.1,
+        "target": 21.0,
+        "rr": 1.71,
+        "liquidity_ok": true,
+        "volatility_ok": true,
+        "atr_ok": true,
+        "status": "READY",
+        "reasons": []
+      },
+      "permission": {
+        "ticker": "GGBR4",
+        "status": "BLOCKED",
+        "max_position_factor": 0.0,
+        "requires_human_confirmation": true,
+        "reasons": [
+          "market regime denied operation",
+          "headline risk is EXTREME"
+        ]
+      }
+    },
+    {
+      "asset": {
+        "ticker": "SBSP3",
+        "sector": "Utilities",
+        "last_close": 84.0,
+        "avg_volume_brl": 140000000.0,
+        "trend_score": 53.0,
+        "momentum_score": 50.0,
+        "volatility_pct": 3.2,
+        "atr_pct": 2.7,
+        "liquidity_score": 82.0,
+        "quality_score": 78.0,
+        "news_score": 52.0,
+        "entry": 84.0,
+        "stop": 81.5,
+        "target": 88.0
+      },
+      "ranking": {
+        "ticker": "SBSP3",
+        "sector": "Utilities",
+        "raw_score": 63.35,
+        "context_score": 34.84,
+        "rank": 5,
+        "raw_signal": "NEUTRAL",
+        "context_signal": "AVOID",
+        "reasons": [
+          "context score reduced by headline factor 0.55"
+        ]
+      },
+      "validation": {
+        "ticker": "SBSP3",
+        "valid": true,
+        "entry": 84.0,
+        "stop": 81.5,
+        "target": 88.0,
+        "rr": 1.6,
+        "liquidity_ok": true,
+        "volatility_ok": true,
+        "atr_ok": true,
+        "status": "READY",
+        "reasons": []
+      },
+      "permission": {
+        "ticker": "SBSP3",
+        "status": "BLOCKED",
+        "max_position_factor": 0.0,
+        "requires_human_confirmation": true,
+        "reasons": [
+          "market regime denied operation",
+          "headline risk is EXTREME"
+        ]
+      }
+    },
+    {
+      "asset": {
+        "ticker": "ABEV3",
+        "sector": "Consumer",
+        "last_close": 12.3,
+        "avg_volume_brl": 160000000.0,
+        "trend_score": 42.0,
+        "momentum_score": 44.0,
+        "volatility_pct": 2.9,
+        "atr_pct": 2.2,
+        "liquidity_score": 91.0,
+        "quality_score": 72.0,
+        "news_score": 55.0,
+        "entry": 12.3,
+        "stop": 11.9,
+        "target": 13.0
+      },
+      "ranking": {
+        "ticker": "ABEV3",
+        "sector": "Consumer",
+        "raw_score": 60.9,
+        "context_score": 33.5,
+        "rank": 6,
+        "raw_signal": "NEUTRAL",
+        "context_signal": "AVOID",
+        "reasons": [
+          "context score reduced by headline factor 0.55"
+        ]
+      },
+      "validation": {
+        "ticker": "ABEV3",
+        "valid": true,
+        "entry": 12.3,
+        "stop": 11.9,
+        "target": 13.0,
+        "rr": 1.75,
+        "liquidity_ok": true,
+        "volatility_ok": true,
+        "atr_ok": true,
+        "status": "READY",
+        "reasons": []
+      },
+      "permission": {
+        "ticker": "ABEV3",
+        "status": "BLOCKED",
+        "max_position_factor": 0.0,
+        "requires_human_confirmation": true,
+        "reasons": [
+          "market regime denied operation",
+          "headline risk is EXTREME"
+        ]
+      }
+    },
+    {
+      "asset": {
+        "ticker": "PETR4",
+        "sector": "OilGas",
+        "last_close": 38.4,
+        "avg_volume_brl": 900000000.0,
+        "trend_score": 48.0,
+        "momentum_score": 51.0,
+        "volatility_pct": 5.5,
+        "atr_pct": 4.4,
+        "liquidity_score": 98.0,
+        "quality_score": 70.0,
+        "news_score": 40.0,
+        "entry": 38.4,
+        "stop": 37.2,
+        "target": 40.0
+      },
+      "ranking": {
+        "ticker": "PETR4",
+        "sector": "OilGas",
+        "raw_score": 60.8,
+        "context_score": 33.44,
+        "rank": 7,
+        "raw_signal": "NEUTRAL",
+        "context_signal": "AVOID",
+        "reasons": [
+          "context score reduced by headline factor 0.55"
+        ]
+      },
+      "validation": {
+        "ticker": "PETR4",
+        "valid": true,
+        "entry": 38.4,
+        "stop": 37.2,
+        "target": 40.0,
+        "rr": 1.33,
+        "liquidity_ok": true,
+        "volatility_ok": true,
+        "atr_ok": true,
+        "status": "READY",
+        "reasons": []
+      },
+      "permission": {
+        "ticker": "PETR4",
+        "status": "BLOCKED",
+        "max_position_factor": 0.0,
+        "requires_human_confirmation": true,
+        "reasons": [
+          "market regime denied operation",
+          "headline risk is EXTREME"
+        ]
+      }
+    },
+    {
+      "asset": {
+        "ticker": "TOTS3",
+        "sector": "Tech",
+        "last_close": 31.0,
+        "avg_volume_brl": 90000000.0,
+        "trend_score": 55.0,
+        "momentum_score": 57.0,
+        "volatility_pct": 5.8,
+        "atr_pct": 4.6,
+        "liquidity_score": 75.0,
+        "quality_score": 76.0,
+        "news_score": 50.0,
+        "entry": 31.0,
+        "stop": 30.1,
+        "target": 32.5
+      },
+      "ranking": {
+        "ticker": "TOTS3",
+        "sector": "Tech",
+        "raw_score": 60.75,
+        "context_score": 33.41,
+        "rank": 8,
+        "raw_signal": "NEUTRAL",
+        "context_signal": "AVOID",
+        "reasons": [
+          "context score reduced by headline factor 0.55"
+        ]
+      },
+      "validation": {
+        "ticker": "TOTS3",
+        "valid": true,
+        "entry": 31.0,
+        "stop": 30.1,
+        "target": 32.5,
+        "rr": 1.67,
+        "liquidity_ok": true,
+        "volatility_ok": true,
+        "atr_ok": true,
+        "status": "READY",
+        "reasons": []
+      },
+      "permission": {
+        "ticker": "TOTS3",
+        "status": "BLOCKED",
+        "max_position_factor": 0.0,
+        "requires_human_confirmation": true,
+        "reasons": [
+          "market regime denied operation",
+          "headline risk is EXTREME"
+        ]
+      }
+    },
+    {
+      "asset": {
+        "ticker": "ITUB4",
+        "sector": "Banks",
+        "last_close": 33.5,
+        "avg_volume_brl": 700000000.0,
+        "trend_score": 38.0,
+        "momentum_score": 36.0,
+        "volatility_pct": 3.1,
+        "atr_pct": 2.6,
+        "liquidity_score": 96.0,
+        "quality_score": 80.0,
+        "news_score": 50.0,
+        "entry": 33.5,
+        "stop": 32.7,
+        "target": 34.7
+      },
+      "ranking": {
+        "ticker": "ITUB4",
+        "sector": "Banks",
+        "raw_score": 59.8,
+        "context_score": 32.89,
+        "rank": 9,
+        "raw_signal": "NEUTRAL",
+        "context_signal": "AVOID",
+        "reasons": [
+          "context score reduced by headline factor 0.55"
+        ]
+      },
+      "validation": {
+        "ticker": "ITUB4",
+        "valid": true,
+        "entry": 33.5,
+        "stop": 32.7,
+        "target": 34.7,
+        "rr": 1.5,
+        "liquidity_ok": true,
+        "volatility_ok": true,
+        "atr_ok": true,
+        "status": "READY",
+        "reasons": []
+      },
+      "permission": {
+        "ticker": "ITUB4",
+        "status": "BLOCKED",
+        "max_position_factor": 0.0,
+        "requires_human_confirmation": true,
+        "reasons": [
+          "market regime denied operation",
+          "headline risk is EXTREME"
+        ]
+      }
+    },
+    {
+      "asset": {
+        "ticker": "WEGE3",
+        "sector": "Industrial",
+        "last_close": 39.4,
+        "avg_volume_brl": 300000000.0,
+        "trend_score": 36.0,
+        "momentum_score": 38.0,
+        "volatility_pct": 4.2,
+        "atr_pct": 3.4,
+        "liquidity_score": 93.0,
+        "quality_score": 85.0,
+        "news_score": 58.0,
+        "entry": 39.4,
+        "stop": 38.5,
+        "target": 41.0
+      },
+      "ranking": {
+        "ticker": "WEGE3",
+        "sector": "Industrial",
+        "raw_score": 59.55,
+        "context_score": 32.75,
+        "rank": 10,
+        "raw_signal": "NEUTRAL",
+        "context_signal": "AVOID",
+        "reasons": [
+          "context score reduced by headline factor 0.55"
+        ]
+      },
+      "validation": {
+        "ticker": "WEGE3",
+        "valid": true,
+        "entry": 39.4,
+        "stop": 38.5,
+        "target": 41.0,
+        "rr": 1.78,
+        "liquidity_ok": true,
+        "volatility_ok": true,
+        "atr_ok": true,
+        "status": "READY",
+        "reasons": []
+      },
+      "permission": {
+        "ticker": "WEGE3",
+        "status": "BLOCKED",
+        "max_position_factor": 0.0,
+        "requires_human_confirmation": true,
+        "reasons": [
+          "market regime denied operation",
+          "headline risk is EXTREME"
+        ]
+      }
+    },
+    {
+      "asset": {
+        "ticker": "BBDC4",
+        "sector": "Banks",
+        "last_close": 14.1,
+        "avg_volume_brl": 450000000.0,
+        "trend_score": 33.0,
+        "momentum_score": 34.0,
+        "volatility_pct": 3.9,
+        "atr_pct": 3.2,
+        "liquidity_score": 94.0,
+        "quality_score": 70.0,
+        "news_score": 48.0,
+        "entry": 14.1,
+        "stop": 13.7,
+        "target": 14.8
+      },
+      "ranking": {
+        "ticker": "BBDC4",
+        "sector": "Banks",
+        "raw_score": 55.25,
+        "context_score": 30.39,
+        "rank": 11,
+        "raw_signal": "NEUTRAL",
+        "context_signal": "AVOID",
+        "reasons": [
+          "context score reduced by headline factor 0.55"
+        ]
+      },
+      "validation": {
+        "ticker": "BBDC4",
+        "valid": true,
+        "entry": 14.1,
+        "stop": 13.7,
+        "target": 14.8,
+        "rr": 1.75,
+        "liquidity_ok": true,
+        "volatility_ok": true,
+        "atr_ok": true,
+        "status": "READY",
+        "reasons": []
+      },
+      "permission": {
+        "ticker": "BBDC4",
+        "status": "BLOCKED",
+        "max_position_factor": 0.0,
+        "requires_human_confirmation": true,
+        "reasons": [
+          "market regime denied operation",
+          "headline risk is EXTREME"
+        ]
+      }
+    },
+    {
+      "asset": {
+        "ticker": "CMIG4",
+        "sector": "Utilities",
+        "last_close": 11.2,
+        "avg_volume_brl": 80000000.0,
+        "trend_score": 30.0,
+        "momentum_score": 35.0,
+        "volatility_pct": 3.8,
+        "atr_pct": 3.0,
+        "liquidity_score": 68.0,
+        "quality_score": 64.0,
+        "news_score": 52.0,
+        "entry": 11.2,
+        "stop": 10.9,
+        "target": 11.7
+      },
+      "ranking": {
+        "ticker": "CMIG4",
+        "sector": "Utilities",
+        "raw_score": 49.1,
+        "context_score": 27.01,
+        "rank": 12,
+        "raw_signal": "AVOID",
+        "context_signal": "AVOID",
+        "reasons": [
+          "context score reduced by headline factor 0.55"
+        ]
+      },
+      "validation": {
+        "ticker": "CMIG4",
+        "valid": true,
+        "entry": 11.2,
+        "stop": 10.9,
+        "target": 11.7,
+        "rr": 1.67,
+        "liquidity_ok": true,
+        "volatility_ok": true,
+        "atr_ok": true,
+        "status": "READY",
+        "reasons": []
+      },
+      "permission": {
+        "ticker": "CMIG4",
+        "status": "BLOCKED",
+        "max_position_factor": 0.0,
+        "requires_human_confirmation": true,
+        "reasons": [
+          "market regime denied operation",
+          "headline risk is EXTREME"
+        ]
+      }
+    },
+    {
+      "asset": {
+        "ticker": "BRAP4",
+        "sector": "Holding",
+        "last_close": 18.6,
+        "avg_volume_brl": 40000000.0,
+        "trend_score": 35.0,
+        "momentum_score": 32.0,
+        "volatility_pct": 5.4,
+        "atr_pct": 4.9,
+        "liquidity_score": 55.0,
+        "quality_score": 50.0,
+        "news_score": 45.0,
+        "entry": 18.6,
+        "stop": 18.2,
+        "target": 19.4
+      },
+      "ranking": {
+        "ticker": "BRAP4",
+        "sector": "Holding",
+        "raw_score": 42.75,
+        "context_score": 23.51,
+        "rank": 13,
+        "raw_signal": "AVOID",
+        "context_signal": "AVOID",
+        "reasons": [
+          "context score reduced by headline factor 0.55"
+        ]
+      },
+      "validation": {
+        "ticker": "BRAP4",
+        "valid": true,
+        "entry": 18.6,
+        "stop": 18.2,
+        "target": 19.4,
+        "rr": 2.0,
+        "liquidity_ok": true,
+        "volatility_ok": true,
+        "atr_ok": true,
+        "status": "READY",
+        "reasons": []
+      },
+      "permission": {
+        "ticker": "BRAP4",
+        "status": "BLOCKED",
+        "max_position_factor": 0.0,
+        "requires_human_confirmation": true,
+        "reasons": [
+          "market regime denied operation",
+          "headline risk is EXTREME"
+        ]
+      }
+    },
+    {
+      "asset": {
+        "ticker": "ASAI3",
+        "sector": "Retail",
+        "last_close": 8.9,
+        "avg_volume_brl": 90000000.0,
+        "trend_score": 22.0,
+        "momentum_score": 25.0,
+        "volatility_pct": 7.5,
+        "atr_pct": 6.2,
+        "liquidity_score": 70.0,
+        "quality_score": 45.0,
+        "news_score": 40.0,
+        "entry": 8.9,
+        "stop": 8.5,
+        "target": 9.3
+      },
+      "ranking": {
+        "ticker": "ASAI3",
+        "sector": "Retail",
+        "raw_score": 37.75,
+        "context_score": 20.76,
+        "rank": 14,
+        "raw_signal": "AVOID",
+        "context_signal": "AVOID",
+        "reasons": [
+          "context score reduced by headline factor 0.55"
+        ]
+      },
+      "validation": {
+        "ticker": "ASAI3",
+        "valid": false,
+        "entry": 8.9,
+        "stop": 8.5,
+        "target": 9.3,
+        "rr": 1.0,
+        "liquidity_ok": true,
+        "volatility_ok": true,
+        "atr_ok": false,
+        "status": "BLOCKED",
+        "reasons": [
+          "ATR above maximum",
+          "RR below minimum: 1.00 < 1.10"
+        ]
+      },
+      "permission": {
+        "ticker": "ASAI3",
+        "status": "BLOCKED",
+        "max_position_factor": 0.0,
+        "requires_human_confirmation": true,
+        "reasons": [
+          "market regime denied operation",
+          "headline risk is EXTREME"
+        ]
+      }
+    },
+    {
+      "asset": {
+        "ticker": "MGLU3",
+        "sector": "Retail",
+        "last_close": 1.8,
+        "avg_volume_brl": 150000000.0,
+        "trend_score": 18.0,
+        "momentum_score": 20.0,
+        "volatility_pct": 9.0,
+        "atr_pct": 7.5,
+        "liquidity_score": 76.0,
+        "quality_score": 35.0,
+        "news_score": 35.0,
+        "entry": 1.8,
+        "stop": 1.7,
+        "target": 2.0
+      },
+      "ranking": {
+        "ticker": "MGLU3",
+        "sector": "Retail",
+        "raw_score": 33.45,
+        "context_score": 18.4,
+        "rank": 15,
+        "raw_signal": "AVOID",
+        "context_signal": "AVOID",
+        "reasons": [
+          "context score reduced by headline factor 0.55"
+        ]
+      },
+      "validation": {
+        "ticker": "MGLU3",
+        "valid": false,
+        "entry": 1.8,
+        "stop": 1.7,
+        "target": 2.0,
+        "rr": 2.0,
+        "liquidity_ok": true,
+        "volatility_ok": false,
+        "atr_ok": false,
+        "status": "BLOCKED",
+        "reasons": [
+          "volatility above maximum",
+          "ATR above maximum"
+        ]
+      },
+      "permission": {
+        "ticker": "MGLU3",
+        "status": "BLOCKED",
+        "max_position_factor": 0.0,
+        "requires_human_confirmation": true,
+        "reasons": [
+          "market regime denied operation",
+          "headline risk is EXTREME"
+        ]
+      }
+    }
+  ],
+  "posture": "STAND_ASIDE",
+  "reasons": [
+    "market regime is not permissive"
+  ]
+}

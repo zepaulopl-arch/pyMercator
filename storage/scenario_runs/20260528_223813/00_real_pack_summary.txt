@@ -1,0 +1,43 @@
+PYMERCATOR REAL PACK SUMMARY
+----------------------------------------------------------------------------------------------------------------------
+STATUS               OK
+CREATED AT           2026-05-28T22:38:12
+TICKERS FILE         data/universes/ibov_tickers.csv
+SENTIMENT DIR        -
+PRICES DIR           data/prices
+UNIVERSE OUTPUT      data/universes/ibov_live.csv
+HEADLINE TAGS        RISK_OFF
+CONTEXT SOURCE       file
+CONTEXT FILE         config/market_context_auto.json
+CONTEXT PRESET       -
+CONTEXT NOTES        IBOV trend/volatility supports caution
+EXECUTION MODE       ANALYSIS_ONLY
+ORDER ROUTING        DISABLED
+HUMAN CONFIRM        REQUIRED
+
+PRICES
+----------------------------------------------------------------------------------------------------------------------
+EXISTS               True
+FILES                78
+VALID FILES          78
+INVALID FILES        0
+
+UNIVERSE BUILD
+----------------------------------------------------------------------------------------------------------------------
+ASSETS               78
+ERRORS               0
+
+UNIVERSE VALIDATION
+----------------------------------------------------------------------------------------------------------------------
+VALID                True
+ROWS                 78
+
+UNIVERSE DIAGNOSIS
+----------------------------------------------------------------------------------------------------------------------
+DATA STATUS          PASS_WITH_WARNINGS
+WARNINGS             66
+CONCENTRATION        LOW
+
+SCENARIO PACK
+----------------------------------------------------------------------------------------------------------------------
+PACK DIR             storage\scenario_runs\20260528_223813

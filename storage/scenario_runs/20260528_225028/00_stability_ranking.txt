@@ -1,0 +1,82 @@
+PYMERCATOR STABILITY RANKING
+----------------------------------------------------------------------------------------------------------------------
+RK TICKER SECTOR     SURV READY WATCH BLOCK    AVG FACTOR SCORE CODES                             
+----------------------------------------------------------------------------------------------------------------------
+ 1 GGBR4  materials     3     0     3     1  47.93   0.80     6 CAUTION,CTX_LOW,HEADLINE,REGIME...
+ 2 BRAV3  energy        3     0     3     1  47.65   0.80     6 CAUTION,CTX_LOW,HEADLINE,REGIME...
+ 3 GOAU4  materials     3     0     3     1  46.73   0.80     6 CAUTION,CTX_LOW,HEADLINE,REGIME...
+ 4 LREN3  consumer_discretionary    3     0     3     1  46.06   0.80     6 CAUTION,CTX_LOW,HEADLINE,REGIME...
+ 5 VALE3  materials     3     0     3     1  45.22   0.80     6 CAUTION,CTX_LOW,HEADLINE,REGIME...
+ 6 CURY3  real_estate    3     0     3     1  44.83   0.80     6 CAUTION,CTX_LOW,HEADLINE,REGIME...
+ 7 CSNA3  materials     3     0     3     1  43.58   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+ 8 PRIO3  energy        3     0     3     1  42.64   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+ 9 ASAI3  consumer_staples    3     0     3     1  42.12   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+10 HYPE3  health_care    3     0     3     1  41.59   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+11 NATU3  consumer_staples    3     0     3     1  41.50   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+12 BBSE3  financials    3     0     3     1  40.84   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+13 DIRR3  real_estate    3     0     3     1  40.27   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+14 ENEV3  utilities     3     0     3     1  39.43   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+15 TOTS3  technology    3     0     3     1  39.11   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+16 CSMG3  utilities     3     0     3     1  39.11   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+17 ITSA4  financials    3     0     3     1  37.76   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+18 VBBR3  energy        3     0     3     1  37.75   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+19 WEGE3  industrials    3     0     3     1  36.98   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+20 BPAC11 financials    3     0     3     1  36.91   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+21 BBDC4  financials    3     0     3     1  36.84   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+22 ITUB4  financials    3     0     3     1  36.62   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+23 BRAP4  materials     3     0     3     1  36.44   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+24 PETR3  energy        3     0     3     1  36.28   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+25 CXSE3  financials    3     0     3     1  36.23   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+26 EMBJ3  industrials    3     0     3     1  36.15   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+27 POMO4  industrials    3     0     3     1  36.00   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+28 MULT3  real_estate    3     0     3     1  35.84   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+29 PETR4  energy        3     0     3     1  35.68   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+30 FLRY3  health_care    3     0     3     1  35.38   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+31 BBAS3  financials    3     0     3     1  35.13   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+32 KLBN11 materials     3     0     3     1  34.87   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+33 CPLE3  utilities     3     0     3     1  34.74   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+34 RDOR3  health_care    3     0     3     1  34.74   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+35 PSSA3  financials    3     0     3     1  34.67   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+36 UGPA3  energy        3     0     3     1  34.67   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+37 ALOS3  real_estate    3     0     3     1  34.65   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+38 EQTL3  utilities     3     0     3     1  33.93   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+39 IGTI11 real_estate    3     0     3     1  33.45   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+40 ENGI11 utilities     3     0     3     1  33.28   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+41 SUZB3  materials     3     0     3     1  33.18   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+42 ISAE4  utilities     3     0     3     1  33.14   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+43 CYRE3  real_estate    3     0     3     1  33.12   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+44 SBSP3  utilities     3     0     3     1  32.41   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+45 BBDC3  financials    3     0     3     1  32.19   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+46 EGIE3  utilities     3     0     3     1  32.00   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+47 AXIA3  utilities     3     0     3     1  31.58   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+48 MBRF3  consumer_staples    3     0     3     1  31.46   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+49 TIMS3  communication    3     0     3     1  31.12   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+50 SLCE3  consumer_staples    3     0     3     1  30.97   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+51 TAEE11 utilities     3     0     3     1  30.92   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+52 MOTV3  industrials    3     0     3     1  30.55   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+53 RAIL3  industrials    3     0     3     1  30.41   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+54 YDUQ3  consumer_discretionary    3     0     3     1  30.16   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+55 AURE3  utilities     3     0     3     1  29.87   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+56 SANB11 financials    3     0     3     1  29.63   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+57 CMIG4  utilities     3     0     3     1  29.60   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+58 AXIA6  utilities     3     0     3     1  29.02   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+59 VIVT3  communication    3     0     3     1  28.68   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+60 AZZA3  consumer_discretionary    3     0     3     1  28.45   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+61 RADL3  health_care    3     0     3     1  28.15   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+62 CPFE3  utilities     3     0     3     1  27.07   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+63 COGN3  consumer_discretionary    3     0     3     1  26.84   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+64 RECV3  energy        3     0     3     1  26.46   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+65 VIVA3  consumer_discretionary    3     0     3     1  26.35   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+66 MRVE3  real_estate    3     0     3     1  24.48   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+67 MGLU3  consumer_discretionary    3     0     3     1  23.61   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+68 CSAN3  energy        3     0     3     1  23.25   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+69 VAMO3  industrials    3     0     3     1  23.12   0.80     6 CTX_LOW,HEADLINE,REGIME_DENY      
+70 USIM5  materials     0     0     0     4  60.05   0.80     0 HEADLINE,REGIME_DENY,VOL_HIGH     
+71 ABEV3  consumer_staples    0     0     0     4  51.86   0.80     0 HEADLINE,REGIME_DENY,VOL_HIGH     
+72 BRKM5  materials     0     0     0     4  49.46   0.80     0 ATR_HIGH,HEADLINE,REGIME_DENY,V...
+73 HAPV3  health_care    0     0     0     4  47.41   0.80     0 HEADLINE,REGIME_DENY,VOL_HIGH     
+74 SMFT3  consumer_discretionary    0     0     0     4  46.91   0.80     0 HEADLINE,REGIME_DENY,VOL_HIGH     
+75 CEAB3  consumer_discretionary    0     0     0     4  40.55   0.80     0 HEADLINE,REGIME_DENY,VOL_HIGH     
+76 BEEF3  consumer_staples    0     0     0     4  37.29   0.80     0 HEADLINE,REGIME_DENY,VOL_HIGH     
+77 CMIN3  materials     0     0     0     4  35.86   0.80     0 HEADLINE,REGIME_DENY,VOL_HIGH     
+78 RENT3  consumer_discretionary    0     0     0     4  34.56   0.80     0 HEADLINE,REGIME_DENY,VOL_HIGH     

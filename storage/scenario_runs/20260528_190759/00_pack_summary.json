@@ -1,0 +1,1355 @@
+{
+  "pack_dir": "storage\\scenario_runs\\20260528_190759",
+  "universe_name": "IBOV",
+  "universe": "data\\universes\\ibov_sample.csv",
+  "market_trend": "CHOPPY",
+  "market_volatility": "NORMAL",
+  "scenarios": [
+    {
+      "key": "01_off_con",
+      "title": "OFF / CON",
+      "profile": "CON",
+      "headline_risk": "OFF",
+      "headline_tags": [],
+      "posture": "WATCH_ONLY",
+      "ready": 0,
+      "watch": 12,
+      "blocked": 3,
+      "top": {
+        "ticker": "PRIO3",
+        "sector": "OilGas",
+        "raw_score": 70.6,
+        "context_factor": 1.0,
+        "context_score": 70.6,
+        "raw_signal": "BUY",
+        "context_signal": "BUY",
+        "permission": "WATCH",
+        "decision_label": "CAUTION"
+      }
+    },
+    {
+      "key": "02_watch_bal",
+      "title": "WATCH / BAL",
+      "profile": "BAL",
+      "headline_risk": "WATCH",
+      "headline_tags": [
+        "IRAN",
+        "OIL",
+        "WAR"
+      ],
+      "posture": "WATCH_ONLY",
+      "ready": 0,
+      "watch": 13,
+      "blocked": 2,
+      "top": {
+        "ticker": "PRIO3",
+        "sector": "OilGas",
+        "raw_score": 70.6,
+        "context_factor": 0.975,
+        "context_score": 68.83,
+        "raw_signal": "BUY",
+        "context_signal": "NEUTRAL",
+        "permission": "WATCH",
+        "decision_label": "HEADLINE+SECTOR+CAUTION"
+      }
+    },
+    {
+      "key": "03_active_agr",
+      "title": "ACTIVE / AGR",
+      "profile": "AGR",
+      "headline_risk": "ACTIVE",
+      "headline_tags": [
+        "IRAN",
+        "OIL",
+        "WAR"
+      ],
+      "posture": "WATCH_ONLY",
+      "ready": 0,
+      "watch": 13,
+      "blocked": 2,
+      "top": {
+        "ticker": "PRIO3",
+        "sector": "OilGas",
+        "raw_score": 70.6,
+        "context_factor": 0.8125,
+        "context_score": 57.36,
+        "raw_signal": "BUY",
+        "context_signal": "NEUTRAL",
+        "permission": "WATCH",
+        "decision_label": "HEADLINE+SECTOR+CAP"
+      }
+    },
+    {
+      "key": "04_extreme_agr",
+      "title": "EXTREME / AGR",
+      "profile": "AGR",
+      "headline_risk": "EXTREME",
+      "headline_tags": [
+        "IRAN",
+        "OIL",
+        "WAR"
+      ],
+      "posture": "STAND_ASIDE",
+      "ready": 0,
+      "watch": 0,
+      "blocked": 15,
+      "top": {
+        "ticker": "PRIO3",
+        "sector": "OilGas",
+        "raw_score": 70.6,
+        "context_factor": 0.5958,
+        "context_score": 42.06,
+        "raw_signal": "BUY",
+        "context_signal": "AVOID",
+        "permission": "BLOCKED",
+        "decision_label": "HEADLINE+SECTOR+REGIME_DENY"
+      }
+    }
+  ],
+  "stability_ranking": [
+    {
+      "ticker": "PRIO3",
+      "sector": "OilGas",
+      "scenario_count": 4,
+      "survived": 3,
+      "ready": 0,
+      "watch": 3,
+      "blocked": 1,
+      "manual_only": 0,
+      "invalid": 0,
+      "avg_final": 59.71,
+      "avg_factor": 0.8458,
+      "survival_score": 6,
+      "labels": [
+        "CAUTION",
+        "HEADLINE+SECTOR+CAP",
+        "HEADLINE+SECTOR+CAUTION",
+        "HEADLINE+SECTOR+REGIME_DENY"
+      ],
+      "codes": [
+        "CAP",
+        "CAUTION",
+        "HEADLINE",
+        "REGIME_DENY",
+        "SECTOR"
+      ],
+      "scenarios": [
+        {
+          "key": "01_off_con",
+          "headline_risk": "OFF",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 70.6,
+          "context_factor": 1.0,
+          "decision_label": "CAUTION",
+          "decision_codes": [
+            "CAUTION"
+          ]
+        },
+        {
+          "key": "02_watch_bal",
+          "headline_risk": "WATCH",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 68.83,
+          "context_factor": 0.975,
+          "decision_label": "HEADLINE+SECTOR+CAUTION",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CAUTION"
+          ]
+        },
+        {
+          "key": "03_active_agr",
+          "headline_risk": "ACTIVE",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 57.36,
+          "context_factor": 0.8125,
+          "decision_label": "HEADLINE+SECTOR+CAP",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CAP"
+          ]
+        },
+        {
+          "key": "04_extreme_agr",
+          "headline_risk": "EXTREME",
+          "posture": "STAND_ASIDE",
+          "status": "BLOCKED",
+          "context_score": 42.06,
+          "context_factor": 0.5958,
+          "decision_label": "HEADLINE+SECTOR+REGIME_DENY",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "REGIME_DENY"
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "VALE3",
+      "sector": "Mining",
+      "scenario_count": 4,
+      "survived": 3,
+      "ready": 0,
+      "watch": 3,
+      "blocked": 1,
+      "manual_only": 0,
+      "invalid": 0,
+      "avg_final": 53.27,
+      "avg_factor": 0.7817,
+      "survival_score": 6,
+      "labels": [
+        "CAUTION",
+        "HEADLINE+SECTOR+CAUTION",
+        "HEADLINE+SECTOR+CTX_LOW",
+        "HEADLINE+SECTOR+REGIME_DENY"
+      ],
+      "codes": [
+        "CAUTION",
+        "CTX_LOW",
+        "HEADLINE",
+        "REGIME_DENY",
+        "SECTOR"
+      ],
+      "scenarios": [
+        {
+          "key": "01_off_con",
+          "headline_risk": "OFF",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 68.15,
+          "context_factor": 1.0,
+          "decision_label": "CAUTION",
+          "decision_codes": [
+            "CAUTION"
+          ]
+        },
+        {
+          "key": "02_watch_bal",
+          "headline_risk": "WATCH",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 59.29,
+          "context_factor": 0.87,
+          "decision_label": "HEADLINE+SECTOR+CAUTION",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CAUTION"
+          ]
+        },
+        {
+          "key": "03_active_agr",
+          "headline_risk": "ACTIVE",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 49.41,
+          "context_factor": 0.725,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "04_extreme_agr",
+          "headline_risk": "EXTREME",
+          "posture": "STAND_ASIDE",
+          "status": "BLOCKED",
+          "context_score": 36.24,
+          "context_factor": 0.5317,
+          "decision_label": "HEADLINE+SECTOR+REGIME_DENY",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "REGIME_DENY"
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "SBSP3",
+      "sector": "Utilities",
+      "scenario_count": 4,
+      "survived": 3,
+      "ready": 0,
+      "watch": 3,
+      "blocked": 1,
+      "manual_only": 0,
+      "invalid": 0,
+      "avg_final": 51.49,
+      "avg_factor": 0.8128,
+      "survival_score": 6,
+      "labels": [
+        "CAUTION",
+        "HEADLINE+SECTOR+CAUTION",
+        "HEADLINE+SECTOR+CTX_LOW",
+        "HEADLINE+SECTOR+REGIME_DENY"
+      ],
+      "codes": [
+        "CAUTION",
+        "CTX_LOW",
+        "HEADLINE",
+        "REGIME_DENY",
+        "SECTOR"
+      ],
+      "scenarios": [
+        {
+          "key": "01_off_con",
+          "headline_risk": "OFF",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 63.35,
+          "context_factor": 1.0,
+          "decision_label": "CAUTION",
+          "decision_codes": [
+            "CAUTION"
+          ]
+        },
+        {
+          "key": "02_watch_bal",
+          "headline_risk": "WATCH",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 58.35,
+          "context_factor": 0.921,
+          "decision_label": "HEADLINE+SECTOR+CAUTION",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CAUTION"
+          ]
+        },
+        {
+          "key": "03_active_agr",
+          "headline_risk": "ACTIVE",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 48.62,
+          "context_factor": 0.7675,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "04_extreme_agr",
+          "headline_risk": "EXTREME",
+          "posture": "STAND_ASIDE",
+          "status": "BLOCKED",
+          "context_score": 35.65,
+          "context_factor": 0.5628,
+          "decision_label": "HEADLINE+SECTOR+REGIME_DENY",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "REGIME_DENY"
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "GGBR4",
+      "sector": "Steel",
+      "scenario_count": 4,
+      "survived": 3,
+      "ready": 0,
+      "watch": 3,
+      "blocked": 1,
+      "manual_only": 0,
+      "invalid": 0,
+      "avg_final": 49.79,
+      "avg_factor": 0.7743,
+      "survival_score": 6,
+      "labels": [
+        "CAUTION",
+        "HEADLINE+SECTOR+CAUTION",
+        "HEADLINE+SECTOR+CTX_LOW",
+        "HEADLINE+SECTOR+REGIME_DENY"
+      ],
+      "codes": [
+        "CAUTION",
+        "CTX_LOW",
+        "HEADLINE",
+        "REGIME_DENY",
+        "SECTOR"
+      ],
+      "scenarios": [
+        {
+          "key": "01_off_con",
+          "headline_risk": "OFF",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 64.3,
+          "context_factor": 1.0,
+          "decision_label": "CAUTION",
+          "decision_codes": [
+            "CAUTION"
+          ]
+        },
+        {
+          "key": "02_watch_bal",
+          "headline_risk": "WATCH",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 55.17,
+          "context_factor": 0.858,
+          "decision_label": "HEADLINE+SECTOR+CAUTION",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CAUTION"
+          ]
+        },
+        {
+          "key": "03_active_agr",
+          "headline_risk": "ACTIVE",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 45.97,
+          "context_factor": 0.715,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "04_extreme_agr",
+          "headline_risk": "EXTREME",
+          "posture": "STAND_ASIDE",
+          "status": "BLOCKED",
+          "context_score": 33.71,
+          "context_factor": 0.5243,
+          "decision_label": "HEADLINE+SECTOR+REGIME_DENY",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "REGIME_DENY"
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "LREN3",
+      "sector": "Retail",
+      "scenario_count": 4,
+      "survived": 3,
+      "ready": 0,
+      "watch": 3,
+      "blocked": 1,
+      "manual_only": 0,
+      "invalid": 0,
+      "avg_final": 49.77,
+      "avg_factor": 0.745,
+      "survival_score": 6,
+      "labels": [
+        "CAUTION",
+        "HEADLINE+SECTOR+CTX_LOW",
+        "HEADLINE+SECTOR+REGIME_DENY"
+      ],
+      "codes": [
+        "CAUTION",
+        "CTX_LOW",
+        "HEADLINE",
+        "REGIME_DENY",
+        "SECTOR"
+      ],
+      "scenarios": [
+        {
+          "key": "01_off_con",
+          "headline_risk": "OFF",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 66.8,
+          "context_factor": 1.0,
+          "decision_label": "CAUTION",
+          "decision_codes": [
+            "CAUTION"
+          ]
+        },
+        {
+          "key": "02_watch_bal",
+          "headline_risk": "WATCH",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 54.11,
+          "context_factor": 0.81,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "03_active_agr",
+          "headline_risk": "ACTIVE",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 45.09,
+          "context_factor": 0.675,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "04_extreme_agr",
+          "headline_risk": "EXTREME",
+          "posture": "STAND_ASIDE",
+          "status": "BLOCKED",
+          "context_score": 33.07,
+          "context_factor": 0.495,
+          "decision_label": "HEADLINE+SECTOR+REGIME_DENY",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "REGIME_DENY"
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "ABEV3",
+      "sector": "Consumer",
+      "scenario_count": 4,
+      "survived": 3,
+      "ready": 0,
+      "watch": 3,
+      "blocked": 1,
+      "manual_only": 0,
+      "invalid": 0,
+      "avg_final": 47.16,
+      "avg_factor": 0.7743,
+      "survival_score": 6,
+      "labels": [
+        "CAUTION",
+        "HEADLINE+SECTOR+CTX_LOW",
+        "HEADLINE+SECTOR+REGIME_DENY"
+      ],
+      "codes": [
+        "CAUTION",
+        "CTX_LOW",
+        "HEADLINE",
+        "REGIME_DENY",
+        "SECTOR"
+      ],
+      "scenarios": [
+        {
+          "key": "01_off_con",
+          "headline_risk": "OFF",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 60.9,
+          "context_factor": 1.0,
+          "decision_label": "CAUTION",
+          "decision_codes": [
+            "CAUTION"
+          ]
+        },
+        {
+          "key": "02_watch_bal",
+          "headline_risk": "WATCH",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 52.25,
+          "context_factor": 0.858,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "03_active_agr",
+          "headline_risk": "ACTIVE",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 43.54,
+          "context_factor": 0.715,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "04_extreme_agr",
+          "headline_risk": "EXTREME",
+          "posture": "STAND_ASIDE",
+          "status": "BLOCKED",
+          "context_score": 31.93,
+          "context_factor": 0.5243,
+          "decision_label": "HEADLINE+SECTOR+REGIME_DENY",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "REGIME_DENY"
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "ITUB4",
+      "sector": "Banks",
+      "scenario_count": 4,
+      "survived": 3,
+      "ready": 0,
+      "watch": 3,
+      "blocked": 1,
+      "manual_only": 0,
+      "invalid": 0,
+      "avg_final": 45.98,
+      "avg_factor": 0.7688,
+      "survival_score": 6,
+      "labels": [
+        "CAUTION",
+        "HEADLINE+SECTOR+CTX_LOW",
+        "HEADLINE+SECTOR+REGIME_DENY"
+      ],
+      "codes": [
+        "CAUTION",
+        "CTX_LOW",
+        "HEADLINE",
+        "REGIME_DENY",
+        "SECTOR"
+      ],
+      "scenarios": [
+        {
+          "key": "01_off_con",
+          "headline_risk": "OFF",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 59.8,
+          "context_factor": 1.0,
+          "decision_label": "CAUTION",
+          "decision_codes": [
+            "CAUTION"
+          ]
+        },
+        {
+          "key": "02_watch_bal",
+          "headline_risk": "WATCH",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 50.77,
+          "context_factor": 0.849,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "03_active_agr",
+          "headline_risk": "ACTIVE",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 42.31,
+          "context_factor": 0.7075,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "04_extreme_agr",
+          "headline_risk": "EXTREME",
+          "posture": "STAND_ASIDE",
+          "status": "BLOCKED",
+          "context_score": 31.02,
+          "context_factor": 0.5188,
+          "decision_label": "HEADLINE+SECTOR+REGIME_DENY",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "REGIME_DENY"
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "TOTS3",
+      "sector": "Tech",
+      "scenario_count": 4,
+      "survived": 3,
+      "ready": 0,
+      "watch": 3,
+      "blocked": 1,
+      "manual_only": 0,
+      "invalid": 0,
+      "avg_final": 45.93,
+      "avg_factor": 0.756,
+      "survival_score": 6,
+      "labels": [
+        "CAUTION",
+        "HEADLINE+SECTOR+CTX_LOW",
+        "HEADLINE+SECTOR+REGIME_DENY"
+      ],
+      "codes": [
+        "CAUTION",
+        "CTX_LOW",
+        "HEADLINE",
+        "REGIME_DENY",
+        "SECTOR"
+      ],
+      "scenarios": [
+        {
+          "key": "01_off_con",
+          "headline_risk": "OFF",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 60.75,
+          "context_factor": 1.0,
+          "decision_label": "CAUTION",
+          "decision_codes": [
+            "CAUTION"
+          ]
+        },
+        {
+          "key": "02_watch_bal",
+          "headline_risk": "WATCH",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 50.3,
+          "context_factor": 0.828,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "03_active_agr",
+          "headline_risk": "ACTIVE",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 41.92,
+          "context_factor": 0.69,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "04_extreme_agr",
+          "headline_risk": "EXTREME",
+          "posture": "STAND_ASIDE",
+          "status": "BLOCKED",
+          "context_score": 30.74,
+          "context_factor": 0.506,
+          "decision_label": "HEADLINE+SECTOR+REGIME_DENY",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "REGIME_DENY"
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "WEGE3",
+      "sector": "Industrial",
+      "scenario_count": 4,
+      "survived": 3,
+      "ready": 0,
+      "watch": 3,
+      "blocked": 1,
+      "manual_only": 0,
+      "invalid": 0,
+      "avg_final": 45.67,
+      "avg_factor": 0.767,
+      "survival_score": 6,
+      "labels": [
+        "CAUTION",
+        "HEADLINE+SECTOR+CTX_LOW",
+        "HEADLINE+SECTOR+REGIME_DENY"
+      ],
+      "codes": [
+        "CAUTION",
+        "CTX_LOW",
+        "HEADLINE",
+        "REGIME_DENY",
+        "SECTOR"
+      ],
+      "scenarios": [
+        {
+          "key": "01_off_con",
+          "headline_risk": "OFF",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 59.55,
+          "context_factor": 1.0,
+          "decision_label": "CAUTION",
+          "decision_codes": [
+            "CAUTION"
+          ]
+        },
+        {
+          "key": "02_watch_bal",
+          "headline_risk": "WATCH",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 50.38,
+          "context_factor": 0.846,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "03_active_agr",
+          "headline_risk": "ACTIVE",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 41.98,
+          "context_factor": 0.705,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "04_extreme_agr",
+          "headline_risk": "EXTREME",
+          "posture": "STAND_ASIDE",
+          "status": "BLOCKED",
+          "context_score": 30.79,
+          "context_factor": 0.517,
+          "decision_label": "HEADLINE+SECTOR+REGIME_DENY",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "REGIME_DENY"
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "BBDC4",
+      "sector": "Banks",
+      "scenario_count": 4,
+      "survived": 3,
+      "ready": 0,
+      "watch": 3,
+      "blocked": 1,
+      "manual_only": 0,
+      "invalid": 0,
+      "avg_final": 42.48,
+      "avg_factor": 0.7688,
+      "survival_score": 6,
+      "labels": [
+        "CAUTION",
+        "HEADLINE+SECTOR+CTX_LOW",
+        "HEADLINE+SECTOR+REGIME_DENY"
+      ],
+      "codes": [
+        "CAUTION",
+        "CTX_LOW",
+        "HEADLINE",
+        "REGIME_DENY",
+        "SECTOR"
+      ],
+      "scenarios": [
+        {
+          "key": "01_off_con",
+          "headline_risk": "OFF",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 55.25,
+          "context_factor": 1.0,
+          "decision_label": "CAUTION",
+          "decision_codes": [
+            "CAUTION"
+          ]
+        },
+        {
+          "key": "02_watch_bal",
+          "headline_risk": "WATCH",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 46.91,
+          "context_factor": 0.849,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "03_active_agr",
+          "headline_risk": "ACTIVE",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 39.09,
+          "context_factor": 0.7075,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "04_extreme_agr",
+          "headline_risk": "EXTREME",
+          "posture": "STAND_ASIDE",
+          "status": "BLOCKED",
+          "context_score": 28.66,
+          "context_factor": 0.5188,
+          "decision_label": "HEADLINE+SECTOR+REGIME_DENY",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "REGIME_DENY"
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "CMIG4",
+      "sector": "Utilities",
+      "scenario_count": 4,
+      "survived": 3,
+      "ready": 0,
+      "watch": 3,
+      "blocked": 1,
+      "manual_only": 0,
+      "invalid": 0,
+      "avg_final": 39.91,
+      "avg_factor": 0.8128,
+      "survival_score": 6,
+      "labels": [
+        "CTX_LOW",
+        "HEADLINE+SECTOR+CTX_LOW",
+        "HEADLINE+SECTOR+REGIME_DENY"
+      ],
+      "codes": [
+        "CTX_LOW",
+        "HEADLINE",
+        "REGIME_DENY",
+        "SECTOR"
+      ],
+      "scenarios": [
+        {
+          "key": "01_off_con",
+          "headline_risk": "OFF",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 49.1,
+          "context_factor": 1.0,
+          "decision_label": "CTX_LOW",
+          "decision_codes": [
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "02_watch_bal",
+          "headline_risk": "WATCH",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 45.22,
+          "context_factor": 0.921,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "03_active_agr",
+          "headline_risk": "ACTIVE",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 37.68,
+          "context_factor": 0.7675,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "04_extreme_agr",
+          "headline_risk": "EXTREME",
+          "posture": "STAND_ASIDE",
+          "status": "BLOCKED",
+          "context_score": 27.63,
+          "context_factor": 0.5628,
+          "decision_label": "HEADLINE+SECTOR+REGIME_DENY",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "REGIME_DENY"
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "BRAP4",
+      "sector": "Holding",
+      "scenario_count": 4,
+      "survived": 3,
+      "ready": 0,
+      "watch": 3,
+      "blocked": 1,
+      "manual_only": 0,
+      "invalid": 0,
+      "avg_final": 33.26,
+      "avg_factor": 0.778,
+      "survival_score": 6,
+      "labels": [
+        "CTX_LOW",
+        "HEADLINE+SECTOR+CTX_LOW",
+        "HEADLINE+SECTOR+REGIME_DENY"
+      ],
+      "codes": [
+        "CTX_LOW",
+        "HEADLINE",
+        "REGIME_DENY",
+        "SECTOR"
+      ],
+      "scenarios": [
+        {
+          "key": "01_off_con",
+          "headline_risk": "OFF",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 42.75,
+          "context_factor": 1.0,
+          "decision_label": "CTX_LOW",
+          "decision_codes": [
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "02_watch_bal",
+          "headline_risk": "WATCH",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 36.94,
+          "context_factor": 0.864,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "03_active_agr",
+          "headline_risk": "ACTIVE",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 30.78,
+          "context_factor": 0.72,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "04_extreme_agr",
+          "headline_risk": "EXTREME",
+          "posture": "STAND_ASIDE",
+          "status": "BLOCKED",
+          "context_score": 22.57,
+          "context_factor": 0.528,
+          "decision_label": "HEADLINE+SECTOR+REGIME_DENY",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "REGIME_DENY"
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "PETR4",
+      "sector": "OilGas",
+      "scenario_count": 4,
+      "survived": 2,
+      "ready": 0,
+      "watch": 2,
+      "blocked": 2,
+      "manual_only": 0,
+      "invalid": 0,
+      "avg_final": 51.42,
+      "avg_factor": 0.8458,
+      "survival_score": 4,
+      "labels": [
+        "HEADLINE+SECTOR+CAUTION",
+        "HEADLINE+SECTOR+CTX_LOW",
+        "HEADLINE+SECTOR+REGIME_DENY",
+        "RR_LOW"
+      ],
+      "codes": [
+        "CAUTION",
+        "CTX_LOW",
+        "HEADLINE",
+        "REGIME_DENY",
+        "RR_LOW",
+        "SECTOR"
+      ],
+      "scenarios": [
+        {
+          "key": "01_off_con",
+          "headline_risk": "OFF",
+          "posture": "WATCH_ONLY",
+          "status": "BLOCKED",
+          "context_score": 60.8,
+          "context_factor": 1.0,
+          "decision_label": "RR_LOW",
+          "decision_codes": [
+            "RR_LOW"
+          ]
+        },
+        {
+          "key": "02_watch_bal",
+          "headline_risk": "WATCH",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 59.28,
+          "context_factor": 0.975,
+          "decision_label": "HEADLINE+SECTOR+CAUTION",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CAUTION"
+          ]
+        },
+        {
+          "key": "03_active_agr",
+          "headline_risk": "ACTIVE",
+          "posture": "WATCH_ONLY",
+          "status": "WATCH",
+          "context_score": 49.4,
+          "context_factor": 0.8125,
+          "decision_label": "HEADLINE+SECTOR+CTX_LOW",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "CTX_LOW"
+          ]
+        },
+        {
+          "key": "04_extreme_agr",
+          "headline_risk": "EXTREME",
+          "posture": "STAND_ASIDE",
+          "status": "BLOCKED",
+          "context_score": 36.22,
+          "context_factor": 0.5958,
+          "decision_label": "HEADLINE+SECTOR+REGIME_DENY",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "REGIME_DENY"
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "ASAI3",
+      "sector": "Retail",
+      "scenario_count": 4,
+      "survived": 0,
+      "ready": 0,
+      "watch": 0,
+      "blocked": 4,
+      "manual_only": 0,
+      "invalid": 0,
+      "avg_final": 28.12,
+      "avg_factor": 0.745,
+      "survival_score": 0,
+      "labels": [
+        "HEADLINE+SECTOR+REGIME_DENY+RR_LOW+ATR_HIGH",
+        "HEADLINE+SECTOR+RR_LOW+ATR_HIGH",
+        "RR_LOW+ATR_HIGH"
+      ],
+      "codes": [
+        "ATR_HIGH",
+        "HEADLINE",
+        "REGIME_DENY",
+        "RR_LOW",
+        "SECTOR"
+      ],
+      "scenarios": [
+        {
+          "key": "01_off_con",
+          "headline_risk": "OFF",
+          "posture": "WATCH_ONLY",
+          "status": "BLOCKED",
+          "context_score": 37.75,
+          "context_factor": 1.0,
+          "decision_label": "RR_LOW+ATR_HIGH",
+          "decision_codes": [
+            "RR_LOW",
+            "ATR_HIGH"
+          ]
+        },
+        {
+          "key": "02_watch_bal",
+          "headline_risk": "WATCH",
+          "posture": "WATCH_ONLY",
+          "status": "BLOCKED",
+          "context_score": 30.58,
+          "context_factor": 0.81,
+          "decision_label": "HEADLINE+SECTOR+RR_LOW+ATR_HIGH",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "RR_LOW",
+            "ATR_HIGH"
+          ]
+        },
+        {
+          "key": "03_active_agr",
+          "headline_risk": "ACTIVE",
+          "posture": "WATCH_ONLY",
+          "status": "BLOCKED",
+          "context_score": 25.48,
+          "context_factor": 0.675,
+          "decision_label": "HEADLINE+SECTOR+RR_LOW+ATR_HIGH",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "RR_LOW",
+            "ATR_HIGH"
+          ]
+        },
+        {
+          "key": "04_extreme_agr",
+          "headline_risk": "EXTREME",
+          "posture": "STAND_ASIDE",
+          "status": "BLOCKED",
+          "context_score": 18.69,
+          "context_factor": 0.495,
+          "decision_label": "HEADLINE+SECTOR+REGIME_DENY+RR_LOW+ATR_HIGH",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "REGIME_DENY",
+            "RR_LOW",
+            "ATR_HIGH"
+          ]
+        }
+      ]
+    },
+    {
+      "ticker": "MGLU3",
+      "sector": "Retail",
+      "scenario_count": 4,
+      "survived": 0,
+      "ready": 0,
+      "watch": 0,
+      "blocked": 4,
+      "manual_only": 0,
+      "invalid": 0,
+      "avg_final": 24.92,
+      "avg_factor": 0.745,
+      "survival_score": 0,
+      "labels": [
+        "ATR_HIGH+VOL_HIGH",
+        "HEADLINE+SECTOR+ATR_HIGH+VOL_HIGH",
+        "HEADLINE+SECTOR+REGIME_DENY+ATR_HIGH+VOL_HIGH"
+      ],
+      "codes": [
+        "ATR_HIGH",
+        "HEADLINE",
+        "REGIME_DENY",
+        "SECTOR",
+        "VOL_HIGH"
+      ],
+      "scenarios": [
+        {
+          "key": "01_off_con",
+          "headline_risk": "OFF",
+          "posture": "WATCH_ONLY",
+          "status": "BLOCKED",
+          "context_score": 33.45,
+          "context_factor": 1.0,
+          "decision_label": "ATR_HIGH+VOL_HIGH",
+          "decision_codes": [
+            "ATR_HIGH",
+            "VOL_HIGH"
+          ]
+        },
+        {
+          "key": "02_watch_bal",
+          "headline_risk": "WATCH",
+          "posture": "WATCH_ONLY",
+          "status": "BLOCKED",
+          "context_score": 27.09,
+          "context_factor": 0.81,
+          "decision_label": "HEADLINE+SECTOR+ATR_HIGH+VOL_HIGH",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "ATR_HIGH",
+            "VOL_HIGH"
+          ]
+        },
+        {
+          "key": "03_active_agr",
+          "headline_risk": "ACTIVE",
+          "posture": "WATCH_ONLY",
+          "status": "BLOCKED",
+          "context_score": 22.58,
+          "context_factor": 0.675,
+          "decision_label": "HEADLINE+SECTOR+ATR_HIGH+VOL_HIGH",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "ATR_HIGH",
+            "VOL_HIGH"
+          ]
+        },
+        {
+          "key": "04_extreme_agr",
+          "headline_risk": "EXTREME",
+          "posture": "STAND_ASIDE",
+          "status": "BLOCKED",
+          "context_score": 16.56,
+          "context_factor": 0.495,
+          "decision_label": "HEADLINE+SECTOR+REGIME_DENY+ATR_HIGH+VOL_HIGH",
+          "decision_codes": [
+            "HEADLINE",
+            "SECTOR",
+            "REGIME_DENY",
+            "ATR_HIGH",
+            "VOL_HIGH"
+          ]
+        }
+      ]
+    }
+  ]
+}

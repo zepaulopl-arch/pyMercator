@@ -1,0 +1,1015 @@
+{
+  "status": "OK",
+  "created_at": "2026-05-28T20:15:50",
+  "tickers_file": "data/universes/ibov_tickers.csv",
+  "start": "2025-01-01",
+  "end": null,
+  "prices_dir": "data/prices",
+  "universe_output": "data/universes/ibov_live.csv",
+  "headline_tags": [
+    "IRAN",
+    "OIL",
+    "WAR"
+  ],
+  "fetch": {
+    "skipped": true,
+    "reason": "skip_fetch enabled"
+  },
+  "prices_check": {
+    "prices_dir": "data\\prices",
+    "exists": true,
+    "files": 16,
+    "valid_files": 16,
+    "invalid_files": 0,
+    "results": [
+      {
+        "path": "data\\prices\\ABEV3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\ASAI3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\BBAS3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\BBDC4.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\BRAP4.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\CMIG4.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\GGBR4.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\ITUB4.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\LREN3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\MGLU3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\PETR4.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\PRIO3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\SBSP3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\TOTS3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\VALE3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      },
+      {
+        "path": "data\\prices\\WEGE3.SA.csv",
+        "valid": true,
+        "rows": 350,
+        "columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "required_columns": [
+          "date",
+          "open",
+          "high",
+          "low",
+          "close",
+          "volume"
+        ],
+        "missing_columns": [],
+        "extra_columns": [],
+        "duplicate_dates": [],
+        "row_errors": [],
+        "start_date": "2025-01-02",
+        "end_date": "2026-05-28"
+      }
+    ]
+  },
+  "universe_build": {
+    "prices_dir": "data\\prices",
+    "tickers_file": "data/universes/ibov_tickers.csv",
+    "output": "data/universes/ibov_live.csv",
+    "asset_count": 16,
+    "error_count": 0,
+    "errors": [],
+    "assets": [
+      {
+        "ticker": "ABEV3",
+        "sector": "Consumer",
+        "last_close": 16.29,
+        "avg_volume_brl": 483738613.41,
+        "trend_score": 60.39,
+        "momentum_score": 89.09,
+        "volatility_pct": 56.86,
+        "atr_pct": 2.29,
+        "liquidity_score": 90.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 16.29,
+        "stop": 15.92,
+        "target": 16.89
+      },
+      {
+        "ticker": "ASAI3",
+        "sector": "Retail",
+        "last_close": 8.98,
+        "avg_volume_brl": 120448988.67,
+        "trend_score": 54.51,
+        "momentum_score": 48.15,
+        "volatility_pct": 48.0,
+        "atr_pct": 4.36,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 8.98,
+        "stop": 8.59,
+        "target": 9.61
+      },
+      {
+        "ticker": "BBAS3",
+        "sector": "Banks",
+        "last_close": 20.61,
+        "avg_volume_brl": 511888098.41,
+        "trend_score": 28.87,
+        "momentum_score": 21.46,
+        "volatility_pct": 27.18,
+        "atr_pct": 2.8,
+        "liquidity_score": 100.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 20.61,
+        "stop": 20.03,
+        "target": 21.53
+      },
+      {
+        "ticker": "BBDC4",
+        "sector": "Banks",
+        "last_close": 17.9,
+        "avg_volume_brl": 555716764.72,
+        "trend_score": 37.03,
+        "momentum_score": 21.56,
+        "volatility_pct": 26.7,
+        "atr_pct": 2.37,
+        "liquidity_score": 100.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 17.9,
+        "stop": 17.48,
+        "target": 18.58
+      },
+      {
+        "ticker": "BRAP4",
+        "sector": "Holding",
+        "last_close": 23.35,
+        "avg_volume_brl": 45959821.16,
+        "trend_score": 51.88,
+        "momentum_score": 44.94,
+        "volatility_pct": 25.84,
+        "atr_pct": 2.64,
+        "liquidity_score": 50.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 23.35,
+        "stop": 22.73,
+        "target": 24.34
+      },
+      {
+        "ticker": "CMIG4",
+        "sector": "Utilities",
+        "last_close": 11.05,
+        "avg_volume_brl": 167025973.14,
+        "trend_score": 29.49,
+        "momentum_score": 4.65,
+        "volatility_pct": 23.14,
+        "atr_pct": 2.29,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 11.05,
+        "stop": 10.8,
+        "target": 11.45
+      },
+      {
+        "ticker": "GGBR4",
+        "sector": "Steel",
+        "last_close": 23.5,
+        "avg_volume_brl": 227112322.65,
+        "trend_score": 72.26,
+        "momentum_score": 63.89,
+        "volatility_pct": 25.76,
+        "atr_pct": 2.72,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 23.5,
+        "stop": 22.86,
+        "target": 24.52
+      },
+      {
+        "ticker": "ITUB4",
+        "sector": "Banks",
+        "last_close": 40.0,
+        "avg_volume_brl": 1278599042.21,
+        "trend_score": 37.23,
+        "momentum_score": 19.01,
+        "volatility_pct": 24.75,
+        "atr_pct": 2.27,
+        "liquidity_score": 100.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 40.0,
+        "stop": 39.09,
+        "target": 41.45
+      },
+      {
+        "ticker": "LREN3",
+        "sector": "Retail",
+        "last_close": 15.0,
+        "avg_volume_brl": 244078877.81,
+        "trend_score": 55.51,
+        "momentum_score": 73.55,
+        "volatility_pct": 49.97,
+        "atr_pct": 4.0,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 15.0,
+        "stop": 14.4,
+        "target": 15.96
+      },
+      {
+        "ticker": "MGLU3",
+        "sector": "Retail",
+        "last_close": 6.35,
+        "avg_volume_brl": 122225354.57,
+        "trend_score": 0.0,
+        "momentum_score": 0.0,
+        "volatility_pct": 47.12,
+        "atr_pct": 4.95,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 6.35,
+        "stop": 6.04,
+        "target": 6.85
+      },
+      {
+        "ticker": "PETR4",
+        "sector": "OilGas",
+        "last_close": 42.51,
+        "avg_volume_brl": 2219145445.6,
+        "trend_score": 31.86,
+        "momentum_score": 14.86,
+        "volatility_pct": 26.7,
+        "atr_pct": 2.73,
+        "liquidity_score": 100.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 42.51,
+        "stop": 41.35,
+        "target": 44.37
+      },
+      {
+        "ticker": "PRIO3",
+        "sector": "OilGas",
+        "last_close": 62.97,
+        "avg_volume_brl": 658026416.93,
+        "trend_score": 43.11,
+        "momentum_score": 42.6,
+        "volatility_pct": 40.61,
+        "atr_pct": 3.45,
+        "liquidity_score": 100.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 62.97,
+        "stop": 60.8,
+        "target": 66.45
+      },
+      {
+        "ticker": "SBSP3",
+        "sector": "Utilities",
+        "last_close": 28.16,
+        "avg_volume_brl": 430324069.9,
+        "trend_score": 29.64,
+        "momentum_score": 0.0,
+        "volatility_pct": 24.83,
+        "atr_pct": 2.65,
+        "liquidity_score": 90.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 28.16,
+        "stop": 27.41,
+        "target": 29.35
+      },
+      {
+        "ticker": "TOTS3",
+        "sector": "Tech",
+        "last_close": 31.75,
+        "avg_volume_brl": 228860243.42,
+        "trend_score": 36.99,
+        "momentum_score": 51.69,
+        "volatility_pct": 49.08,
+        "atr_pct": 3.83,
+        "liquidity_score": 80.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 31.75,
+        "stop": 30.53,
+        "target": 33.7
+      },
+      {
+        "ticker": "VALE3",
+        "sector": "Mining",
+        "last_close": 83.96,
+        "avg_volume_brl": 1623366213.26,
+        "trend_score": 54.72,
+        "momentum_score": 48.3,
+        "volatility_pct": 32.77,
+        "atr_pct": 2.4,
+        "liquidity_score": 100.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 83.96,
+        "stop": 81.94,
+        "target": 87.18
+      },
+      {
+        "ticker": "WEGE3",
+        "sector": "Industrial",
+        "last_close": 43.72,
+        "avg_volume_brl": 303120796.37,
+        "trend_score": 38.14,
+        "momentum_score": 24.84,
+        "volatility_pct": 33.94,
+        "atr_pct": 2.39,
+        "liquidity_score": 90.0,
+        "quality_score": 50.0,
+        "news_score": 50.0,
+        "entry": 43.72,
+        "stop": 42.68,
+        "target": 45.39
+      }
+    ]
+  },
+  "universe_validation": {
+    "path": "data/universes/ibov_live.csv",
+    "valid": true,
+    "rows": 16,
+    "columns": [
+      "ticker",
+      "sector",
+      "last_close",
+      "avg_volume_brl",
+      "trend_score",
+      "momentum_score",
+      "volatility_pct",
+      "atr_pct",
+      "liquidity_score",
+      "quality_score",
+      "news_score",
+      "entry",
+      "stop",
+      "target"
+    ],
+    "required_columns": [
+      "ticker",
+      "sector",
+      "last_close",
+      "avg_volume_brl",
+      "trend_score",
+      "momentum_score",
+      "volatility_pct",
+      "atr_pct",
+      "liquidity_score",
+      "quality_score",
+      "news_score",
+      "entry",
+      "stop",
+      "target"
+    ],
+    "missing_columns": [],
+    "extra_columns": [],
+    "duplicate_tickers": [],
+    "row_errors": []
+  },
+  "universe_diagnosis": {
+    "path": "data/universes/ibov_live.csv",
+    "policy": "config/policy.json",
+    "assets": 16,
+    "min_assets": 3,
+    "data_status": "PASS_WITH_WARNINGS",
+    "asset_count_status": "OK",
+    "warning_count": 12,
+    "liquidity_low": 0,
+    "volatility_high": 1,
+    "atr_high": 0,
+    "weak_trend": 10,
+    "weak_momentum": 10,
+    "missing_trade_plan": 0,
+    "sector_concentration": {
+      "status": "LOW",
+      "top_sector": "Retail",
+      "top_sector_count": 3,
+      "top_sector_pct": 18.75,
+      "sectors": {
+        "Banks": 3,
+        "Consumer": 1,
+        "Holding": 1,
+        "Industrial": 1,
+        "Mining": 1,
+        "OilGas": 2,
+        "Retail": 3,
+        "Steel": 1,
+        "Tech": 1,
+        "Utilities": 2
+      }
+    },
+    "diagnostics": [
+      {
+        "ticker": "ABEV3",
+        "sector": "Consumer",
+        "avg_volume_brl": 483738613.41,
+        "volatility_pct": 56.86,
+        "atr_pct": 2.29,
+        "trend_score": 60.39,
+        "momentum_score": 89.09,
+        "codes": [
+          "VOL_HIGH"
+        ],
+        "label": "VOL_HIGH"
+      },
+      {
+        "ticker": "ASAI3",
+        "sector": "Retail",
+        "avg_volume_brl": 120448988.67,
+        "volatility_pct": 48.0,
+        "atr_pct": 4.36,
+        "trend_score": 54.51,
+        "momentum_score": 48.15,
+        "codes": [],
+        "label": "OK"
+      },
+      {
+        "ticker": "BBAS3",
+        "sector": "Banks",
+        "avg_volume_brl": 511888098.41,
+        "volatility_pct": 27.18,
+        "atr_pct": 2.8,
+        "trend_score": 28.87,
+        "momentum_score": 21.46,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "BBDC4",
+        "sector": "Banks",
+        "avg_volume_brl": 555716764.72,
+        "volatility_pct": 26.7,
+        "atr_pct": 2.37,
+        "trend_score": 37.03,
+        "momentum_score": 21.56,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "BRAP4",
+        "sector": "Holding",
+        "avg_volume_brl": 45959821.16,
+        "volatility_pct": 25.84,
+        "atr_pct": 2.64,
+        "trend_score": 51.88,
+        "momentum_score": 44.94,
+        "codes": [
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_MOM"
+      },
+      {
+        "ticker": "CMIG4",
+        "sector": "Utilities",
+        "avg_volume_brl": 167025973.14,
+        "volatility_pct": 23.14,
+        "atr_pct": 2.29,
+        "trend_score": 29.49,
+        "momentum_score": 4.65,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "GGBR4",
+        "sector": "Steel",
+        "avg_volume_brl": 227112322.65,
+        "volatility_pct": 25.76,
+        "atr_pct": 2.72,
+        "trend_score": 72.26,
+        "momentum_score": 63.89,
+        "codes": [],
+        "label": "OK"
+      },
+      {
+        "ticker": "ITUB4",
+        "sector": "Banks",
+        "avg_volume_brl": 1278599042.21,
+        "volatility_pct": 24.75,
+        "atr_pct": 2.27,
+        "trend_score": 37.23,
+        "momentum_score": 19.01,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "LREN3",
+        "sector": "Retail",
+        "avg_volume_brl": 244078877.81,
+        "volatility_pct": 49.97,
+        "atr_pct": 4.0,
+        "trend_score": 55.51,
+        "momentum_score": 73.55,
+        "codes": [],
+        "label": "OK"
+      },
+      {
+        "ticker": "MGLU3",
+        "sector": "Retail",
+        "avg_volume_brl": 122225354.57,
+        "volatility_pct": 47.12,
+        "atr_pct": 4.95,
+        "trend_score": 0.0,
+        "momentum_score": 0.0,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "PETR4",
+        "sector": "OilGas",
+        "avg_volume_brl": 2219145445.6,
+        "volatility_pct": 26.7,
+        "atr_pct": 2.73,
+        "trend_score": 31.86,
+        "momentum_score": 14.86,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "PRIO3",
+        "sector": "OilGas",
+        "avg_volume_brl": 658026416.93,
+        "volatility_pct": 40.61,
+        "atr_pct": 3.45,
+        "trend_score": 43.11,
+        "momentum_score": 42.6,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "SBSP3",
+        "sector": "Utilities",
+        "avg_volume_brl": 430324069.9,
+        "volatility_pct": 24.83,
+        "atr_pct": 2.65,
+        "trend_score": 29.64,
+        "momentum_score": 0.0,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      },
+      {
+        "ticker": "TOTS3",
+        "sector": "Tech",
+        "avg_volume_brl": 228860243.42,
+        "volatility_pct": 49.08,
+        "atr_pct": 3.83,
+        "trend_score": 36.99,
+        "momentum_score": 51.69,
+        "codes": [
+          "WEAK_TREND"
+        ],
+        "label": "WEAK_TREND"
+      },
+      {
+        "ticker": "VALE3",
+        "sector": "Mining",
+        "avg_volume_brl": 1623366213.26,
+        "volatility_pct": 32.77,
+        "atr_pct": 2.4,
+        "trend_score": 54.72,
+        "momentum_score": 48.3,
+        "codes": [],
+        "label": "OK"
+      },
+      {
+        "ticker": "WEGE3",
+        "sector": "Industrial",
+        "avg_volume_brl": 303120796.37,
+        "volatility_pct": 33.94,
+        "atr_pct": 2.39,
+        "trend_score": 38.14,
+        "momentum_score": 24.84,
+        "codes": [
+          "WEAK_TREND",
+          "WEAK_MOM"
+        ],
+        "label": "WEAK_TREND+WEAK_MOM"
+      }
+    ]
+  },
+  "pack_dir": "storage\\scenario_runs\\20260528_201550",
+  "scenario_summary_text": "PYMERCATOR SCENARIO PACK SUMMARY\n----------------------------------------------------------------------------------------------------------------------\nPACK DIR         storage\\scenario_runs\\20260528_201550\n\nSCENARIO         POSTURE      READY WATCH BLOCK TOP    TOP_EXEC TOP_LABEL                   \n----------------------------------------------------------------------------------------------------------------------\n01_off_con       WATCH_ONLY       0    15     1 ABEV3  BLOCKED  VOL_HIGH                    \n02_watch_bal     WATCH_ONLY       0    15     1 ABEV3  BLOCKED  HEADLINE+SECTOR+VOL_HIGH    \n03_active_agr    WATCH_ONLY       0    15     1 ABEV3  BLOCKED  HEADLINE+SECTOR+VOL_HIGH    \n04_extreme_agr   STAND_ASIDE      0     0    16 ABEV3  BLOCKED  HEADLINE+SECTOR+REGIME_DENY+VOL_HIGH\n\nFILES\n----------------------------------------------------------------------------------------------------------------------\n01_off_con/report.txt\n01_off_con/report.json\n02_watch_bal/report.txt\n02_watch_bal/report.json\n03_active_agr/report.txt\n03_active_agr/report.json\n04_extreme_agr/report.txt\n04_extreme_agr/report.json",
+  "stability_text": "PYMERCATOR STABILITY RANKING\n----------------------------------------------------------------------------------------------------------------------\nRK TICKER SECTOR     SURV READY WATCH BLOCK    AVG FACTOR SCORE CODES                             \n----------------------------------------------------------------------------------------------------------------------\n 1 GGBR4  Steel         3     0     3     1  45.95   0.77     6 CAUTION,CTX_LOW,HEADLINE,REGIME...\n 2 PRIO3  OilGas        3     0     3     1  43.81   0.85     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n 3 VALE3  Mining        3     0     3     1  43.65   0.78     6 CAUTION,CTX_LOW,HEADLINE,REGIME...\n 4 LREN3  Retail        3     0     3     1  42.53   0.74     6 CAUTION,CTX_LOW,HEADLINE,REGIME...\n 5 ASAI3  Retail        3     0     3     1  38.56   0.74     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n 6 PETR4  OilGas        3     0     3     1  36.74   0.85     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n 7 TOTS3  Tech          3     0     3     1  36.35   0.76     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n 8 BBDC4  Banks         3     0     3     1  35.42   0.77     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n 9 ITUB4  Banks         3     0     3     1  35.06   0.77     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n10 BRAP4  Holding       3     0     3     1  34.59   0.78     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n11 WEGE3  Industrial    3     0     3     1  34.52   0.77     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n12 BBAS3  Banks         3     0     3     1  33.84   0.77     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n13 SBSP3  Utilities     3     0     3     1  30.82   0.81     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n14 CMIG4  Utilities     3     0     3     1  29.91   0.81     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n15 MGLU3  Retail        3     0     3     1  21.23   0.74     6 CTX_LOW,HEADLINE,REGIME_DENY,SE...\n16 ABEV3  Consumer      0     0     0     4  49.11   0.77     0 HEADLINE,REGIME_DENY,SECTOR,VOL...",
+  "errors": [],
+  "summary_text": "PYMERCATOR REAL PACK SUMMARY\n----------------------------------------------------------------------------------------------------------------------\nSTATUS               OK\nCREATED AT           2026-05-28T20:15:50\nTICKERS FILE         data/universes/ibov_tickers.csv\nPRICES DIR           data/prices\nUNIVERSE OUTPUT      data/universes/ibov_live.csv\nHEADLINE TAGS        IRAN, OIL, WAR\n\nPRICES\n----------------------------------------------------------------------------------------------------------------------\nEXISTS               True\nFILES                16\nVALID FILES          16\nINVALID FILES        0\n\nUNIVERSE BUILD\n----------------------------------------------------------------------------------------------------------------------\nASSETS               16\nERRORS               0\n\nUNIVERSE VALIDATION\n----------------------------------------------------------------------------------------------------------------------\nVALID                True\nROWS                 16\n\nUNIVERSE DIAGNOSIS\n----------------------------------------------------------------------------------------------------------------------\nDATA STATUS          PASS_WITH_WARNINGS\nWARNINGS             12\nCONCENTRATION        LOW\n\nSCENARIO PACK\n----------------------------------------------------------------------------------------------------------------------\nPACK DIR             storage\\scenario_runs\\20260528_201550\n"
+}

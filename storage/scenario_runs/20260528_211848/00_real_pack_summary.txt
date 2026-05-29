@@ -1,0 +1,42 @@
+PYMERCATOR REAL PACK SUMMARY
+----------------------------------------------------------------------------------------------------------------------
+STATUS               OK
+CREATED AT           2026-05-28T21:18:47
+TICKERS FILE         data/universes/ibov_tickers.csv
+PRICES DIR           data/prices
+UNIVERSE OUTPUT      data/universes/ibov_live.csv
+HEADLINE TAGS        IRAN, OIL, WAR
+CONTEXT SOURCE       preset
+CONTEXT FILE         -
+CONTEXT PRESET       oil_war
+CONTEXT NOTES        stress geopolitico com impacto potencial em energia
+EXECUTION MODE       ANALYSIS_ONLY
+ORDER ROUTING        DISABLED
+HUMAN CONFIRM        REQUIRED
+
+PRICES
+----------------------------------------------------------------------------------------------------------------------
+EXISTS               True
+FILES                78
+VALID FILES          78
+INVALID FILES        0
+
+UNIVERSE BUILD
+----------------------------------------------------------------------------------------------------------------------
+ASSETS               78
+ERRORS               0
+
+UNIVERSE VALIDATION
+----------------------------------------------------------------------------------------------------------------------
+VALID                True
+ROWS                 78
+
+UNIVERSE DIAGNOSIS
+----------------------------------------------------------------------------------------------------------------------
+DATA STATUS          PASS_WITH_WARNINGS
+WARNINGS             66
+CONCENTRATION        LOW
+
+SCENARIO PACK
+----------------------------------------------------------------------------------------------------------------------
+PACK DIR             storage\scenario_runs\20260528_211848

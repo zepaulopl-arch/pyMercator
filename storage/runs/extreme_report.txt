@@ -1,0 +1,60 @@
+PYMERCATOR DAILY OPERATIONAL REPORT
+--------------------------------------------------------------------------------------------------------------------------------
+UNIVERSE             IBOV
+PROFILE              AGR
+TODAY POSTURE        STAND_ASIDE
+
+1. MARKET REGIME
+--------------------------------------------------------------------------------------------------------------------------------
+REGIME               CRISIS
+PERMISSION           DENY
+HEADLINE RISK        EXTREME
+HEADLINE TAGS        IRAN, OIL, WAR, HORMUZ
+SCORE FACTOR         0.55
+EXPOSURE FACTOR      0.25
+- headline risk is EXTREME
+
+2. UNIVERSE HEALTH
+--------------------------------------------------------------------------------------------------------------------------------
+TOTAL ASSETS         15
+VALID ASSETS         15
+HEALTHY ASSETS       6
+HEALTH               NORMAL
+BREADTH              NORMAL
+CONCENTRATION        LOW
+PERMISSION           ALLOW
+- normal quantity of healthy assets
+
+3. ASSET RANKING + 4. TRADE VALIDATION + 5. EXECUTION PERMISSION
+--------------------------------------------------------------------------------------------------------------------------------
+ RK  TICKER  SECTOR       RAW_SIG  CTX_SIG      RAW   FINAL     RR EXEC         SIZE REASON                                    
+--------------------------------------------------------------------------------------------------------------------------------
+  1  PRIO3   OilGas       BUY      AVOID      70.60   38.83   1.77 BLOCKED      0.00 market regime denied operation; headline …
+  2  VALE3   Mining       NEUTRAL  AVOID      68.15   37.48   1.72 BLOCKED      0.00 market regime denied operation; headline …
+  3  LREN3   Retail       NEUTRAL  AVOID      66.80   36.74   1.50 BLOCKED      0.00 market regime denied operation; headline …
+  4  GGBR4   Steel        NEUTRAL  AVOID      64.30   35.37   1.71 BLOCKED      0.00 market regime denied operation; headline …
+  5  SBSP3   Utilities    NEUTRAL  AVOID      63.35   34.84   1.60 BLOCKED      0.00 market regime denied operation; headline …
+  6  ABEV3   Consumer     NEUTRAL  AVOID      60.90   33.50   1.75 BLOCKED      0.00 market regime denied operation; headline …
+  7  PETR4   OilGas       NEUTRAL  AVOID      60.80   33.44   1.33 BLOCKED      0.00 market regime denied operation; headline …
+  8  TOTS3   Tech         NEUTRAL  AVOID      60.75   33.41   1.67 BLOCKED      0.00 market regime denied operation; headline …
+  9  ITUB4   Banks        NEUTRAL  AVOID      59.80   32.89   1.50 BLOCKED      0.00 market regime denied operation; headline …
+ 10  WEGE3   Industrial   NEUTRAL  AVOID      59.55   32.75   1.78 BLOCKED      0.00 market regime denied operation; headline …
+ 11  BBDC4   Banks        NEUTRAL  AVOID      55.25   30.39   1.75 BLOCKED      0.00 market regime denied operation; headline …
+ 12  CMIG4   Utilities    AVOID    AVOID      49.10   27.01   1.67 BLOCKED      0.00 market regime denied operation; headline …
+ 13  BRAP4   Holding      AVOID    AVOID      42.75   23.51   2.00 BLOCKED      0.00 market regime denied operation; headline …
+ 14  ASAI3   Retail       AVOID    AVOID      37.75   20.76   1.00 BLOCKED      0.00 market regime denied operation; headline …
+ 15  MGLU3   Retail       AVOID    AVOID      33.45   18.40   2.00 BLOCKED      0.00 market regime denied operation; headline …
+
+SUMMARY
+--------------------------------------------------------------------------------------------------------------------------------
+READY                0
+WATCH                0
+BLOCKED              15
+
+6. HUMAN CONFIRMATION
+--------------------------------------------------------------------------------------------------------------------------------
+No READY tickets generated.
+
+POSTURE REASONS
+--------------------------------------------------------------------------------------------------------------------------------
+- market regime is not permissive
