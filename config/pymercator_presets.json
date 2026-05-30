@@ -1,0 +1,61 @@
+{
+  "default_profile": "daily",
+  "paths": {
+    "indices_catalog": "config/indices_catalog.json",
+    "indices_dir": "data/indices",
+    "prices_dir": "data/prices",
+    "sentiment_dir": "data/sentiment",
+    "tickers_file": "data/universes/ibov_tickers.csv",
+    "universe_output": "data/universes/ibov_live.csv",
+    "context_output": "config/market_context_auto.json",
+    "features_catalog": "config/features_catalog.json",
+    "feature_matrix": "storage/features/latest_feature_matrix.csv",
+    "prediction_dataset": "storage/prediction/latest_prediction_dataset.csv",
+    "prediction_evaluation": "storage/prediction/latest_evaluation.json",
+    "scenario_runs": "storage/scenario_runs"
+  },
+  "prediction": {
+    "horizon": 5,
+    "min_history": 20,
+    "min_train_rows": 100,
+    "n_jobs": 4,
+    "engines": [
+      "rolling_majority",
+      "momentum_rule",
+      "xgb",
+      "catboost",
+      "extratrees",
+      "ridge_arbiter"
+    ],
+    "autotune": false,
+    "autotune_iter": 15,
+    "autotune_cv": 3
+  },
+  "profiles": {
+    "daily": {
+      "skip_indices_fetch": false,
+      "skip_asset_fetch": false
+    },
+    "no_fetch": {
+      "skip_indices_fetch": true,
+      "skip_asset_fetch": true
+    },
+    "fast": {
+      "skip_indices_fetch": true,
+      "skip_asset_fetch": true,
+      "prediction_engines": [
+        "rolling_majority",
+        "momentum_rule"
+      ]
+    },
+    "lab": {
+      "skip_indices_fetch": true,
+      "skip_asset_fetch": true
+    }
+  },
+  "ui": {
+    "theme": "BBG-DARK",
+    "width": 120,
+    "compact": true
+  }
+}

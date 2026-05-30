@@ -741,6 +741,34 @@ def run_prediction_lab(
         autotune_cv=autotune_cv,
     )
 
+    models = evaluation_payload["models"]
+    summary: dict[str, Any] = {
+        "status": "OK",
+        "engine_count": len(models),
+        "best_accuracy_engine": None,
+        "best_accuracy": None,
+        "best_mae_engine": None,
+        "best_mae": None,
+    }
+
+    if models:
+        sorted_by_accuracy = sorted(
+            models.items(),
+            key=lambda item: (-item[1].get("accuracy", 0.0), item[1].get("mae_return", 0.0)),
+        )
+        summary["best_accuracy_engine"] = sorted_by_accuracy[0][0]
+        summary["best_accuracy"] = sorted_by_accuracy[0][1].get("accuracy", 0.0)
+
+        sorted_by_mae = sorted(
+            models.items(),
+            key=lambda item: (
+                item[1].get("mae_return", float("inf")),
+                -item[1].get("accuracy", 0.0),
+            ),
+        )
+        summary["best_mae_engine"] = sorted_by_mae[0][0]
+        summary["best_mae"] = sorted_by_mae[0][1].get("mae_return", 0.0)
+
     return {
         "status": "OK",
         "dataset": {
@@ -759,6 +787,7 @@ def run_prediction_lab(
             "autotune": evaluation_payload.get("autotune", {}),
             "models": evaluation_payload["models"],
         },
+        "summary": summary,
     }
 
 

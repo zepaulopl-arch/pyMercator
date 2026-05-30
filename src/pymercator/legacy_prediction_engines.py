@@ -44,6 +44,10 @@ DEFAULT_ENGINES = [
     "ridge_arbiter",
 ]
 
+LEGACY_RETURN_CLIP_LOWER: float = -20.0
+LEGACY_RETURN_CLIP_UPPER: float = 20.0
+LEGACY_CONSENSUS_DEVIATION_THRESHOLD: float = 0.5
+
 FEATURE_COLUMNS = [
     "return_1d",
     "return_5d",
@@ -152,10 +156,14 @@ def _median(values: list[float]) -> float:
     return (ordered[mid - 1] + ordered[mid]) / 2.0
 
 
+def _clip_return_value(value: float) -> float:
+    return max(LEGACY_RETURN_CLIP_LOWER, min(LEGACY_RETURN_CLIP_UPPER, value))
+
+
 def apply_consensus_guard(
     predictions: dict[str, float],
     *,
-    max_deviation_from_median: float = 0.025,
+    max_deviation_from_median: float = LEGACY_CONSENSUS_DEVIATION_THRESHOLD,
 ) -> dict[str, float]:
     if not predictions:
         return {}
@@ -164,9 +172,8 @@ def apply_consensus_guard(
     guarded: dict[str, float] = {}
 
     for engine, value in predictions.items():
-        guarded[engine] = (
-            median if abs(value - median) > max_deviation_from_median else value
-        )
+        guarded_value = median if abs(value - median) > max_deviation_from_median else value
+        guarded[engine] = _clip_return_value(guarded_value)
 
     return guarded
 
@@ -446,7 +453,8 @@ def predict_legacy_engine(model: Any, row: dict[str, Any]) -> float:
     if model is None:
         return 0.0
 
-    return float(model.predict([_feature_vector(row)])[0])
+    value = float(model.predict([_feature_vector(row)])[0])
+    return _clip_return_value(value)
 
 
 def majority_prediction(train_rows: list[dict[str, Any]], target_up_column: str) -> int:

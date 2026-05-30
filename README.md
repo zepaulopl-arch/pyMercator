@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 \# pyMercator
 
 
@@ -58,3 +59,6 @@ python -m pip install -e .
 
 python -m pymercator daily --universe data\\universes\\ibov\_sample.csv --headline-risk ACTIVE --headline-tags IRAN,OIL,WAR --profile AGR
 
+=======
+# pyMercator
+>>>>>>> af0d4fb13c0ea89628fefc4ae360f405fbabcadc

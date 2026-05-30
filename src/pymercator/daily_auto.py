@@ -1,5 +1,6 @@
 ﻿from __future__ import annotations
 
+import json
 from pathlib import Path
 from typing import Any
 
@@ -22,8 +23,6 @@ def _attach_feature_matrix_to_manifest(
 
     if not manifest_path.exists():
         return
-
-    import json
 
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["feature_matrix"] = {
@@ -55,8 +54,6 @@ def _attach_prediction_lab_to_manifest(
     if not manifest_path.exists():
         return
 
-    import json
-
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))
     manifest["prediction_lab"] = prediction_lab
 
@@ -80,6 +77,10 @@ def run_daily_auto(
     prediction_min_history: int = 20,
     prediction_min_train_rows: int = 100,
     prediction_engines: list[str] | None = None,
+    prediction_n_jobs: int = 4,
+    prediction_autotune: bool = False,
+    prediction_autotune_iter: int = 15,
+    prediction_autotune_cv: int = 3,
     tickers_file: str = "data/universes/ibov_tickers.csv",
     sentiment_dir: str = "data/sentiment",
     prices_start: str = "2025-01-01",
@@ -176,6 +177,10 @@ def run_daily_auto(
         min_history=prediction_min_history,
         min_train_rows=prediction_min_train_rows,
         engines=prediction_engines,
+        n_jobs=prediction_n_jobs,
+        autotune=prediction_autotune,
+        autotune_iter=prediction_autotune_iter,
+        autotune_cv=prediction_autotune_cv,
     )
 
     _attach_prediction_lab_to_manifest(

@@ -5,6 +5,10 @@ from pathlib import Path
 
 import pytest
 
+from pymercator.legacy_prediction_engines import (
+    apply_consensus_guard,
+    predict_legacy_engine,
+)
 from pymercator.prediction_lab import (
     build_prediction_dataset,
     run_prediction_lab,
@@ -105,16 +109,13 @@ def test_walk_forward_evaluate_returns_baseline_metrics(tmp_path: Path):
         dataset=dataset,
         horizon=5,
         min_train_rows=10,
+        engines=["rolling_majority", "momentum_rule"],
     )
 
     assert payload["rows"] > 0
     assert payload["evaluated_rows"] > 0
     assert "rolling_majority" in payload["models"]
     assert "momentum_rule" in payload["models"]
-    assert "xgb" in payload["models"]
-    assert "catboost" in payload["models"]
-    assert "extratrees" in payload["models"]
-    assert "ridge_arbiter" in payload["models"]
 
 
 def test_run_prediction_lab_creates_dataset_and_evaluation(tmp_path: Path):
@@ -135,12 +136,34 @@ def test_run_prediction_lab_creates_dataset_and_evaluation(tmp_path: Path):
         horizon=5,
         min_history=20,
         min_train_rows=10,
+        engines=["rolling_majority", "momentum_rule"],
     )
 
     assert payload["status"] == "OK"
     assert dataset.exists()
     assert evaluation.exists()
     assert payload["evaluation"]["evaluated_rows"] > 0
+    assert payload["summary"]["status"] == "OK"
+    assert payload["summary"]["engine_count"] == 2
+
+
+def test_apply_consensus_guard_replaces_outlier_values():
+    predictions = {"xgb": 4.5, "catboost": 4.3, "extratrees": 10.0}
+    guarded = apply_consensus_guard(predictions)
+
+    assert guarded["extratrees"] == 4.5
+    assert guarded["xgb"] == 4.5
+    assert guarded["catboost"] == 4.3
+
+
+def test_predict_legacy_engine_clips_excessive_returns():
+    class DummyModel:
+        def predict(self, _rows):
+            return [100.0]
+
+    value = predict_legacy_engine(DummyModel(), {})
+    assert value == 20.0
+
 
 @pytest.mark.skipif(
     os.environ.get("PYMERCATOR_RUN_ENGINE_TESTS") != "1",

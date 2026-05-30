@@ -1,0 +1,56 @@
+﻿# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Environments
+.venv/
+venv/
+env/
+ENV/
+.conda/
+*.egg-info/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# CatBoost generated training logs
+catboost_info/
+
+# Logs / temp / handoff
+*.log
+logs/
+handoff/
+output/
+tmp/
+temp/
+*.zip
+*.7z
+*.rar
+
+# Generated market data
+data/prices/
+data/indices/
+data/sentiment/
+
+# Generated operational artifacts
+storage/scenario_runs/
+storage/cache/
+storage/baskets/
+storage/prediction/*.csv
+storage/prediction/*.json
+storage/features/*.csv
+
+# Keep placeholders if needed
+!storage/prediction/.gitkeep
+!storage/features/.gitkeep
+!storage/baskets/.gitkeep
