@@ -26,12 +26,7 @@ DEFAULT_PRESETS: dict[str, Any] = {
         "min_train_rows": 100,
         "n_jobs": 4,
         "engines": [
-            "rolling_majority",
-            "momentum_rule",
-            "xgb",
-            "catboost",
-            "extratrees",
-            "ridge_arbiter",
+            "ridge_ensemble",
         ],
         "autotune": False,
         "autotune_iter": 15,
@@ -46,7 +41,6 @@ DEFAULT_PRESETS: dict[str, Any] = {
         "skip_asset_fetch": True,
         "prediction_engines": [
             "rolling_majority",
-            "momentum_rule",
         ],
     },
     "lab": {
@@ -67,7 +61,6 @@ DEFAULT_PRESETS: dict[str, Any] = {
             "skip_asset_fetch": True,
             "prediction_engines": [
                 "rolling_majority",
-                "momentum_rule",
             ],
         },
         "lab": {

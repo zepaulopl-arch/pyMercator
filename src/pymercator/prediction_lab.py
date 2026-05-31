@@ -642,6 +642,7 @@ def walk_forward_evaluate(
     horizon: int = 5,
     min_train_rows: int = 100,
     engines: list[str] | None = None,
+    base_engines: list[str] | None = None,
     n_jobs: int = 4,
     autotune: bool = False,
     autotune_iter: int = 15,
@@ -655,6 +656,7 @@ def walk_forward_evaluate(
         horizon=horizon,
         min_train_rows=min_train_rows,
         engines=engines,
+        base_engines=base_engines,
         n_jobs=n_jobs,
         autotune=autotune,
         autotune_iter=autotune_iter,
@@ -669,6 +671,7 @@ def write_evaluation_report(
     horizon: int = 5,
     min_train_rows: int = 100,
     engines: list[str] | None = None,
+    base_engines: list[str] | None = None,
     n_jobs: int = 4,
     autotune: bool = False,
     autotune_iter: int = 15,
@@ -679,6 +682,7 @@ def write_evaluation_report(
         horizon=horizon,
         min_train_rows=min_train_rows,
         engines=engines,
+        base_engines=base_engines,
         n_jobs=n_jobs,
         autotune=autotune,
         autotune_iter=autotune_iter,
@@ -707,6 +711,7 @@ def run_prediction_lab(
     min_history: int = 20,
     min_train_rows: int = 100,
     engines: list[str] | None = None,
+    base_engines: list[str] | None = None,
     n_jobs: int = 4,
     autotune: bool = False,
     autotune_iter: int = 15,
@@ -726,6 +731,7 @@ def run_prediction_lab(
         horizon=horizon,
         min_train_rows=min_train_rows,
         engines=engines,
+        base_engines=base_engines,
         n_jobs=n_jobs,
         autotune=autotune,
         autotune_iter=autotune_iter,
@@ -734,7 +740,7 @@ def run_prediction_lab(
 
     models = evaluation_payload["models"]
     summary: dict[str, Any] = {
-        "status": "OK",
+        "status": evaluation_payload.get("status", "OK"),
         "engine_count": len(models),
         "best_accuracy_engine": None,
         "best_accuracy": None,
@@ -761,7 +767,7 @@ def run_prediction_lab(
         summary["best_mae"] = sorted_by_mae[0][1].get("mae_return", 0.0)
 
     return {
-        "status": "OK",
+        "status": evaluation_payload.get("status", "OK"),
         "dataset": {
             "file": dataset_payload["output"],
             "rows": dataset_payload["rows"],
@@ -770,6 +776,8 @@ def run_prediction_lab(
         },
         "evaluation": {
             "file": evaluation_payload["output"],
+            "status": evaluation_payload.get("status", "OK"),
+            "reason": evaluation_payload.get("reason", ""),
             "rows": evaluation_payload["rows"],
             "evaluated_rows": evaluation_payload["evaluated_rows"],
             "n_jobs": evaluation_payload.get("n_jobs", n_jobs),
@@ -778,6 +786,13 @@ def run_prediction_lab(
             "engine_used": evaluation_payload.get("engine_used", "-"),
             "is_baseline": evaluation_payload.get("is_baseline", False),
             "trained_models": evaluation_payload.get("trained_models", []),
+            "base_engines": evaluation_payload.get("base_engines", []),
+            "valid_base_engines": evaluation_payload.get("valid_base_engines", []),
+            "failed_engines": evaluation_payload.get("failed_engines", []),
+            "meta_model": evaluation_payload.get("meta_model", ""),
+            "base_metrics": evaluation_payload.get("base_metrics", {}),
+            "ensemble_metrics": evaluation_payload.get("ensemble_metrics", {}),
+            "ridge_coefficients": evaluation_payload.get("ridge_coefficients", {}),
             "autotune": evaluation_payload.get("autotune", {}),
             "models": evaluation_payload["models"],
         },

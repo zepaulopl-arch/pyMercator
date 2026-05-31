@@ -33,6 +33,26 @@ def _write_context(path: Path) -> None:
     )
 
 
+def _write_multi_horizon_evaluation(path: Path) -> None:
+    path.write_text(
+        json.dumps(
+            {
+                "engine_used": "multi_horizon_ridge",
+                "is_baseline": False,
+                "horizons": [5, 20, 60],
+                "horizon_observer": {
+                    "mode": "weighted",
+                    "scores": {"D5": 51.0, "D20": 58.0, "D60": 66.0},
+                    "combined_score": 59.85,
+                    "dominant_horizon": "D60",
+                    "behavior": "POSITIONAL_SETUP",
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
 def _fake_report(profile: str) -> DailyReport:
     asset = AssetSnapshot(
         ticker="PRIO3",
@@ -428,3 +448,56 @@ def test_cli_run_reuses_same_evaluation_across_profiles_for_basket(
 
     assert pipeline_profiles == ["CON", "AGR"]
     assert basket_evaluations == [str(evaluation), str(evaluation)]
+
+
+def test_cli_run_exposes_multi_horizon_prediction_observer(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+):
+    import pymercator.cli_run as run_mod
+
+    context = tmp_path / "context.json"
+    evaluation = tmp_path / "latest_evaluation.json"
+    _write_context(context)
+    _write_multi_horizon_evaluation(evaluation)
+
+    monkeypatch.setattr(
+        run_mod,
+        "run_daily_pipeline",
+        lambda **kwargs: _fake_report(kwargs["profile"]),
+    )
+
+    exit_code = main(
+        [
+            "run",
+            "--profile",
+            "CON",
+            "--universe",
+            "data/universes/ibov_sample.csv",
+            "--context",
+            str(context),
+            "--evaluation",
+            str(evaluation),
+            "--report-output",
+            str(tmp_path / "report.txt"),
+            "--json-output",
+            str(tmp_path / "report.json"),
+            "--run-dir",
+            str(tmp_path / "latest"),
+            "--json",
+        ]
+    )
+
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["prediction"]["engine_used"] == "multi_horizon_ridge"
+    assert payload["prediction"]["horizons"] == [5, 20, 60]
+    assert payload["prediction"]["d5_score"] == 51.0
+    assert payload["prediction"]["d20_score"] == 58.0
+    assert payload["prediction"]["d60_score"] == 66.0
+    assert payload["prediction"]["combined_score"] == 59.85
+    assert payload["prediction"]["dominant_horizon"] == "D60"
+    assert payload["prediction"]["behavior"] == "POSITIONAL_SETUP"
+    assert payload["top"][0]["dominant_horizon"] == "D60"
+    assert payload["top"][0]["behavior"] == "POSITIONAL_SETUP"

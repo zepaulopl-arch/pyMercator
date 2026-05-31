@@ -52,7 +52,7 @@ def test_predict_lab_command_creates_outputs(tmp_path: Path, capsys):
             "--min-train-rows",
             "10",
             "--engines",
-            "rolling_majority,momentum_rule",
+            "rolling_majority",
         ]
     )
 
@@ -254,7 +254,10 @@ def test_predict_lab_help_lists_valid_engines(capsys):
     assert "Prediction engines to run. Valid engines:" in help_text
     assert "rolling_majority" in help_text
     assert "extratrees" in help_text
-    assert "ridge_arbiter" in help_text
+    assert "randomforest" in help_text
+    assert "gradientboosting" in help_text
+    assert "ridge_ensemble" in help_text
+    assert "ridge_arbiter" not in help_text
     assert "Prediction horizon in trading days. Default: 5" in help_text
     assert "Parallel workers. Default: 4" in help_text
     assert "Minimum price history. Default: 20" in help_text

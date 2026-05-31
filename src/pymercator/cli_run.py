@@ -40,6 +40,69 @@ def _top_rows(report: DailyReport, limit: int = 5) -> list[dict[str, Any]]:
     return rows
 
 
+def _load_prediction_observer(path: str) -> dict[str, Any]:
+    source = Path(path)
+    if not source.exists():
+        return {}
+
+    try:
+        payload = json.loads(source.read_text(encoding="utf-8-sig"))
+    except Exception as exc:
+        return {"engine_used": "-", "error": str(exc), "source": path}
+    if not isinstance(payload, dict):
+        return {}
+
+    if payload.get("engine_used") != "multi_horizon_ridge":
+        return {
+            "engine_used": payload.get("engine_used", "-"),
+            "is_baseline": bool(payload.get("is_baseline", False)),
+        }
+
+    observer = payload.get("horizon_observer", {})
+    if not isinstance(observer, dict):
+        observer = {}
+
+    scores = observer.get("scores", {})
+    if not isinstance(scores, dict):
+        scores = {}
+
+    return {
+        "engine_used": "multi_horizon_ridge",
+        "is_baseline": False,
+        "horizons": payload.get("horizons", []),
+        "observer_mode": observer.get("mode", payload.get("observer", {}).get("mode", "-")),
+        "d5_score": scores.get("D5"),
+        "d20_score": scores.get("D20"),
+        "d60_score": scores.get("D60"),
+        "combined_score": observer.get("combined_score"),
+        "dominant_horizon": observer.get("dominant_horizon"),
+        "behavior": observer.get("behavior"),
+        "source": path,
+    }
+
+
+def _top_rows_with_prediction(
+    report: DailyReport,
+    limit: int,
+    prediction: dict[str, Any],
+) -> list[dict[str, Any]]:
+    rows = _top_rows(report, limit)
+    if not prediction or prediction.get("engine_used") != "multi_horizon_ridge":
+        return rows
+
+    prediction_fields = {
+        "d5_score": prediction.get("d5_score"),
+        "d20_score": prediction.get("d20_score"),
+        "d60_score": prediction.get("d60_score"),
+        "combined_score": prediction.get("combined_score"),
+        "dominant_horizon": prediction.get("dominant_horizon"),
+        "behavior": prediction.get("behavior"),
+    }
+    for row in rows:
+        row.update(prediction_fields)
+    return rows
+
+
 def _blocked_payload(
     *,
     profile: str,
@@ -127,6 +190,8 @@ def run_decision_flow(
             files=files,
             detail={"error": str(exc), "context": context},
         )
+
+    prediction_payload = _load_prediction_observer(evaluation)
 
     try:
         report = run_daily_pipeline(
@@ -217,13 +282,18 @@ def run_decision_flow(
             "regime": report.market_regime.regime.value,
             "context": context,
         },
+        "prediction": prediction_payload,
         "decision": {
             "actionable": ready,
             "watch": watch,
             "blocked": blocked,
             "rejected": 0,
         },
-        "top": _top_rows(report, min(5, max(1, limit))),
+        "top": _top_rows_with_prediction(
+            report,
+            min(5, max(1, limit)),
+            prediction_payload,
+        ),
         "files": files,
         "basket": basket_summary,
         "report": daily_report_to_dict(report),
@@ -244,6 +314,7 @@ def render_run_summary(payload: dict[str, Any]) -> str:
         return "\n".join(lines)
 
     market = payload["market"]
+    prediction = payload.get("prediction", {})
     decision = payload["decision"]
     files = payload["files"]
     lines.extend(
@@ -252,6 +323,13 @@ def render_run_summary(payload: dict[str, Any]) -> str:
             "MARKET:",
             f"- regime: {market['regime']}",
             f"- context: {market['context']}",
+            "",
+            "PREDICTION:",
+            f"- engine: {prediction.get('engine_used', '-')}",
+            f"- horizons: {prediction.get('horizons', [])}",
+            f"- combined_score: {prediction.get('combined_score', '-')}",
+            f"- dominant_horizon: {prediction.get('dominant_horizon', '-')}",
+            f"- behavior: {prediction.get('behavior', '-')}",
             "",
             "DECISION:",
             f"- actionable: {decision['actionable']}",
@@ -264,9 +342,12 @@ def render_run_summary(payload: dict[str, Any]) -> str:
     )
 
     for index, item in enumerate(payload.get("top", []), start=1):
+        observer_note = ""
+        if item.get("dominant_horizon") and item.get("behavior"):
+            observer_note = f" | {item['dominant_horizon']} {item['behavior']}"
         lines.append(
             f"{index}. {item['ticker']} | {item['decision']} | "
-            f"{item['score']} | {item['guard']}"
+            f"{item['score']} | {item['guard']}{observer_note}"
         )
 
     lines.extend(

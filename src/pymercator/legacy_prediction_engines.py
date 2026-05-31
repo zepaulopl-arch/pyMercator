@@ -6,13 +6,19 @@ import random
 from typing import Any
 
 try:
-    from sklearn.ensemble import ExtraTreesRegressor
+    from sklearn.ensemble import (
+        ExtraTreesRegressor,
+        GradientBoostingRegressor,
+        RandomForestRegressor,
+    )
     from sklearn.metrics import mean_absolute_error
     from sklearn.model_selection import TimeSeriesSplit
 
     SKLEARN_AVAILABLE = True
 except Exception:
     ExtraTreesRegressor = None
+    GradientBoostingRegressor = None
+    RandomForestRegressor = None
     TimeSeriesSplit = None
     mean_absolute_error = None
     SKLEARN_AVAILABLE = False
@@ -34,17 +40,16 @@ except Exception:
     CATBOOST_AVAILABLE = False
 
 
-BASELINE_ENGINES = ["rolling_majority", "momentum_rule"]
-LEGACY_BASE_ENGINES = ["xgb", "catboost", "extratrees"]
-ARBITER_ENGINES = ["ridge_arbiter"]
-DEFAULT_ENGINES = [
+BASELINE_ENGINES = ["rolling_majority"]
+LEGACY_BASE_ENGINES = ["extratrees", "randomforest", "gradientboosting"]
+ARBITER_ENGINES = ["ridge_ensemble"]
+VALID_PREDICTION_ENGINES = [
     *BASELINE_ENGINES,
     *LEGACY_BASE_ENGINES,
     *ARBITER_ENGINES,
 ]
-LEGACY_ENGINE_ALIASES = {
-    "xgboost": "xgb",
-}
+DEFAULT_ENGINES = ["ridge_ensemble"]
+LEGACY_ENGINE_ALIASES: dict[str, str] = {}
 
 LEGACY_RETURN_CLIP_LOWER: float = -20.0
 LEGACY_RETURN_CLIP_UPPER: float = 20.0
@@ -78,23 +83,35 @@ AUTOTUNE_SPACES: dict[str, dict[str, list[Any]]] = {
         "l2_leaf_reg": [1, 3, 5, 7, 9],
     },
     "extratrees": {
-        "n_estimators": [100, 180, 260, 360, 500],
+        "n_estimators": [24, 40, 60, 100],
         "max_depth": [3, 6, 10, 16, 25, None],
         "min_samples_leaf": [1, 2, 5, 10, 15],
         "max_features": ["sqrt", "log2", None],
+    },
+    "randomforest": {
+        "n_estimators": [24, 40, 60, 100],
+        "max_depth": [3, 6, 10, 16, None],
+        "min_samples_leaf": [1, 2, 5, 10],
+        "max_features": ["sqrt", "log2", None],
+    },
+    "gradientboosting": {
+        "n_estimators": [24, 40, 60, 100],
+        "max_depth": [2, 3, 4],
+        "learning_rate": [0.02, 0.05, 0.1],
+        "subsample": [0.7, 0.9, 1.0],
     },
 }
 
 
 def available_legacy_engines() -> list[str]:
-    return DEFAULT_ENGINES.copy()
+    return VALID_PREDICTION_ENGINES.copy()
 
 
 def parse_legacy_engines(engines: list[str] | None = None) -> list[str]:
     if not engines:
         return DEFAULT_ENGINES.copy()
 
-    allowed = set(DEFAULT_ENGINES)
+    allowed = set(VALID_PREDICTION_ENGINES)
     parsed: list[str] = []
     for engine in engines:
         raw = engine.strip().lower()
@@ -104,7 +121,7 @@ def parse_legacy_engines(engines: list[str] | None = None) -> list[str]:
     unknown = [engine for engine in parsed if engine not in allowed]
 
     if unknown:
-        valid = ", ".join([*LEGACY_BASE_ENGINES, *ARBITER_ENGINES])
+        valid = ", ".join(VALID_PREDICTION_ENGINES)
         baselines = ", ".join(BASELINE_ENGINES)
         raise ValueError(
             f"Unknown prediction engines: {', '.join(unknown)}\n"
@@ -191,6 +208,35 @@ def apply_consensus_guard(
     return guarded
 
 
+def _solve_linear_system(matrix: list[list[float]], vector: list[float]) -> list[float]:
+    size = len(vector)
+    augmented = [row.copy() + [vector[index]] for index, row in enumerate(matrix)]
+
+    for column in range(size):
+        pivot = max(range(column, size), key=lambda row: abs(augmented[row][column]))
+        if abs(augmented[pivot][column]) < 1e-12:
+            augmented[column][column] += 1e-8
+            pivot = column
+
+        if pivot != column:
+            augmented[column], augmented[pivot] = augmented[pivot], augmented[column]
+
+        divisor = augmented[column][column] or 1e-8
+        for item in range(column, size + 1):
+            augmented[column][item] /= divisor
+
+        for row in range(size):
+            if row == column:
+                continue
+            factor = augmented[row][column]
+            if factor == 0:
+                continue
+            for item in range(column, size + 1):
+                augmented[row][item] -= factor * augmented[column][item]
+
+    return [augmented[row][size] for row in range(size)]
+
+
 class StableRidgeArbiter:
     def __init__(self, alpha: float = 1.0):
         self.alpha = float(alpha)
@@ -203,20 +249,21 @@ class StableRidgeArbiter:
             self.weights = []
             return
 
-        try:
-            import numpy as np
-        except Exception:
-            self.intercept = sum(y_values) / len(y_values)
-            self.weights = []
-            return
+        width = len(x_rows[0]) + 1
+        matrix = [[0.0 for _column in range(width)] for _row in range(width)]
+        vector = [0.0 for _row in range(width)]
 
-        x = np.asarray([[1.0, *row] for row in x_rows], dtype=float)
-        y = np.asarray(y_values, dtype=float)
+        for row, target in zip(x_rows, y_values, strict=True):
+            values = [1.0, *[float(value) for value in row]]
+            for i in range(width):
+                vector[i] += values[i] * float(target)
+                for j in range(width):
+                    matrix[i][j] += values[i] * values[j]
 
-        identity = np.eye(x.shape[1])
-        identity[0, 0] = 0.0
+        for index in range(1, width):
+            matrix[index][index] += self.alpha
 
-        solution = np.linalg.pinv(x.T @ x + self.alpha * identity) @ x.T @ y
+        solution = _solve_linear_system(matrix, vector)
 
         self.intercept = float(solution[0])
         self.weights = [float(value) for value in solution[1:]]
@@ -254,10 +301,26 @@ def _engine_defaults(engine: str) -> dict[str, Any]:
 
     if engine == "extratrees":
         return {
-            "n_estimators": 260,
+            "n_estimators": 24,
             "max_depth": 10,
             "min_samples_leaf": 2,
             "max_features": None,
+        }
+
+    if engine == "randomforest":
+        return {
+            "n_estimators": 24,
+            "max_depth": 10,
+            "min_samples_leaf": 2,
+            "max_features": "sqrt",
+        }
+
+    if engine == "gradientboosting":
+        return {
+            "n_estimators": 24,
+            "max_depth": 3,
+            "learning_rate": 0.05,
+            "subsample": 0.9,
         }
 
     raise ValueError(f"Unknown legacy engine: {engine}")
@@ -299,6 +362,25 @@ def _make_model(
             **params,
             random_state=42,
             n_jobs=n_jobs,
+        )
+
+    if engine == "randomforest":
+        if not SKLEARN_AVAILABLE or RandomForestRegressor is None:
+            return None
+
+        return RandomForestRegressor(
+            **params,
+            random_state=42,
+            n_jobs=n_jobs,
+        )
+
+    if engine == "gradientboosting":
+        if not SKLEARN_AVAILABLE or GradientBoostingRegressor is None:
+            return None
+
+        return GradientBoostingRegressor(
+            **params,
+            random_state=42,
         )
 
     raise ValueError(f"Unknown legacy engine: {engine}")
@@ -453,7 +535,15 @@ def fit_legacy_engine(
             "status": "UNAVAILABLE",
         }
 
-    model.fit(x_train, y_train)
+    try:
+        model.fit(x_train, y_train)
+    except Exception as exc:
+        return None, {
+            "enabled": bool(autotune),
+            "params": params,
+            "status": "FAILED",
+            "error": str(exc),
+        }
 
     return model, {
         "enabled": bool(autotune),
@@ -562,6 +652,221 @@ def metric_report(
     }
 
 
+def _normalize_base_engines(base_engines: list[str] | None = None) -> list[str]:
+    if not base_engines:
+        return LEGACY_BASE_ENGINES.copy()
+
+    normalized: list[str] = []
+    for engine in base_engines:
+        name = str(engine).strip().lower()
+        if name in LEGACY_BASE_ENGINES and name not in normalized:
+            normalized.append(name)
+    return normalized
+
+
+def _zero_metrics() -> dict[str, Any]:
+    return {
+        "observations": 0,
+        "accuracy": 0.0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "mae_return": 0.0,
+        "target_up_rate": 0.0,
+        "predicted_up_rate": 0.0,
+        "mean_predicted_return": 0.0,
+        "true_positive": 0,
+        "true_negative": 0,
+        "false_positive": 0,
+        "false_negative": 0,
+    }
+
+
+def _temporal_train_test_split(
+    rows: list[dict[str, Any]],
+    *,
+    min_train_rows: int,
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    if len(rows) <= min_train_rows:
+        return rows, []
+
+    split_index = max(min_train_rows, int(len(rows) * 0.70))
+    split_index = min(split_index, len(rows) - 1)
+    return rows[:split_index], rows[split_index:]
+
+
+def _evaluate_ridge_ensemble_temporal(
+    *,
+    rows: list[dict[str, Any]],
+    selected: list[str],
+    dataset: str,
+    horizon: int,
+    min_train_rows: int,
+    base_engines: list[str],
+    n_jobs: int,
+    autotune: bool,
+    autotune_iter: int,
+    autotune_cv: int,
+) -> dict[str, Any]:
+    target_return_column = f"target_return_{horizon}d"
+    target_up_column = f"target_up_{horizon}d"
+    train_rows, test_rows = _temporal_train_test_split(rows, min_train_rows=min_train_rows)
+
+    engine_status: dict[str, str] = {}
+    tuned_params: dict[str, dict[str, Any]] = {}
+    base_models: dict[str, Any] = {}
+    base_failure: dict[str, str] = {}
+
+    for engine in base_engines:
+        model, tune_meta = fit_legacy_engine(
+            engine,
+            train_rows,
+            target_return_column,
+            n_jobs=n_jobs,
+            autotune=autotune,
+            autotune_iter=autotune_iter,
+            autotune_cv=autotune_cv,
+        )
+        base_models[engine] = model
+        engine_status[engine] = "OK" if model is not None else tune_meta["status"]
+        tuned_params[engine] = tune_meta
+        if model is None:
+            base_failure[engine] = str(
+                tune_meta.get("error") or tune_meta.get("status") or "failed"
+            )
+
+    valid_base_engines = [engine for engine in base_engines if base_models.get(engine) is not None]
+    failed_engines = [engine for engine in base_engines if engine not in valid_base_engines]
+
+    pred_ret: dict[str, list[float]] = {engine: [] for engine in base_engines}
+    pred_up: dict[str, list[int]] = {engine: [] for engine in base_engines}
+    pred_ret["ridge_ensemble"] = []
+    pred_up["ridge_ensemble"] = []
+    ridge_coefficients: dict[str, Any] = {"intercept": 0.0, "weights": {}}
+    reason = ""
+
+    if len(valid_base_engines) >= 2 and test_rows:
+        ridge_x: list[list[float]] = []
+        ridge_y: list[float] = []
+        for row in train_rows:
+            base_pred = {
+                engine: predict_legacy_engine(base_models[engine], row)
+                for engine in valid_base_engines
+            }
+            guarded = apply_consensus_guard(base_pred)
+            ridge_x.append([guarded.get(engine, 0.0) for engine in valid_base_engines])
+            ridge_y.append(_to_float(row.get(target_return_column)))
+
+        ridge = StableRidgeArbiter(alpha=1.0)
+        ridge.fit(ridge_x, ridge_y)
+        ridge_coefficients = {
+            "intercept": round(ridge.intercept, 8),
+            "weights": {
+                engine: round(weight, 8)
+                for engine, weight in zip(valid_base_engines, ridge.weights, strict=False)
+            },
+        }
+
+        for row in test_rows:
+            base_pred = {
+                engine: predict_legacy_engine(base_models[engine], row)
+                for engine in valid_base_engines
+            }
+            guarded = apply_consensus_guard(base_pred)
+            for engine in base_engines:
+                value = guarded.get(engine, 0.0)
+                pred_ret[engine].append(value)
+                pred_up[engine].append(1 if value > 0 else 0)
+
+            ridge_value = ridge.predict_one(
+                [guarded.get(engine, 0.0) for engine in valid_base_engines]
+            )
+            pred_ret["ridge_ensemble"].append(ridge_value)
+            pred_up["ridge_ensemble"].append(1 if ridge_value > 0 else 0)
+
+    if len(valid_base_engines) < 2:
+        status = "FAIL"
+        reason = "ridge_ensemble requires at least 2 base engines"
+    elif failed_engines:
+        status = "DEGRADED"
+    else:
+        status = "OK"
+
+    engine_status["ridge_ensemble"] = status
+    tuned_params["ridge_ensemble"] = {
+        "enabled": False,
+        "params": {"alpha": 1.0},
+        "base_engines": valid_base_engines,
+        "failed_engines": {
+            engine: base_failure.get(engine, "failed") for engine in failed_engines
+        },
+        "status": status,
+    }
+
+    base_metrics = {
+        engine: (
+            metric_report(
+                rows=test_rows,
+                predictions_up=pred_up[engine],
+                predictions_return=pred_ret[engine],
+                target_up_column=target_up_column,
+                target_return_column=target_return_column,
+            )
+            if engine in valid_base_engines
+            and test_rows
+            and len(pred_up[engine]) == len(test_rows)
+            else _zero_metrics()
+        )
+        for engine in base_engines
+    }
+    ensemble_metrics = (
+        metric_report(
+            rows=test_rows,
+            predictions_up=pred_up["ridge_ensemble"],
+            predictions_return=pred_ret["ridge_ensemble"],
+            target_up_column=target_up_column,
+            target_return_column=target_return_column,
+        )
+        if len(valid_base_engines) >= 2 and test_rows
+        else _zero_metrics()
+    )
+    models = {**base_metrics, "ridge_ensemble": ensemble_metrics}
+    trained_models = [
+        *valid_base_engines,
+        *(["ridge_ensemble"] if status in {"OK", "DEGRADED"} else []),
+    ]
+
+    return {
+        "status": status,
+        "reason": reason,
+        "dataset": dataset,
+        "horizon": horizon,
+        "min_train_rows": min_train_rows,
+        "n_jobs": n_jobs,
+        "autotune": {
+            "enabled": bool(autotune),
+            "n_iter": int(autotune_iter),
+            "cv": int(autotune_cv),
+            "scoring": "neg_mean_absolute_error",
+            "tuned_params": tuned_params,
+        },
+        "engines": selected,
+        "engine_status": engine_status,
+        "engine_used": "ridge_ensemble",
+        "is_baseline": False,
+        "trained_models": trained_models,
+        "base_engines": base_engines,
+        "valid_base_engines": valid_base_engines,
+        "failed_engines": failed_engines,
+        "meta_model": "ridge",
+        "base_metrics": base_metrics,
+        "ensemble_metrics": ensemble_metrics,
+        "ridge_coefficients": ridge_coefficients,
+        "rows": len(rows),
+        "evaluated_rows": len(test_rows),
+        "models": models,
+    }
+
+
 def evaluate_legacy_walk_forward(
     *,
     rows: list[dict[str, Any]],
@@ -569,28 +874,57 @@ def evaluate_legacy_walk_forward(
     horizon: int = 5,
     min_train_rows: int = 100,
     engines: list[str] | None = None,
+    base_engines: list[str] | None = None,
     n_jobs: int = 4,
     autotune: bool = False,
     autotune_iter: int = 15,
     autotune_cv: int = 3,
 ) -> dict[str, Any]:
     selected = parse_legacy_engines(engines)
+    uses_ridge_ensemble = "ridge_ensemble" in selected
+    base_engine_list = _normalize_base_engines(base_engines)
     rows = sorted(
         rows,
         key=lambda row: (str(row.get("date", "")), str(row.get("ticker", ""))),
     )
 
+    if uses_ridge_ensemble:
+        return _evaluate_ridge_ensemble_temporal(
+            rows=rows,
+            selected=selected,
+            dataset=dataset,
+            horizon=horizon,
+            min_train_rows=min_train_rows,
+            base_engines=base_engine_list,
+            n_jobs=n_jobs,
+            autotune=autotune,
+            autotune_iter=autotune_iter,
+            autotune_cv=autotune_cv,
+        )
+
     target_return_column = f"target_return_{horizon}d"
     target_up_column = f"target_up_{horizon}d"
 
     evaluation_rows: list[dict[str, Any]] = []
-    pred_up: dict[str, list[int]] = {engine: [] for engine in selected}
-    pred_ret: dict[str, list[float]] = {engine: [] for engine in selected}
+    tracked_engines = list(
+        dict.fromkeys(
+            [
+                *selected,
+                *(LEGACY_BASE_ENGINES if uses_ridge_ensemble else []),
+            ]
+        )
+    )
+    pred_up: dict[str, list[int]] = {engine: [] for engine in tracked_engines}
+    pred_ret: dict[str, list[float]] = {engine: [] for engine in tracked_engines}
     engine_status: dict[str, str] = {}
     tuned_params: dict[str, dict[str, Any]] = {}
+    base_success: set[str] = set()
+    base_failure: dict[str, str] = {}
+    final_ridge_coefficients: dict[str, Any] = {"intercept": 0.0, "weights": {}}
+    ensemble_reason = ""
 
     for engine in selected:
-        if engine in {"rolling_majority", "momentum_rule"}:
+        if engine in BASELINE_ENGINES:
             engine_status[engine] = "BASELINE"
 
     dates = sorted({str(row.get("date", "")) for row in rows if row.get("date")})
@@ -605,7 +939,7 @@ def evaluate_legacy_walk_forward(
         base_needed = [
             engine
             for engine in LEGACY_BASE_ENGINES
-            if engine in selected or "ridge_arbiter" in selected
+            if engine in selected or uses_ridge_ensemble
         ]
 
         base_models: dict[str, Any] = {}
@@ -623,33 +957,60 @@ def evaluate_legacy_walk_forward(
             base_models[engine] = model
             engine_status[engine] = "OK" if model is not None else tune_meta["status"]
             tuned_params[engine] = tune_meta
+            if model is not None:
+                base_success.add(engine)
+            else:
+                base_failure[engine] = str(
+                    tune_meta.get("error") or tune_meta.get("status") or "failed"
+                )
 
         ridge = StableRidgeArbiter(alpha=1.0)
+        ridge_base_engines = [
+            engine for engine in LEGACY_BASE_ENGINES if base_models.get(engine) is not None
+        ]
 
-        if "ridge_arbiter" in selected:
+        if uses_ridge_ensemble and len(ridge_base_engines) >= 2:
             ridge_x: list[list[float]] = []
             ridge_y: list[float] = []
 
             for train_row in train_rows:
                 base_pred = {
-                    engine: predict_legacy_engine(model, train_row)
-                    for engine, model in base_models.items()
-                    if model is not None
+                    engine: predict_legacy_engine(base_models[engine], train_row)
+                    for engine in ridge_base_engines
                 }
                 guarded = apply_consensus_guard(base_pred)
 
                 if guarded:
                     ridge_x.append(
-                        [guarded.get(engine, 0.0) for engine in LEGACY_BASE_ENGINES]
+                        [guarded.get(engine, 0.0) for engine in ridge_base_engines]
                     )
                     ridge_y.append(_to_float(train_row.get(target_return_column)))
 
             ridge.fit(ridge_x, ridge_y)
-            engine_status["ridge_arbiter"] = "OK" if ridge_x else "NO_BASE_ENGINES"
-            tuned_params["ridge_arbiter"] = {
+            final_ridge_coefficients = {
+                "intercept": round(ridge.intercept, 8),
+                "weights": {
+                    engine: round(weight, 8)
+                    for engine, weight in zip(
+                        ridge_base_engines,
+                        ridge.weights,
+                        strict=False,
+                    )
+                },
+            }
+            tuned_params["ridge_ensemble"] = {
                 "enabled": False,
                 "params": {"alpha": 1.0},
-                "status": engine_status["ridge_arbiter"],
+                "base_engines": ridge_base_engines,
+                "status": "OK",
+            }
+        elif uses_ridge_ensemble:
+            ensemble_reason = "ridge_ensemble requires at least 2 base engines"
+            tuned_params["ridge_ensemble"] = {
+                "enabled": False,
+                "params": {"alpha": 1.0},
+                "base_engines": ridge_base_engines,
+                "status": "FAIL",
             }
 
         majority = majority_prediction(train_rows, target_up_column)
@@ -661,11 +1022,6 @@ def evaluate_legacy_walk_forward(
                 pred_up["rolling_majority"].append(majority)
                 pred_ret["rolling_majority"].append(0.0)
 
-            if "momentum_rule" in selected:
-                up = momentum_rule_prediction(row)
-                pred_up["momentum_rule"].append(up)
-                pred_ret["momentum_rule"].append(0.01 if up else -0.01)
-
             base_pred = {
                 engine: predict_legacy_engine(model, row)
                 for engine, model in base_models.items()
@@ -674,18 +1030,46 @@ def evaluate_legacy_walk_forward(
             guarded = apply_consensus_guard(base_pred)
 
             for engine in LEGACY_BASE_ENGINES:
-                if engine in selected:
+                if engine in tracked_engines:
                     value = guarded.get(engine, 0.0)
                     pred_ret[engine].append(value)
                     pred_up[engine].append(1 if value > 0 else 0)
 
-            if "ridge_arbiter" in selected:
-                ridge_input = [
-                    guarded.get(engine, 0.0) for engine in LEGACY_BASE_ENGINES
-                ]
+            if uses_ridge_ensemble:
+                ridge_input = [guarded.get(engine, 0.0) for engine in ridge_base_engines]
                 value = ridge.predict_one(ridge_input)
-                pred_ret["ridge_arbiter"].append(value)
-                pred_up["ridge_arbiter"].append(1 if value > 0 else 0)
+                pred_ret["ridge_ensemble"].append(value)
+                pred_up["ridge_ensemble"].append(1 if value > 0 else 0)
+
+    valid_base_engines = [engine for engine in LEGACY_BASE_ENGINES if engine in base_success]
+    failed_engines = [
+        engine
+        for engine in LEGACY_BASE_ENGINES
+        if uses_ridge_ensemble and engine not in valid_base_engines
+    ]
+
+    if uses_ridge_ensemble:
+        if len(valid_base_engines) < 2:
+            engine_status["ridge_ensemble"] = "FAIL"
+            ensemble_reason = ensemble_reason or "ridge_ensemble requires at least 2 base engines"
+        elif failed_engines:
+            engine_status["ridge_ensemble"] = "DEGRADED"
+        else:
+            engine_status["ridge_ensemble"] = "OK"
+
+        tuned_params.setdefault(
+            "ridge_ensemble",
+            {
+                "enabled": False,
+                "params": {"alpha": 1.0},
+                "base_engines": valid_base_engines,
+                "status": engine_status["ridge_ensemble"],
+            },
+        )
+        tuned_params["ridge_ensemble"]["status"] = engine_status["ridge_ensemble"]
+        tuned_params["ridge_ensemble"]["failed_engines"] = {
+            engine: base_failure.get(engine, "failed") for engine in failed_engines
+        }
 
     models = {
         engine: metric_report(
@@ -695,22 +1079,43 @@ def evaluate_legacy_walk_forward(
             target_up_column=target_up_column,
             target_return_column=target_return_column,
         )
-        for engine in selected
+        for engine in tracked_engines
     }
     trained_models = [
         engine
-        for engine in selected
-        if engine in {*LEGACY_BASE_ENGINES, *ARBITER_ENGINES}
-        and engine_status.get(engine) == "OK"
+        for engine in tracked_engines
+        if (
+            engine in LEGACY_BASE_ENGINES
+            and engine_status.get(engine) == "OK"
+        )
+        or (
+            engine == "ridge_ensemble"
+            and engine_status.get(engine) in {"OK", "DEGRADED"}
+        )
     ]
     baseline_models = [engine for engine in selected if engine in BASELINE_ENGINES]
     engine_used = (
-        trained_models[0]
+        "ridge_ensemble"
+        if uses_ridge_ensemble
+        else (trained_models[0]
         if trained_models
         else (baseline_models[0] if baseline_models else "-")
+        )
     )
+    status = engine_status.get("ridge_ensemble", "OK") if uses_ridge_ensemble else "OK"
+    if selected == ["rolling_majority"]:
+        status = "BASELINE"
+
+    base_metrics = {
+        engine: models.get(engine, {})
+        for engine in LEGACY_BASE_ENGINES
+        if engine in models
+    }
+    ensemble_metrics = models.get("ridge_ensemble", {})
 
     return {
+        "status": status,
+        "reason": ensemble_reason,
         "dataset": dataset,
         "horizon": horizon,
         "min_train_rows": min_train_rows,
@@ -727,6 +1132,13 @@ def evaluate_legacy_walk_forward(
         "engine_used": engine_used,
         "is_baseline": engine_used in BASELINE_ENGINES,
         "trained_models": trained_models,
+        "base_engines": LEGACY_BASE_ENGINES.copy() if uses_ridge_ensemble else [],
+        "valid_base_engines": valid_base_engines if uses_ridge_ensemble else [],
+        "failed_engines": failed_engines if uses_ridge_ensemble else [],
+        "meta_model": "ridge" if uses_ridge_ensemble else "",
+        "base_metrics": base_metrics,
+        "ensemble_metrics": ensemble_metrics,
+        "ridge_coefficients": final_ridge_coefficients if uses_ridge_ensemble else {},
         "rows": len(rows),
         "evaluated_rows": len(evaluation_rows),
         "models": models,

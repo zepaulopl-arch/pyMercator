@@ -1,0 +1,31 @@
+{
+  "default_engine": "multi_horizon_ridge",
+  "horizons": [5, 20, 60],
+  "base_engines": ["extratrees", "randomforest", "gradientboosting"],
+  "meta_model": "ridge",
+  "observer": {
+    "mode": "weighted",
+    "weights": {
+      "D5": 0.25,
+      "D20": 0.35,
+      "D60": 0.4
+    },
+    "independent_analysis": true,
+    "combined_analysis": true
+  },
+  "training": {
+    "min_history": 120,
+    "min_train_rows": 100,
+    "n_jobs": 4,
+    "autotune": false,
+    "autotune_iter": 20,
+    "autotune_cv": 3,
+    "temporal_split": true,
+    "shuffle": false
+  },
+  "fallback": {
+    "allow_baseline": true,
+    "baseline_engine": "rolling_majority",
+    "baseline_requires_explicit_request": true
+  }
+}

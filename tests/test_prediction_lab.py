@@ -110,18 +110,17 @@ def test_walk_forward_evaluate_returns_baseline_metrics(tmp_path: Path):
         dataset=dataset,
         horizon=5,
         min_train_rows=10,
-        engines=["rolling_majority", "momentum_rule"],
+        engines=["rolling_majority"],
     )
 
     assert payload["rows"] > 0
     assert payload["evaluated_rows"] > 0
     assert "rolling_majority" in payload["models"]
-    assert "momentum_rule" in payload["models"]
     assert payload["engine_status"]["rolling_majority"] == "BASELINE"
-    assert payload["engine_status"]["momentum_rule"] == "BASELINE"
     assert payload["engine_used"] == "rolling_majority"
     assert payload["is_baseline"] is True
     assert payload["trained_models"] == []
+    assert payload["status"] == "BASELINE"
 
 
 def test_run_prediction_lab_creates_dataset_and_evaluation(tmp_path: Path):
@@ -142,26 +141,184 @@ def test_run_prediction_lab_creates_dataset_and_evaluation(tmp_path: Path):
         horizon=5,
         min_history=20,
         min_train_rows=10,
-        engines=["rolling_majority", "momentum_rule"],
+        engines=["rolling_majority"],
     )
 
-    assert payload["status"] == "OK"
+    assert payload["status"] == "BASELINE"
     assert dataset.exists()
     assert evaluation.exists()
     assert payload["evaluation"]["evaluated_rows"] > 0
     assert payload["evaluation"]["engine_used"] == "rolling_majority"
     assert payload["evaluation"]["is_baseline"] is True
-    assert payload["summary"]["status"] == "OK"
-    assert payload["summary"]["engine_count"] == 2
+    assert payload["summary"]["status"] == "BASELINE"
+    assert payload["summary"]["engine_count"] == 1
+
+
+def test_ridge_ensemble_trains_three_base_engines(
+    tmp_path: Path,
+    monkeypatch,
+):
+    import pymercator.legacy_prediction_engines as engines_mod
+
+    class DummyModel:
+        def __init__(self, value: float):
+            self.value = value
+
+        def fit(self, _x_rows, _y_values):
+            return None
+
+        def predict(self, x_rows):
+            return [self.value for _row in x_rows]
+
+    def fake_make_model(engine, _params, *, n_jobs=4):
+        values = {
+            "extratrees": 0.10,
+            "randomforest": 0.20,
+            "gradientboosting": 0.30,
+        }
+        return DummyModel(values[engine])
+
+    matrix = tmp_path / "matrix.csv"
+    prices_dir = tmp_path / "prices"
+    dataset = tmp_path / "dataset.csv"
+
+    prices_dir.mkdir()
+    _write_matrix(matrix)
+    _write_price_file(prices_dir / "PRIO3.SA.csv")
+    write_prediction_dataset(
+        matrix=matrix,
+        prices_dir=prices_dir,
+        output=dataset,
+        horizon=5,
+        min_history=20,
+    )
+    monkeypatch.setattr(engines_mod, "_make_model", fake_make_model)
+
+    payload = walk_forward_evaluate(
+        dataset=dataset,
+        horizon=5,
+        min_train_rows=10,
+        engines=["ridge_ensemble"],
+    )
+
+    assert payload["status"] == "OK"
+    assert payload["engine_used"] == "ridge_ensemble"
+    assert payload["is_baseline"] is False
+    assert payload["base_engines"] == ["extratrees", "randomforest", "gradientboosting"]
+    assert payload["valid_base_engines"] == ["extratrees", "randomforest", "gradientboosting"]
+    assert payload["failed_engines"] == []
+    assert payload["meta_model"] == "ridge"
+    assert set(payload["base_metrics"]) == {"extratrees", "randomforest", "gradientboosting"}
+    assert payload["ensemble_metrics"]["observations"] > 0
+    assert set(payload["ridge_coefficients"]["weights"]) == {
+        "extratrees",
+        "randomforest",
+        "gradientboosting",
+    }
+
+
+def test_ridge_ensemble_degrades_when_one_base_engine_fails(
+    tmp_path: Path,
+    monkeypatch,
+):
+    import pymercator.legacy_prediction_engines as engines_mod
+
+    class DummyModel:
+        def __init__(self, value: float):
+            self.value = value
+
+        def fit(self, _x_rows, _y_values):
+            return None
+
+        def predict(self, x_rows):
+            return [self.value for _row in x_rows]
+
+    def fake_make_model(engine, _params, *, n_jobs=4):
+        if engine == "gradientboosting":
+            return None
+        return DummyModel(0.10 if engine == "extratrees" else 0.20)
+
+    matrix = tmp_path / "matrix.csv"
+    prices_dir = tmp_path / "prices"
+    dataset = tmp_path / "dataset.csv"
+
+    prices_dir.mkdir()
+    _write_matrix(matrix)
+    _write_price_file(prices_dir / "PRIO3.SA.csv")
+    write_prediction_dataset(
+        matrix=matrix,
+        prices_dir=prices_dir,
+        output=dataset,
+        horizon=5,
+        min_history=20,
+    )
+    monkeypatch.setattr(engines_mod, "_make_model", fake_make_model)
+
+    payload = walk_forward_evaluate(
+        dataset=dataset,
+        horizon=5,
+        min_train_rows=10,
+        engines=["ridge_ensemble"],
+    )
+
+    assert payload["status"] == "DEGRADED"
+    assert payload["engine_status"]["ridge_ensemble"] == "DEGRADED"
+    assert payload["failed_engines"] == ["gradientboosting"]
+    assert payload["valid_base_engines"] == ["extratrees", "randomforest"]
+
+
+def test_ridge_ensemble_fails_with_only_one_base_engine(
+    tmp_path: Path,
+    monkeypatch,
+):
+    import pymercator.legacy_prediction_engines as engines_mod
+
+    class DummyModel:
+        def fit(self, _x_rows, _y_values):
+            return None
+
+        def predict(self, x_rows):
+            return [0.10 for _row in x_rows]
+
+    def fake_make_model(engine, _params, *, n_jobs=4):
+        return DummyModel() if engine == "extratrees" else None
+
+    matrix = tmp_path / "matrix.csv"
+    prices_dir = tmp_path / "prices"
+    dataset = tmp_path / "dataset.csv"
+
+    prices_dir.mkdir()
+    _write_matrix(matrix)
+    _write_price_file(prices_dir / "PRIO3.SA.csv")
+    write_prediction_dataset(
+        matrix=matrix,
+        prices_dir=prices_dir,
+        output=dataset,
+        horizon=5,
+        min_history=20,
+    )
+    monkeypatch.setattr(engines_mod, "_make_model", fake_make_model)
+
+    payload = walk_forward_evaluate(
+        dataset=dataset,
+        horizon=5,
+        min_train_rows=10,
+        engines=["ridge_ensemble"],
+    )
+
+    assert payload["status"] == "FAIL"
+    assert payload["engine_status"]["ridge_ensemble"] == "FAIL"
+    assert payload["reason"] == "ridge_ensemble requires at least 2 base engines"
+    assert payload["valid_base_engines"] == ["extratrees"]
 
 
 def test_apply_consensus_guard_replaces_outlier_values():
-    predictions = {"xgb": 4.5, "catboost": 4.3, "extratrees": 10.0}
+    predictions = {"extratrees": 10.0, "randomforest": 4.5, "gradientboosting": 4.3}
     guarded = apply_consensus_guard(predictions)
 
     assert guarded["extratrees"] == 4.5
-    assert guarded["xgb"] == 4.5
-    assert guarded["catboost"] == 4.3
+    assert guarded["randomforest"] == 4.5
+    assert guarded["gradientboosting"] == 4.3
 
 
 def test_predict_legacy_engine_clips_excessive_returns():
@@ -201,8 +358,8 @@ def test_walk_forward_evaluate_runs_all_engines(tmp_path: Path):
     )
 
     assert payload["evaluated_rows"] > 0
-    assert "rolling_majority" in payload["models"]
-    assert "momentum_rule" in payload["models"]
+    assert payload["engine_used"] == "ridge_ensemble"
+    assert "ridge_ensemble" in payload["models"]
 
 
 
@@ -211,10 +368,11 @@ def test_available_engines_exposes_legacy_engines():
 
     engines = available_engines()
 
-    assert "xgb" in engines
-    assert "catboost" in engines
+    assert "rolling_majority" in engines
     assert "extratrees" in engines
-    assert "ridge_arbiter" in engines
+    assert "randomforest" in engines
+    assert "gradientboosting" in engines
+    assert "ridge_ensemble" in engines
     assert "sklearn" not in engines
 
 

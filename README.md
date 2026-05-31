@@ -38,11 +38,18 @@ python -m pymercator daily `
 
 ```powershell
 python -m pymercator update --list IBOV
-python -m pymercator train --engines extratrees
+python -m pymercator train
 python -m pymercator run --profile CON --basket
 ```
 
 Os comandos internos continuam disponiveis para diagnostico e operacoes pontuais.
 O treino e baseado no dataset e nao depende de perfil operacional.
 Perfis como `CON` e `AGR` sao aplicados no `run`, junto com politica, risco, filtros e execucao.
-Bibliotecas instaladas aparecem no `diag`; engines validas aparecem no help do `predict lab`.
+Por default, `train` executa o ensemble multi-horizonte parametrizado em
+`config/prediction.json`: D5, D20 e D60; base engines `extratrees`,
+`randomforest` e `gradientboosting`; meta-modelo `ridge`; observador ponderado.
+O arquivo `storage/prediction/latest_evaluation.json` aponta para a avaliacao
+final `multi_horizon_ridge`.
+
+Bibliotecas instaladas aparecem no `diag`; engines validas aparecem no help do
+`predict lab` e as engines/base engines do treino aparecem no help do `train`.

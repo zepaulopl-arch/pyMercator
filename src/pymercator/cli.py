@@ -14,6 +14,12 @@ DEFAULT_PREDICTION_HORIZON = 5
 DEFAULT_PREDICTION_MIN_HISTORY = 20
 DEFAULT_PREDICTION_MIN_TRAIN_ROWS = 100
 DEFAULT_PREDICTION_N_JOBS = 4
+DEFAULT_TRAIN_HORIZONS = "5,20,60"
+DEFAULT_TRAIN_MIN_HISTORY = 120
+DEFAULT_TRAIN_MIN_TRAIN_ROWS = 100
+DEFAULT_TRAIN_N_JOBS = 4
+DEFAULT_TRAIN_AUTOTUNE_ITER = 20
+DEFAULT_TRAIN_AUTOTUNE_CV = 3
 
 
 def _run_sentiment_command(args: argparse.Namespace) -> int:
@@ -93,18 +99,14 @@ def _parse_csv_arg(value: str) -> list[str]:
 def _prediction_engines_help() -> str:
     try:
         from pymercator.legacy_prediction_engines import (
-            ARBITER_ENGINES,
-            BASELINE_ENGINES,
-            LEGACY_BASE_ENGINES,
+            VALID_PREDICTION_ENGINES,
         )
 
-        valid = ", ".join([*LEGACY_BASE_ENGINES, *ARBITER_ENGINES])
-        baselines = ", ".join(BASELINE_ENGINES)
+        valid = ", ".join(VALID_PREDICTION_ENGINES)
     except Exception:
-        valid = "xgb, catboost, extratrees, ridge_arbiter"
-        baselines = "rolling_majority, momentum_rule"
+        valid = "rolling_majority, extratrees, randomforest, gradientboosting, ridge_ensemble"
 
-    return f"Prediction engines to run. Valid engines: {valid}. Baselines: {baselines}"
+    return f"Prediction engines to run. Valid engines: {valid}"
 
 
 def _run_short_lab_command(args: argparse.Namespace) -> int:
@@ -262,6 +264,12 @@ def _run_short_diag_command(args: argparse.Namespace) -> int:
         SKLEARN_AVAILABLE,
         XGBOOST_AVAILABLE,
     )
+    from pymercator.prediction_config import effective_prediction_config, horizon_key
+
+    prediction_config = effective_prediction_config(path="config/prediction.json")
+    observer = prediction_config.get("observer", {})
+    training = prediction_config.get("training", {})
+    weights = observer.get("weights", {})
 
     print("PYMERCATOR DIAG")
     print(ui.line(profile.get("ui", {}).get("width", 120)))
@@ -269,21 +277,37 @@ def _run_short_diag_command(args: argparse.Namespace) -> int:
     print(ui.kv("FEATURE MATRIX", paths.get("feature_matrix")))
     print(ui.kv("PREDICTION EVAL", paths.get("prediction_evaluation")))
     print("")
+    print("PREDICTION CONFIG:")
+    print("- config: config/prediction.json")
+    print(f"- default_engine: {prediction_config.get('default_engine', '-')}")
+    print(
+        "- horizons: "
+        f"{','.join(horizon_key(item) for item in prediction_config.get('horizons', []))}"
+    )
+    print(f"- base_engines: {','.join(prediction_config.get('base_engines', []))}")
+    print(f"- meta_model: {prediction_config.get('meta_model', '-')}")
+    print(f"- observer_mode: {observer.get('mode', '-')}")
+    print(
+        "- weights: "
+        + ", ".join(f"{key}={value}" for key, value in sorted(weights.items()))
+    )
+    print(f"- autotune: {str(bool(training.get('autotune', False))).lower()}")
+    print(f"- n_jobs: {training.get('n_jobs', '-')}")
+    print("")
     print("LIBRARIES:")
     print(f"- sklearn available: {bool(SKLEARN_AVAILABLE)}")
     print(f"- xgboost available: {bool(XGBOOST_AVAILABLE)}")
     print(f"- catboost available: {bool(CATBOOST_AVAILABLE)}")
     print("")
     print("PREDICTION ENGINES:")
-    print(f"- xgb: {'available' if XGBOOST_AVAILABLE else 'unavailable'}")
-    print(f"- catboost: {'available' if CATBOOST_AVAILABLE else 'unavailable'}")
-    extratrees_status = "available" if SKLEARN_AVAILABLE else "unavailable"
-    print(f"- extratrees: {extratrees_status}")
-    print("- ridge_arbiter: available")
-    print("")
-    print("BASELINES:")
-    print("- rolling_majority: available")
-    print("- momentum_rule: available")
+    sklearn_engine_status = "available" if SKLEARN_AVAILABLE else "unavailable"
+    print("- rolling_majority: available baseline")
+    print(f"- extratrees: {sklearn_engine_status}")
+    print(f"- randomforest: {sklearn_engine_status}")
+    print(f"- gradientboosting: {sklearn_engine_status}")
+    print(f"- ridge: {sklearn_engine_status}")
+    print(f"- ridge_ensemble: {sklearn_engine_status} per-horizon")
+    print(f"- multi_horizon_ridge: {sklearn_engine_status} default")
 
     return 0
 
@@ -366,6 +390,22 @@ def _pack_top_from_summary(summary: dict[str, Any]) -> dict[str, Any]:
 
 def build_parser() -> argparse.ArgumentParser:
         engines_help = _prediction_engines_help()
+        train_horizons_help = (
+            f"Prediction horizons in trading days. Default: {DEFAULT_TRAIN_HORIZONS}"
+        )
+        train_engines_help = (
+            "Base engines for multi_horizon_ridge. Valid: extratrees, "
+            "randomforest, gradientboosting. Baseline: rolling_majority"
+        )
+        train_n_jobs_help = f"Parallel workers. Default: {DEFAULT_TRAIN_N_JOBS}"
+        train_min_history_help = (
+            f"Minimum price history. Default: {DEFAULT_TRAIN_MIN_HISTORY}"
+        )
+        train_min_train_rows_help = (
+            f"Minimum training rows. Default: {DEFAULT_TRAIN_MIN_TRAIN_ROWS}"
+        )
+        train_autotune_iter_help = f"Autotune iterations. Default: {DEFAULT_TRAIN_AUTOTUNE_ITER}"
+        train_autotune_cv_help = f"Autotune CV folds. Default: {DEFAULT_TRAIN_AUTOTUNE_CV}"
         horizon_help = (
             f"Prediction horizon in trading days. Default: {DEFAULT_PREDICTION_HORIZON}"
         )
@@ -406,16 +446,26 @@ def build_parser() -> argparse.ArgumentParser:
 
         train_parser = subparsers.add_parser(
             "train",
-            help="Train/evaluate prediction model. Profile-independent.",
-            description="Train/evaluate prediction model. Profile-independent.",
+            help="Train multi-horizon prediction ensemble. Profile-independent.",
+            description="Train multi-horizon prediction ensemble. Profile-independent.",
         )
         train_parser.set_defaults(command="train")
         train_parser.add_argument("--profile", default="", help=argparse.SUPPRESS)
         train_parser.add_argument(
+            "--config",
+            default="config/prediction.json",
+            help="Prediction config file. Default: config/prediction.json",
+        )
+        train_parser.add_argument(
+            "--horizons",
+            default="",
+            help=train_horizons_help,
+        )
+        train_parser.add_argument(
             "--horizon",
             type=int,
-            default=DEFAULT_PREDICTION_HORIZON,
-            help=horizon_help,
+            default=None,
+            help=argparse.SUPPRESS,
         )
         train_parser.add_argument("--matrix", default="storage/features/latest_feature_matrix.csv")
         train_parser.add_argument("--prices-dir", default="data/prices")
@@ -430,23 +480,48 @@ def build_parser() -> argparse.ArgumentParser:
         train_parser.add_argument(
             "--min-history",
             type=int,
-            default=DEFAULT_PREDICTION_MIN_HISTORY,
-            help=min_history_help,
+            default=None,
+            help=train_min_history_help,
         )
         train_parser.add_argument(
             "--min-train-rows",
             type=int,
-            default=DEFAULT_PREDICTION_MIN_TRAIN_ROWS,
-            help=min_train_rows_help,
+            default=None,
+            help=train_min_train_rows_help,
         )
-        train_parser.add_argument("--engines", default="", help=engines_help)
+        train_parser.add_argument("--engines", default="", help=train_engines_help)
+        train_parser.add_argument("--meta", default="", help="Meta model. Default: ridge")
+        train_parser.add_argument(
+            "--observer",
+            default="",
+            help="Horizon observer mode. Default: weighted",
+        )
+        train_parser.add_argument(
+            "--weights",
+            default="",
+            help="Horizon weights, e.g. D5=0.25,D20=0.35,D60=0.4",
+        )
+        train_parser.add_argument("--independent-horizons", action="store_true")
+        train_parser.add_argument("--combined-horizons", action="store_true")
         train_parser.add_argument(
             "--n-jobs",
             type=int,
-            default=DEFAULT_PREDICTION_N_JOBS,
-            help=n_jobs_help,
+            default=None,
+            help=train_n_jobs_help,
         )
-        train_parser.add_argument("--autotune", action="store_true")
+        train_parser.add_argument("--autotune", action="store_true", default=None)
+        train_parser.add_argument(
+            "--autotune-iter",
+            type=int,
+            default=None,
+            help=train_autotune_iter_help,
+        )
+        train_parser.add_argument(
+            "--autotune-cv",
+            type=int,
+            default=None,
+            help=train_autotune_cv_help,
+        )
         train_parser.add_argument("--json", action="store_true")
 
         run_parser = subparsers.add_parser(
