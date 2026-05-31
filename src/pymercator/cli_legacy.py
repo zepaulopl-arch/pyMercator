@@ -3,12 +3,12 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from pymercator.features_catalog import migrate_legacy_features_catalog
 from pymercator.legacy_classification import write_legacy_classification
 from pymercator.legacy_indices import migrate_legacy_indices_catalog
 from pymercator.legacy_inventory import write_legacy_inventory
 from pymercator.legacy_universe import write_legacy_universe_ticker_list
 from pymercator.sentiment_store import migrate_legacy_sentiment
-from pymercator.features_catalog import migrate_legacy_features_catalog
 
 
 def run_legacy_command(args: Any) -> int:

@@ -112,7 +112,7 @@ def _run_short_lab_command(args: argparse.Namespace) -> int:
     if getattr(args, "fast", False):
         engines = fast_profile.get("prediction", {}).get("engines", engines)
 
-    from pymercator.prediction_lab import run_prediction_lab, render_prediction_lab_summary
+    from pymercator.prediction_lab import render_prediction_lab_summary, run_prediction_lab
 
     horizon = int(getattr(args, "horizon", 0) or 0)
     if horizon <= 0:
@@ -543,7 +543,7 @@ def build_parser() -> argparse.ArgumentParser:
         daily_parser = subparsers.add_parser("daily", help="Run daily report")
         daily_parser.set_defaults(command="daily")
         daily_parser.add_argument("--universe", required=True)
-        daily_parser.add_argument("--universe-name", default="")
+        daily_parser.add_argument("--universe-name", default="IBOV")
         daily_parser.add_argument("--profile", default="")
         daily_parser.add_argument("--headline-risk", default="OFF")
         daily_parser.add_argument("--policy", default="config/policy.json")
@@ -850,7 +850,7 @@ def build_parser() -> argparse.ArgumentParser:
         )
         legacy_migrate_sentiment_parser.set_defaults(legacy_command="migrate-sentiment")
         legacy_migrate_sentiment_parser.add_argument("--legacy-path", required=True)
-        legacy_migrate_sentiment_parser.add_argument("--source-dir", required=True)
+        legacy_migrate_sentiment_parser.add_argument("--source-dir", default="data/sentiment")
         legacy_migrate_sentiment_parser.add_argument("--output", required=True)
         legacy_migrate_features_parser = legacy_subparsers.add_parser(
             "migrate-features",
@@ -865,7 +865,10 @@ def build_parser() -> argparse.ArgumentParser:
         )
         legacy_migrate_indices_parser.set_defaults(legacy_command="migrate-indices")
         legacy_migrate_indices_parser.add_argument("--legacy-path", required=True)
-        legacy_migrate_indices_parser.add_argument("--catalog-file", required=True)
+        legacy_migrate_indices_parser.add_argument(
+            "--catalog-file",
+            default="config/indices/catalog.yaml",
+        )
         legacy_migrate_indices_parser.add_argument("--output", required=True)
         legacy_migrate_universe_parser = legacy_subparsers.add_parser(
             "migrate-universe",
@@ -873,8 +876,14 @@ def build_parser() -> argparse.ArgumentParser:
         )
         legacy_migrate_universe_parser.set_defaults(legacy_command="migrate-universe")
         legacy_migrate_universe_parser.add_argument("--legacy-path", required=True)
-        legacy_migrate_universe_parser.add_argument("--assets-file", required=True)
-        legacy_migrate_universe_parser.add_argument("--universe-file", required=True)
+        legacy_migrate_universe_parser.add_argument(
+            "--assets-file",
+            default="config/assets/ibov_assets.yaml",
+        )
+        legacy_migrate_universe_parser.add_argument(
+            "--universe-file",
+            default="config/universes/ibov.yaml",
+        )
         legacy_migrate_universe_parser.add_argument("--output", required=True)
         legacy_scan_parser = legacy_subparsers.add_parser("scan", help="Scan legacy inventory")
         legacy_scan_parser.set_defaults(legacy_command="scan")
@@ -956,7 +965,7 @@ def build_parser() -> argparse.ArgumentParser:
         )
         universe_diagnose_parser.set_defaults(universe_command="diagnose")
         universe_diagnose_parser.add_argument("--file", required=True)
-        universe_diagnose_parser.add_argument("--policy", required=True)
+        universe_diagnose_parser.add_argument("--policy", default="config/policy.json")
 
         return parser
 

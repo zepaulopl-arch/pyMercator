@@ -1,9 +1,9 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import Any
 
-from pathlib import Path
 from pymercator.data.prices_csv import check_prices_dir
 from pymercator.data.prices_yahoo import (
     fetch_yahoo_prices_from_ticker_file,

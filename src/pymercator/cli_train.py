@@ -10,8 +10,8 @@ from pymercator.legacy_prediction_engines import (
     SKLEARN_AVAILABLE,
     XGBOOST_AVAILABLE,
 )
-from pymercator.prediction_lab import run_prediction_lab
 from pymercator.policy import normalize_profile
+from pymercator.prediction_lab import run_prediction_lab
 
 ENGINE_ALIASES = {
     "xgboost": "xgb",

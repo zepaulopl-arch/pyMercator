@@ -1,5 +1,5 @@
-﻿from datetime import date, timedelta
-import json
+﻿import json
+from datetime import date, timedelta
 from pathlib import Path
 
 import pytest
@@ -51,6 +51,8 @@ def test_predict_lab_command_creates_outputs(tmp_path: Path, capsys):
             str(evaluation),
             "--min-train-rows",
             "10",
+            "--engines",
+            "rolling_majority,momentum_rule",
         ]
     )
 
