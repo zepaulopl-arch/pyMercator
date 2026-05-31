@@ -436,7 +436,7 @@ def build_parser() -> argparse.ArgumentParser:
         update_parser = subparsers.add_parser("update", help="Update operational data")
         update_parser.set_defaults(command="update")
         update_parser.add_argument("--list", default="IBOV")
-        update_parser.add_argument("--start", default="1900-01-01")
+        update_parser.add_argument("--start", default="2000-01-01")
         update_parser.add_argument("--end", default="")
         update_parser.add_argument("--no-cache", action="store_true")
         update_parser.add_argument("--tickers-file", default="")
@@ -763,7 +763,7 @@ def build_parser() -> argparse.ArgumentParser:
         daily_auto_parser.set_defaults(command="daily-auto")
         daily_auto_parser.add_argument("--execution-policy", default="config/execution_policy.json")
         daily_auto_parser.add_argument("--indices-catalog", default="config/indices_catalog.json")
-        daily_auto_parser.add_argument("--indices-start", default="1900-01-01")
+        daily_auto_parser.add_argument("--indices-start", default="2000-01-01")
         daily_auto_parser.add_argument("--indices-dir", default="data/indices")
         daily_auto_parser.add_argument(
             "--context-output",
@@ -792,7 +792,7 @@ def build_parser() -> argparse.ArgumentParser:
         daily_auto_parser.add_argument("--prediction-autotune-cv", type=int, default=3)
         daily_auto_parser.add_argument("--tickers-file", default="data/universes/ibov_tickers.csv")
         daily_auto_parser.add_argument("--sentiment-dir", default="data/sentiment")
-        daily_auto_parser.add_argument("--prices-start", default="1900-01-01")
+        daily_auto_parser.add_argument("--prices-start", default="2000-01-01")
         daily_auto_parser.add_argument("--prices-dir", default="data/prices")
         daily_auto_parser.add_argument("--universe-output", default="data/universes/ibov_live.csv")
         daily_auto_parser.add_argument("--run-dir", default="storage/scenario_runs")

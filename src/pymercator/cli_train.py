@@ -334,6 +334,148 @@ def _observer_summary(
     }
 
 
+def _weighted_metric(
+    *,
+    horizon_models: dict[str, Any],
+    weights: dict[str, float],
+    metric: str,
+) -> float:
+    values: list[tuple[float, float]] = []
+    for key, model in horizon_models.items():
+        metrics = model.get("ensemble_metrics", {})
+        if not isinstance(metrics, dict):
+            continue
+        if metric not in metrics:
+            continue
+        values.append((float(metrics.get(metric, 0.0) or 0.0), weights.get(key, 0.0)))
+
+    if not values:
+        return 0.0
+
+    total_weight = sum(weight for _value, weight in values) or float(len(values))
+    return round(sum(value * (weight or 1.0) for value, weight in values) / total_weight, 6)
+
+
+def _model_quality(
+    *,
+    horizon_models: dict[str, Any],
+    observer: dict[str, Any],
+) -> dict[str, Any]:
+    weights = {
+        str(key).upper(): float(value)
+        for key, value in observer.get("weights", {}).items()
+    }
+    baseline_accuracy = 0.5
+    ensemble_accuracy = _weighted_metric(
+        horizon_models=horizon_models,
+        weights=weights,
+        metric="accuracy",
+    )
+    precision = _weighted_metric(
+        horizon_models=horizon_models,
+        weights=weights,
+        metric="precision",
+    )
+    recall = _weighted_metric(
+        horizon_models=horizon_models,
+        weights=weights,
+        metric="recall",
+    )
+
+    false_positive_rates: list[tuple[float, float]] = []
+    for key, model in horizon_models.items():
+        metrics = model.get("ensemble_metrics", {})
+        if not isinstance(metrics, dict):
+            continue
+        false_positive = float(metrics.get("false_positive", 0.0) or 0.0)
+        true_negative = float(metrics.get("true_negative", 0.0) or 0.0)
+        denominator = false_positive + true_negative
+        if denominator <= 0:
+            continue
+        false_positive_rates.append((false_positive / denominator, weights.get(key, 0.0)))
+
+    if false_positive_rates:
+        total_weight = sum(weight for _value, weight in false_positive_rates) or float(
+            len(false_positive_rates)
+        )
+        false_positive_rate = round(
+            sum(value * (weight or 1.0) for value, weight in false_positive_rates)
+            / total_weight,
+            6,
+        )
+    else:
+        false_positive_rate = 0.0
+
+    edge = round(ensemble_accuracy - baseline_accuracy, 6)
+    if ensemble_accuracy >= 0.58 and edge >= 0.08 and precision >= 0.55:
+        status = "STRONG"
+    elif ensemble_accuracy >= 0.52 and edge >= 0.02:
+        status = "OK"
+    else:
+        status = "WEAK"
+
+    return {
+        "baseline_accuracy": baseline_accuracy,
+        "ensemble_accuracy": ensemble_accuracy,
+        "edge": edge,
+        "precision": precision,
+        "recall": recall,
+        "false_positive_rate": false_positive_rate,
+        "status": status,
+    }
+
+
+def _price_row_counts_by_asset(prices_dir: str | Path) -> dict[str, int]:
+    root = Path(prices_dir)
+    if not root.exists():
+        return {}
+
+    return {
+        _price_file_ticker(path): _csv_row_count(path)
+        for path in root.glob("*.csv")
+    }
+
+
+def _dropped_assets_by_horizon(
+    *,
+    universe: str,
+    matrix: str,
+    prices_dir: str,
+    min_history: int,
+    selected_horizons: list[int],
+    dataset_assets_by_horizon: dict[str, set[str]],
+) -> dict[str, list[dict[str, Any]]]:
+    universe_assets = _csv_asset_set(universe)
+    matrix_assets = _csv_asset_set(matrix)
+    price_rows = _price_row_counts_by_asset(prices_dir)
+    expected_assets = universe_assets or matrix_assets
+    dropped: dict[str, list[dict[str, Any]]] = {}
+
+    for horizon in selected_horizons:
+        key = horizon_key(horizon)
+        present = dataset_assets_by_horizon.get(key, set())
+        items: list[dict[str, Any]] = []
+        for ticker in sorted(expected_assets - present):
+            rows = int(price_rows.get(ticker, 0))
+            if ticker not in matrix_assets:
+                reason = "missing from feature matrix"
+            elif rows == 0:
+                reason = "missing price file"
+            elif rows < min_history:
+                reason = f"insufficient price history: rows={rows}, required={min_history}"
+            elif rows < min_history + horizon + 1:
+                reason = (
+                    f"insufficient history for {key}: "
+                    f"rows={rows}, required={min_history + horizon + 1}"
+                )
+            else:
+                reason = "no target rows generated"
+            items.append({"ticker": ticker, "reason": reason, "price_rows": rows})
+        dropped[key] = items
+
+    return dropped
+
+
 def _multi_horizon_status(horizon_models: dict[str, Any]) -> tuple[str, str]:
     statuses = [str(model.get("status", "FAIL")) for model in horizon_models.values()]
     valid_count = sum(1 for status in statuses if status in {"OK", "DEGRADED"})
@@ -760,6 +902,18 @@ def run_train_flow(
         horizon_models=horizon_models,
         observer_config=config.get("observer", {}),
     )
+    model_quality = _model_quality(
+        horizon_models=horizon_models,
+        observer=observer,
+    )
+    dropped_assets_by_horizon = _dropped_assets_by_horizon(
+        universe=universe,
+        matrix=matrix,
+        prices_dir=prices_dir,
+        min_history=selected_min_history,
+        selected_horizons=selected_horizons,
+        dataset_assets_by_horizon=dataset_assets_by_horizon,
+    )
     diagnostic = _build_training_diagnostic(
         universe=universe,
         matrix=matrix,
@@ -853,6 +1007,8 @@ def run_train_flow(
         "horizon_observer": observer,
         "row_count_by_horizon": row_count_by_horizon,
         "asset_count_by_horizon": asset_count_by_horizon,
+        "dropped_assets_by_horizon": dropped_assets_by_horizon,
+        "model_quality": model_quality,
         "diagnostic": diagnostic,
         "autotune": autotune_payload,
         "rows": total_rows,
@@ -862,6 +1018,7 @@ def run_train_flow(
             "combined_score": observer.get("combined_score", 0.0),
             "dominant_horizon": observer.get("dominant_horizon", "-"),
             "behavior": observer.get("behavior", "AVOID"),
+            "model_quality_status": model_quality.get("status", "WEAK"),
         },
         **availability,
     }
@@ -899,6 +1056,8 @@ def run_train_flow(
                 "output": str(output_root),
             },
             "diagnostic": diagnostic,
+            "model_quality": model_quality,
+            "dropped_assets_by_horizon": dropped_assets_by_horizon,
             "evaluation": {
                 "engine_used": "multi_horizon_ridge",
                 "status": status,
@@ -954,6 +1113,8 @@ def run_train_flow(
             "output": str(output_root),
         },
         "diagnostic": diagnostic,
+        "model_quality": model_quality,
+        "dropped_assets_by_horizon": dropped_assets_by_horizon,
         "autotune": autotune_payload,
         "evaluation": {
             "engine_used": "multi_horizon_ridge",
@@ -966,6 +1127,7 @@ def run_train_flow(
             "output": evaluation_output,
             "multi_output": str(multi_output),
             "observer": observer.get("status", "-"),
+            "model_quality": model_quality,
         },
         "horizon_models": horizon_models,
         "files": files,
@@ -1065,6 +1227,11 @@ def render_train_summary(payload: dict[str, Any]) -> str:
         lines.append(f"- meta_model: {evaluation.get('meta_model')}")
     if evaluation.get("failed_engines"):
         lines.append(f"- failed_engines: {', '.join(evaluation.get('failed_engines', []))}")
+    model_quality = payload.get("model_quality") or evaluation.get("model_quality") or {}
+    if model_quality:
+        lines.append(f"- model_quality: {model_quality.get('status', '-')}")
+        lines.append(f"- ensemble_accuracy: {model_quality.get('ensemble_accuracy', '-')}")
+        lines.append(f"- edge: {model_quality.get('edge', '-')}")
     lines.extend(
         [
             *[

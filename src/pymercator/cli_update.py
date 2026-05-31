@@ -15,6 +15,9 @@ from pymercator.indices_prices import check_indices_prices_dir, fetch_indices_pr
 from pymercator.market_context import validate_market_context
 from pymercator.market_context_auto import write_auto_market_context
 
+DEFAULT_UPDATE_START = "2000-01-01"
+DEFAULT_INDICES_START = "2000-01-01"
+
 
 def default_tickers_file(list_name: str) -> str:
     preferred = Path("data") / "tickers" / f"{list_name.lower()}.csv"
@@ -29,6 +32,25 @@ def _step(name: str, status: str, payload: dict[str, Any]) -> dict[str, Any]:
         "status": status,
         "payload": payload,
     }
+
+
+def _safe_indices_start(start: str) -> str:
+    return max(start, DEFAULT_INDICES_START)
+
+
+def _step_warnings(name: str, payload: dict[str, Any]) -> list[str]:
+    warnings: list[str] = []
+    for warning in payload.get("warnings", []) or []:
+        warnings.append(f"{name}: {warning}")
+
+    optional_failed = int(payload.get("optional_failed", 0) or 0)
+    cache_fallbacks = int(payload.get("cache_fallbacks", 0) or 0)
+    if optional_failed:
+        warnings.append(f"{name}: {optional_failed} optional item(s) failed")
+    if cache_fallbacks:
+        warnings.append(f"{name}: {cache_fallbacks} item(s) used cache fallback")
+
+    return warnings
 
 
 def _fail_payload(
@@ -55,7 +77,7 @@ def _fail_payload(
 def run_update_flow(
     *,
     list_name: str = "IBOV",
-    start: str = "1900-01-01",
+    start: str = DEFAULT_UPDATE_START,
     end: str | None = None,
     tickers_file: str | None = None,
     prices_dir: str = "data/prices",
@@ -81,6 +103,7 @@ def run_update_flow(
         "matrix": matrix_output,
     }
     steps: list[dict[str, Any]] = []
+    warnings: list[str] = []
     current_step = "startup"
 
     try:
@@ -93,8 +116,11 @@ def run_update_flow(
             use_cache=use_cache,
         )
         status = "OK" if int(prices.get("failed", 0)) == 0 else "FAIL"
+        if status == "OK" and int(prices.get("cache_fallbacks", 0) or 0) > 0:
+            status = "PARTIAL"
+        warnings.extend(_step_warnings("prices", prices))
         steps.append(_step("prices", status, prices))
-        if status != "OK":
+        if status == "FAIL":
             return _fail_payload(
                 list_name=list_text,
                 step="prices",
@@ -125,16 +151,28 @@ def run_update_flow(
             )
 
         current_step = "indices"
+        indices_start = _safe_indices_start(start)
         indices = fetch_indices_prices(
             catalog=indices_catalog,
-            start=start,
+            start=indices_start,
             end=resolved_end,
             output=indices_dir,
             use_cache=use_cache,
         )
-        status = "OK" if int(indices.get("required_failed", 0)) == 0 else "FAIL"
+        if int(indices.get("required_failed", 0)) > 0:
+            status = "FAIL"
+        elif (
+            int(indices.get("optional_failed", 0) or 0) > 0
+            or int(indices.get("cache_fallbacks", 0) or 0) > 0
+        ):
+            status = "PARTIAL"
+        else:
+            status = "OK"
+        indices["requested_start"] = start
+        indices["effective_start"] = indices_start
+        warnings.extend(_step_warnings("indices", indices))
         steps.append(_step("indices", status, indices))
-        if status != "OK":
+        if status == "FAIL":
             return _fail_payload(
                 list_name=list_text,
                 step="indices",
@@ -297,10 +335,11 @@ def run_update_flow(
     return {
         "command": "update",
         "list": list_text,
-        "status": "OK",
+        "status": "PARTIAL" if warnings else "OK",
         "start": start,
         "end": resolved_end,
         "use_cache": use_cache,
+        "warnings": warnings,
         "steps": steps,
         "files": files,
     }
@@ -311,7 +350,7 @@ def render_update_summary(payload: dict[str, Any]) -> str:
     status = payload.get("status", "-")
     lines = [f"UPDATE | LIST {list_name} | STATUS {status}"]
 
-    if status != "OK":
+    if status == "FAIL":
         lines.extend(
             [
                 f"STEP: {payload.get('failed_step', '-')}",
@@ -347,6 +386,11 @@ def render_update_summary(payload: dict[str, Any]) -> str:
             lines.append(f"- {name}: {step.get('status', '-')}")
 
     files = payload.get("files", {})
+    if payload.get("warnings"):
+        lines.extend(["", "WARNINGS:"])
+        for warning in payload.get("warnings", []):
+            lines.append(f"- {warning}")
+
     lines.extend(
         [
             "",
@@ -382,4 +426,4 @@ def run_update_command(args: Any) -> int:
     else:
         print(render_update_summary(payload))
 
-    return 0 if payload["status"] == "OK" else 1
+    return 0 if payload["status"] in {"OK", "PARTIAL"} else 1

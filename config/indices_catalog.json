@@ -14,9 +14,9 @@
       "symbol": "IFNC.SA",
       "provider": "yfinance",
       "category": "market",
-      "description": "",
+      "description": "Disabled because Yahoo no longer returns reliable daily data for this symbol.",
       "required": false,
-      "enabled": true
+      "enabled": false
     },
     {
       "name": "IBrX 50 B3",

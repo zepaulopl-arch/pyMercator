@@ -1,4 +1,5 @@
-﻿from pathlib import Path
+﻿import json
+from pathlib import Path
 
 import pandas as pd
 
@@ -274,8 +275,16 @@ def test_fetch_indices_prices_preserves_cache_on_provider_failure(
         output=output,
     )
 
-    assert payload["status"] == "OK"
+    assert payload["status"] == "OK_WITH_WARNINGS"
     assert payload["required_failed"] == 0
     assert payload["cache_fallbacks"] == 1
     assert payload["results"][0]["status"] == "CACHE_FALLBACK"
+
+
+def test_operational_indices_catalog_disables_invalid_ifnc_symbol():
+    payload = json.loads(Path("config/indices_catalog.json").read_text(encoding="utf-8"))
+    index_by_symbol = {item["symbol"]: item for item in payload["indices"]}
+
+    assert index_by_symbol["IFNC.SA"]["required"] is False
+    assert index_by_symbol["IFNC.SA"]["enabled"] is False
 

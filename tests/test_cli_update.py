@@ -137,7 +137,7 @@ def test_cli_update_passes_default_long_history_and_cache(monkeypatch):
     exit_code = main(["update", "--list", "IBOV"])
 
     assert exit_code == 0
-    assert captured["start"] == "1900-01-01"
+    assert captured["start"] == "2000-01-01"
     assert captured["use_cache"] is True
 
 
@@ -197,3 +197,46 @@ def test_cli_update_fails_when_feature_matrix_loses_universe_assets(
     assert "UPDATE | LIST IBOV | STATUS FAIL" in captured.out
     assert "STEP: features" in captured.out
     assert "feature matrix lost assets from universe" in captured.out
+
+
+def test_cli_update_does_not_use_1900_for_indices(monkeypatch):
+    import pymercator.cli_update as update_mod
+
+    captured: dict[str, object] = {}
+
+    def fake_indices(**kwargs):
+        captured["indices_start"] = kwargs["start"]
+        return {"status": "OK", "required_failed": 0, "fetched": 1}
+
+    _patch_update_ok(monkeypatch)
+    monkeypatch.setattr(update_mod, "fetch_indices_prices", fake_indices)
+
+    exit_code = main(["update", "--list", "IBOV", "--start", "1900-01-01"])
+
+    assert exit_code == 0
+    assert captured["indices_start"] == "2000-01-01"
+
+
+def test_cli_update_marks_optional_index_failure_as_partial(monkeypatch, capsys):
+    import pymercator.cli_update as update_mod
+
+    _patch_update_ok(monkeypatch)
+    monkeypatch.setattr(
+        update_mod,
+        "fetch_indices_prices",
+        lambda **kwargs: {
+            "status": "OK_WITH_WARNINGS",
+            "required_failed": 0,
+            "optional_failed": 1,
+            "cache_fallbacks": 0,
+            "warnings": ["optional index IFNC.SA failed: no price data"],
+        },
+    )
+
+    exit_code = main(["update", "--list", "IBOV"])
+
+    assert exit_code == 0
+    captured = capsys.readouterr()
+    assert "UPDATE | LIST IBOV | STATUS PARTIAL" in captured.out
+    assert "WARNINGS:" in captured.out
+    assert "optional index IFNC.SA failed" in captured.out

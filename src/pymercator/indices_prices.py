@@ -318,10 +318,20 @@ def fetch_indices_prices(
         1 for item in results if item["status"] == "FAILED_OPTIONAL"
     )
     failed = required_failed + optional_failed
+    warnings: list[str] = []
+    for item in results:
+        if item.get("status") == "FAILED_OPTIONAL":
+            warnings.append(
+                f"optional index {item.get('symbol', '-')} failed: {item.get('error', '-')}"
+            )
+        elif item.get("status") == "CACHE_FALLBACK":
+            warnings.append(
+                f"index {item.get('symbol', '-')} used cache fallback: {item.get('error', '-')}"
+            )
 
     if required_failed:
         status = "FAILED"
-    elif optional_failed:
+    elif optional_failed or cache_fallbacks:
         status = "OK_WITH_WARNINGS"
     else:
         status = "OK"
@@ -342,6 +352,7 @@ def fetch_indices_prices(
         "skipped": skipped,
         "status": status,
         "use_cache": use_cache,
+        "warnings": warnings,
         "start": start,
         "end": end,
         "results": results,

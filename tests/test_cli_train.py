@@ -22,9 +22,11 @@ def _fake_lab_factory(
     calls: list[dict],
     *,
     asset_count: int = 78,
+    asset_count_by_horizon: dict[int, int] | None = None,
     status_by_horizon: dict[int, str] | None = None,
     accuracy_by_horizon: dict[int, float] | None = None,
 ):
+    asset_count_by_horizon = asset_count_by_horizon or {}
     status_by_horizon = status_by_horizon or {}
     accuracy_by_horizon = accuracy_by_horizon or {5: 0.61, 20: 0.64, 60: 0.67}
 
@@ -34,7 +36,9 @@ def _fake_lab_factory(
         evaluation_output = Path(kwargs["evaluation_output"])
         dataset_output.parent.mkdir(parents=True, exist_ok=True)
         evaluation_output.parent.mkdir(parents=True, exist_ok=True)
-        tickers = [f"TCK{index:03d}" for index in range(asset_count)]
+        horizon = int(kwargs["horizon"])
+        horizon_asset_count = asset_count_by_horizon.get(horizon, asset_count)
+        tickers = [f"TCK{index:03d}" for index in range(horizon_asset_count)]
         dataset_output.write_text(
             "date,ticker\n"
             + "\n".join(
@@ -47,10 +51,13 @@ def _fake_lab_factory(
 
         if kwargs["engines"] == ["rolling_majority"]:
             payload = {
-                "dataset": {"rows": asset_count * 2, "output": str(dataset_output)},
+                "dataset": {
+                    "rows": horizon_asset_count * 2,
+                    "output": str(dataset_output),
+                },
                 "evaluation": {
-                    "rows": asset_count * 2,
-                    "evaluated_rows": asset_count,
+                    "rows": horizon_asset_count * 2,
+                    "evaluated_rows": horizon_asset_count,
                     "engines": ["rolling_majority"],
                     "engine_status": {"rolling_majority": "BASELINE"},
                     "engine_used": "rolling_majority",
@@ -64,7 +71,6 @@ def _fake_lab_factory(
             evaluation_output.write_text(json.dumps(payload["evaluation"]), encoding="utf-8")
             return payload
 
-        horizon = int(kwargs["horizon"])
         status = status_by_horizon.get(horizon, "OK")
         base_engines = list(kwargs.get("base_engines") or BASE_ENGINES)
         if status == "FAIL":
@@ -92,8 +98,8 @@ def _fake_lab_factory(
             else {}
         )
         evaluation = {
-            "rows": asset_count * 2,
-            "evaluated_rows": asset_count,
+            "rows": horizon_asset_count * 2,
+            "evaluated_rows": horizon_asset_count,
             "engines": kwargs["engines"],
             "status": status,
             "reason": reason,
@@ -115,7 +121,10 @@ def _fake_lab_factory(
         }
         evaluation_output.write_text(json.dumps(evaluation), encoding="utf-8")
         return {
-            "dataset": {"rows": asset_count * 2, "output": str(dataset_output)},
+            "dataset": {
+                "rows": horizon_asset_count * 2,
+                "output": str(dataset_output),
+            },
             "evaluation": evaluation,
         }
 
@@ -196,6 +205,9 @@ def test_cli_train_generates_multi_horizon_evaluation_by_default(
     assert evaluation_payload["meta_model"] == "ridge"
     assert evaluation_payload["row_count_by_horizon"] == {"D5": 156, "D20": 156, "D60": 156}
     assert evaluation_payload["asset_count_by_horizon"] == {"D5": 78, "D20": 78, "D60": 78}
+    assert evaluation_payload["model_quality"]["status"] in {"OK", "STRONG"}
+    assert "ensemble_accuracy" in evaluation_payload["model_quality"]
+    assert "dropped_assets_by_horizon" in evaluation_payload
     assert set(evaluation_payload["horizon_models"]) == {"D5", "D20", "D60"}
     assert evaluation_payload["horizon_models"]["D5"]["engine_used"] == "ridge_ensemble"
     assert evaluation_payload["horizon_models"]["D5"]["meta_model"] == "ridge"
@@ -239,6 +251,91 @@ def test_cli_train_profile_is_ignored_with_warning(tmp_path: Path, monkeypatch, 
     assert "profile" not in payload
     assert "profile" not in evaluation_payload
     assert not (tmp_path / "evaluation_CON.json").exists()
+
+
+def test_cli_train_lists_dropped_assets_by_horizon_with_reason(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+):
+    import pymercator.cli_train as train_mod
+
+    universe = tmp_path / "universe.csv"
+    matrix = tmp_path / "matrix.csv"
+    prices_dir = tmp_path / "prices"
+    dataset = tmp_path / "dataset.csv"
+    evaluation = tmp_path / "evaluation.json"
+    prices_dir.mkdir()
+    tickers = [f"TCK{index:03d}" for index in range(60)]
+    universe.write_text(
+        "ticker,sector,last_close,trend_score,momentum_score,volatility_pct,atr_pct,news_score\n"
+        + "\n".join(
+            f"{ticker},energy,10,60,60,10,2,60" for ticker in tickers
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    matrix.write_text(
+        "ticker,sector,return_1d\n"
+        + "\n".join(f"{ticker},energy,1" for ticker in tickers)
+        + "\n",
+        encoding="utf-8",
+    )
+    for ticker in tickers:
+        row_count = 170 if ticker == "TCK059" else 220
+        rows = ["date,open,high,low,close,volume"]
+        rows.extend(
+            f"2025-01-{(index % 28) + 1:02d},10,10,10,10,1000"
+            for index in range(row_count)
+        )
+        (prices_dir / f"{ticker}.SA.csv").write_text("\n".join(rows) + "\n", encoding="utf-8")
+
+    calls: list[dict] = []
+    monkeypatch.setattr(
+        train_mod,
+        "run_prediction_lab",
+        _fake_lab_factory(
+            calls,
+            asset_count=60,
+            asset_count_by_horizon={5: 60, 20: 60, 60: 59},
+        ),
+    )
+
+    exit_code = main(
+        [
+            "train",
+            "--universe",
+            str(universe),
+            "--matrix",
+            str(matrix),
+            "--prices-dir",
+            str(prices_dir),
+            "--dataset-output",
+            str(dataset),
+            "--evaluation-output",
+            str(evaluation),
+            "--min-history",
+            "120",
+            "--min-train-rows",
+            "2",
+            "--json",
+        ]
+    )
+
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    evaluation_payload = json.loads(evaluation.read_text(encoding="utf-8"))
+    assert payload["status"] == "OK"
+    assert evaluation_payload["asset_count_by_horizon"]["D60"] == 59
+    assert evaluation_payload["dropped_assets_by_horizon"]["D5"] == []
+    assert evaluation_payload["dropped_assets_by_horizon"]["D20"] == []
+    assert evaluation_payload["dropped_assets_by_horizon"]["D60"] == [
+        {
+            "ticker": "TCK059",
+            "reason": "insufficient history for D60: rows=170, required=181",
+            "price_rows": 170,
+        }
+    ]
 
 
 def test_cli_train_blocks_when_matrix_is_missing(tmp_path: Path, capsys):

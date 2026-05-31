@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
@@ -77,12 +78,14 @@ def _load_prediction_observer(path: str) -> dict[str, Any]:
         "reason": payload.get("reason", ""),
         "horizons": payload.get("horizons", []),
         "observer_mode": observer.get("mode", payload.get("observer", {}).get("mode", "-")),
+        "weights": observer.get("weights", payload.get("weights", {})),
         "d5_score": scores.get("D5"),
         "d20_score": scores.get("D20"),
         "d60_score": scores.get("D60"),
         "combined_score": observer.get("combined_score"),
         "dominant_horizon": observer.get("dominant_horizon"),
         "behavior": observer.get("behavior"),
+        "model_quality": payload.get("model_quality", {}),
         "source": path,
     }
 
@@ -126,6 +129,41 @@ def _blocked_payload(
         "detail": detail or {},
         "files": files,
     }
+
+
+def _apply_model_quality_guard(
+    report: DailyReport,
+    prediction: dict[str, Any],
+) -> DailyReport:
+    quality = prediction.get("model_quality", {})
+    if not isinstance(quality, dict) or quality.get("status") != "WEAK":
+        return report
+
+    decisions = []
+    for decision in report.decisions:
+        if decision.permission.status != ExecutionStatus.READY:
+            decisions.append(decision)
+            continue
+
+        permission = replace(
+            decision.permission,
+            status=ExecutionStatus.WATCH,
+            reasons=(
+                *decision.permission.reasons,
+                "model quality is weak",
+            ),
+        )
+        decisions.append(replace(decision, permission=permission))
+
+    return replace(
+        report,
+        decisions=tuple(decisions),
+        posture="WATCH_ONLY",
+        reasons=(
+            *report.reasons,
+            "model quality is weak; actionable trades downgraded",
+        ),
+    )
 
 
 def _load_operational_market_context(path: str) -> dict[str, Any]:
@@ -240,6 +278,8 @@ def run_decision_flow(
                 },
             )
 
+        report = _apply_model_quality_guard(report, prediction_payload)
+
         rendered = render_daily_report(report, limit=limit)
         report_path = Path(report_output)
         json_path = Path(json_output)
@@ -249,9 +289,9 @@ def run_decision_flow(
         run_path.mkdir(parents=True, exist_ok=True)
 
         report_path.write_text(rendered, encoding="utf-8")
-        write_daily_report_json(report, json_path)
+        write_daily_report_json(report, json_path, prediction=prediction_payload)
         (run_path / "report.txt").write_text(rendered, encoding="utf-8")
-        write_daily_report_json(report, run_path / "report.json")
+        write_daily_report_json(report, run_path / "report.json", prediction=prediction_payload)
 
         ready_tickers = _tickers_by_status(report, ExecutionStatus.READY)
         basket_payload: dict[str, Any] | None = None
@@ -319,7 +359,7 @@ def run_decision_flow(
         ),
         "files": files,
         "basket": basket_summary,
-        "report": daily_report_to_dict(report),
+        "report": daily_report_to_dict(report, prediction=prediction_payload),
     }
 
 

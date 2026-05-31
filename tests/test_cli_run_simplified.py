@@ -44,10 +44,20 @@ def _write_multi_horizon_evaluation(path: Path) -> None:
                 "horizons": [5, 20, 60],
                 "horizon_observer": {
                     "mode": "weighted",
+                    "weights": {"D5": 0.25, "D20": 0.35, "D60": 0.4},
                     "scores": {"D5": 51.0, "D20": 58.0, "D60": 66.0},
                     "combined_score": 59.85,
                     "dominant_horizon": "D60",
                     "behavior": "POSITIONAL_SETUP",
+                },
+                "model_quality": {
+                    "baseline_accuracy": 0.5,
+                    "ensemble_accuracy": 0.58,
+                    "edge": 0.08,
+                    "precision": 0.57,
+                    "recall": 0.55,
+                    "false_positive_rate": 0.2,
+                    "status": "OK",
                 },
             }
         ),
@@ -513,8 +523,77 @@ def test_cli_run_exposes_multi_horizon_prediction_observer(
     assert payload["prediction"]["combined_score"] == 59.85
     assert payload["prediction"]["dominant_horizon"] == "D60"
     assert payload["prediction"]["behavior"] == "POSITIONAL_SETUP"
+    assert payload["prediction"]["weights"] == {"D5": 0.25, "D20": 0.35, "D60": 0.4}
+    assert payload["prediction"]["model_quality"]["status"] == "OK"
     assert payload["top"][0]["dominant_horizon"] == "D60"
     assert payload["top"][0]["behavior"] == "POSITIONAL_SETUP"
+
+    report_payload = json.loads((tmp_path / "report.json").read_text(encoding="utf-8"))
+    assert report_payload["prediction"]["engine"] == "multi_horizon_ridge"
+    assert report_payload["prediction"]["horizons"] == [5, 20, 60]
+    assert report_payload["prediction"]["combined_score"] == 59.85
+    assert report_payload["prediction"]["dominant_horizon"] == "D60"
+    assert report_payload["prediction"]["behavior"] == "POSITIONAL_SETUP"
+    assert report_payload["decisions"][0]["prediction"] == {
+        "d5_score": 51.0,
+        "d20_score": 58.0,
+        "d60_score": 66.0,
+        "combined_score": 59.85,
+        "dominant_horizon": "D60",
+        "behavior": "POSITIONAL_SETUP",
+    }
+
+
+def test_cli_run_downgrades_actionable_when_model_quality_is_weak(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+):
+    import pymercator.cli_run as run_mod
+
+    context = tmp_path / "context.json"
+    evaluation = tmp_path / "latest_evaluation.json"
+    _write_context(context)
+    _write_multi_horizon_evaluation(evaluation)
+    payload = json.loads(evaluation.read_text(encoding="utf-8"))
+    payload["model_quality"]["status"] = "WEAK"
+    payload["model_quality"]["ensemble_accuracy"] = 0.48
+    payload["model_quality"]["edge"] = -0.02
+    evaluation.write_text(json.dumps(payload), encoding="utf-8")
+
+    monkeypatch.setattr(
+        run_mod,
+        "run_daily_pipeline",
+        lambda **kwargs: _fake_report(kwargs["profile"]),
+    )
+
+    exit_code = main(
+        [
+            "run",
+            "--profile",
+            "CON",
+            "--universe",
+            "data/universes/ibov_sample.csv",
+            "--context",
+            str(context),
+            "--evaluation",
+            str(evaluation),
+            "--report-output",
+            str(tmp_path / "report.txt"),
+            "--json-output",
+            str(tmp_path / "report.json"),
+            "--run-dir",
+            str(tmp_path / "latest"),
+            "--json",
+        ]
+    )
+
+    assert exit_code == 0
+    result = json.loads(capsys.readouterr().out)
+    assert result["decision"]["actionable"] == 0
+    assert result["decision"]["watch"] == 1
+    assert result["report"]["decisions"][0]["permission"]["status"] == "WATCH"
+    assert "model quality is weak" in result["report"]["decisions"][0]["permission"]["reasons"]
 
 
 def test_cli_run_blocks_non_ok_prediction_evaluation(

@@ -66,7 +66,7 @@ def _attach_prediction_lab_to_manifest(
 def run_daily_auto(
     *,
     indices_catalog: str = "config/indices_catalog.json",
-    indices_start: str = "1900-01-01",
+    indices_start: str = "2000-01-01",
     indices_dir: str = "data/indices",
     context_output: str = "config/market_context_auto.json",
     features_file: str = "config/features_catalog.json",
@@ -83,7 +83,7 @@ def run_daily_auto(
     prediction_autotune_cv: int = 3,
     tickers_file: str = "data/universes/ibov_tickers.csv",
     sentiment_dir: str = "data/sentiment",
-    prices_start: str = "1900-01-01",
+    prices_start: str = "2000-01-01",
     prices_dir: str = "data/prices",
     universe_output: str = "data/universes/ibov_live.csv",
     run_dir: str = "storage/scenario_runs",
