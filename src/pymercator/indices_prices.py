@@ -1,5 +1,7 @@
 ﻿from __future__ import annotations
 
+import contextlib
+import io
 from pathlib import Path
 from typing import Any
 
@@ -46,14 +48,15 @@ def _download_yfinance(symbol: str, start: str, end: str | None = None) -> pd.Da
     except ImportError as exc:
         raise RuntimeError("yfinance is not installed. Run: python -m pip install -e .") from exc
 
-    data = yf.download(
-        symbol,
-        start=start,
-        end=end,
-        progress=False,
-        auto_adjust=False,
-        threads=False,
-    )
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+        data = yf.download(
+            symbol,
+            start=start,
+            end=end,
+            progress=False,
+            auto_adjust=False,
+            threads=False,
+        )
 
     if data is None or data.empty:
         return pd.DataFrame()

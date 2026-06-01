@@ -42,6 +42,7 @@ def test_daily_auto_command_with_existing_indices(tmp_path: Path, capsys):
     prices_dir = tmp_path / "prices"
     tickers_file = tmp_path / "tickers.csv"
     universe_output = tmp_path / "ibov_live.csv"
+    feature_matrix_output = tmp_path / "latest_feature_matrix.csv"
     run_dir = tmp_path / "scenario_runs"
 
     indices_dir.mkdir()
@@ -77,6 +78,8 @@ def test_daily_auto_command_with_existing_indices(tmp_path: Path, capsys):
             str(prices_dir),
             "--universe-output",
             str(universe_output),
+            "--feature-matrix-output",
+            str(feature_matrix_output),
             "--run-dir",
             str(run_dir),
             "--skip-indices-fetch",

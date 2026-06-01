@@ -1,5 +1,7 @@
 ﻿from __future__ import annotations
 
+import contextlib
+import io
 from pathlib import Path
 from typing import Any
 
@@ -75,14 +77,15 @@ def fetch_yahoo_prices(
             "yfinance is not installed. Run: python -m pip install -e ."
         ) from exc
 
-    data = yf.download(
-        ticker,
-        start=start,
-        end=end,
-        auto_adjust=False,
-        progress=False,
-        threads=False,
-    )
+    with contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+        data = yf.download(
+            ticker,
+            start=start,
+            end=end,
+            auto_adjust=False,
+            progress=False,
+            threads=False,
+        )
 
     if data.empty:
         raise ValueError(f"No price data returned for ticker: {ticker}")

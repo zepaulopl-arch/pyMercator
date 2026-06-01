@@ -65,6 +65,109 @@ def test_predict_lab_command_creates_outputs(tmp_path: Path, capsys):
     assert "rolling_majority" in captured.out
 
 
+def test_predict_lab_redirects_default_latest_outputs_to_horizon_dir(
+    tmp_path: Path,
+    capsys,
+):
+    matrix = tmp_path / "matrix.csv"
+    prices_dir = tmp_path / "prices"
+    prediction_dir = tmp_path / "storage" / "prediction"
+    dataset = prediction_dir / "latest_dataset.csv"
+    evaluation = prediction_dir / "latest_evaluation.json"
+    d5_dataset = prediction_dir / "d5" / "latest_dataset.csv"
+    d5_evaluation = prediction_dir / "d5" / "latest_evaluation.json"
+
+    prices_dir.mkdir()
+    prediction_dir.mkdir(parents=True)
+    _write_matrix(matrix)
+    _write_price_file(prices_dir / "PRIO3.SA.csv")
+    operational_payload = {
+        "engine_used": "multi_horizon_ridge",
+        "operational": True,
+        "experimental": False,
+        "horizons": [5, 20, 60],
+        "status": "OK",
+    }
+    evaluation.write_text(json.dumps(operational_payload), encoding="utf-8")
+
+    exit_code = main(
+        [
+            "predict",
+            "lab",
+            "--matrix",
+            str(matrix),
+            "--prices-dir",
+            str(prices_dir),
+            "--dataset-output",
+            str(dataset),
+            "--evaluation-output",
+            str(evaluation),
+            "--horizon",
+            "5",
+            "--min-train-rows",
+            "10",
+            "--engines",
+            "rolling_majority",
+        ]
+    )
+
+    assert exit_code == 0
+    assert d5_dataset.exists()
+    assert d5_evaluation.exists()
+    assert not dataset.exists()
+    assert json.loads(evaluation.read_text(encoding="utf-8")) == operational_payload
+    assert json.loads(d5_evaluation.read_text(encoding="utf-8"))["horizon"] == 5
+    assert str(d5_evaluation) in capsys.readouterr().out
+
+
+def test_predict_evaluate_redirects_default_latest_evaluation_to_horizon_dir(
+    tmp_path: Path,
+    capsys,
+):
+    dataset = tmp_path / "dataset.csv"
+    prediction_dir = tmp_path / "storage" / "prediction"
+    evaluation = prediction_dir / "latest_evaluation.json"
+    d20_evaluation = prediction_dir / "d20" / "latest_evaluation.json"
+    prediction_dir.mkdir(parents=True)
+    dataset.write_text(
+        "date,ticker,target_return_20d,target_up_20d\n"
+        "2025-01-01,PRIO3,1,1\n"
+        "2025-01-02,PRIO3,-1,0\n",
+        encoding="utf-8",
+    )
+    operational_payload = {
+        "engine_used": "multi_horizon_ridge",
+        "operational": True,
+        "experimental": False,
+        "horizons": [5, 20, 60],
+        "status": "OK",
+    }
+    evaluation.write_text(json.dumps(operational_payload), encoding="utf-8")
+
+    exit_code = main(
+        [
+            "predict",
+            "evaluate",
+            "--dataset",
+            str(dataset),
+            "--output",
+            str(evaluation),
+            "--horizon",
+            "20",
+            "--min-train-rows",
+            "1",
+            "--engines",
+            "rolling_majority",
+        ]
+    )
+
+    assert exit_code == 0
+    assert d20_evaluation.exists()
+    assert json.loads(evaluation.read_text(encoding="utf-8")) == operational_payload
+    assert json.loads(d20_evaluation.read_text(encoding="utf-8"))["horizon"] == 20
+    assert str(d20_evaluation) in capsys.readouterr().out
+
+
 def test_predict_lab_command_accepts_extratrees_engine(
     tmp_path: Path,
     monkeypatch,

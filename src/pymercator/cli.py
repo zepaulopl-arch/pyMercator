@@ -119,6 +119,10 @@ def _run_short_lab_command(args: argparse.Namespace) -> int:
     if getattr(args, "fast", False):
         engines = fast_profile.get("prediction", {}).get("engines", engines)
 
+    from pymercator.cli_predict import (
+        resolve_single_horizon_dataset_output,
+        resolve_single_horizon_evaluation_output,
+    )
     from pymercator.prediction_lab import render_prediction_lab_summary, run_prediction_lab
 
     horizon = int(getattr(args, "horizon", 0) or 0)
@@ -132,8 +136,14 @@ def _run_short_lab_command(args: argparse.Namespace) -> int:
     payload = run_prediction_lab(
         matrix=paths.get("feature_matrix"),
         prices_dir=paths.get("prices_dir"),
-        dataset_output=paths.get("prediction_dataset"),
-        evaluation_output=paths.get("prediction_evaluation"),
+        dataset_output=resolve_single_horizon_dataset_output(
+            paths.get("prediction_dataset"),
+            horizon,
+        ),
+        evaluation_output=resolve_single_horizon_evaluation_output(
+            paths.get("prediction_evaluation"),
+            horizon,
+        ),
         horizon=horizon,
         min_history=pred.get("min_history", 20),
         min_train_rows=pred.get("min_train_rows", 100),

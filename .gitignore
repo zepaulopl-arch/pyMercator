@@ -31,6 +31,7 @@ catboost_info/
 logs/
 handoff/
 output/
+runtime/
 tmp/
 temp/
 *.zip
@@ -48,7 +49,11 @@ storage/cache/
 storage/baskets/
 storage/prediction/*.csv
 storage/prediction/*.json
+storage/prediction/**/
+storage/context/
 storage/features/*.csv
+storage/reports/
+storage/runs/
 
 # Keep placeholders if needed
 !storage/prediction/.gitkeep
