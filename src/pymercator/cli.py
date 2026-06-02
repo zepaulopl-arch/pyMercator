@@ -290,6 +290,12 @@ def _run_short_diag_command(args: argparse.Namespace) -> int:
         f"D{int(item)}"
         for item in prediction_config.get("horizons", [])
     ]
+    backend = "sklearn" if SKLEARN_AVAILABLE else "unavailable"
+    stack_status = "OK" if SKLEARN_AVAILABLE else "DEGRADED"
+    optional_backend_status = {
+        "xgboost": "installed" if XGBOOST_AVAILABLE else "not installed",
+        "catboost": "installed" if CATBOOST_AVAILABLE else "not installed",
+    }
 
     print("PYMERCATOR DIAG")
     print(ui.line(profile.get("ui", {}).get("width", 120)))
@@ -297,10 +303,28 @@ def _run_short_diag_command(args: argparse.Namespace) -> int:
     print(ui.kv("FEATURE MATRIX", paths.get("feature_matrix")))
     print(ui.kv("PREDICTION EVAL", paths.get("prediction_evaluation")))
     print("")
-    print("PREDICTION CONFIG:")
+    print("PREDICTION STACK:")
+    print(f"- status: {stack_status}")
+    print(f"- backend: {backend}")
+    print(f"- default_engine: {prediction_config.get('default_engine', '-')}")
+    print(f"- horizons: {','.join(horizon_labels)}")
+    print(f"- base_models: {','.join(prediction_config.get('base_engines', []))}")
+    print(f"- per_horizon_combiner: {prediction_config.get('per_horizon_engine', '-')}")
+    print(f"- final_observer: {observer.get('mode', '-')}")
+    print("- baseline_available: rolling_majority")
+    print("- baseline_used: false")
+    print("")
+    print("OPTIONAL BACKENDS:")
+    print(f"- xgboost: {optional_backend_status['xgboost']}")
+    print(f"- catboost: {optional_backend_status['catboost']}")
+
+    if not getattr(args, "verbose", False):
+        return 0
+
+    print("")
+    print("TECHNICAL CONFIG:")
     print("- mode: operational")
     print("- config: config/prediction.json")
-    print(f"- default_engine: {prediction_config.get('default_engine', '-')}")
     print(f"- per_horizon_engine: {prediction_config.get('per_horizon_engine', '-')}")
     print(
         "- horizons: "
@@ -326,7 +350,7 @@ def _run_short_diag_command(args: argparse.Namespace) -> int:
     print(f"- xgboost available: {bool(XGBOOST_AVAILABLE)}")
     print(f"- catboost available: {bool(CATBOOST_AVAILABLE)}")
     print("")
-    print("PREDICTION ENGINES:")
+    print("TECHNICAL PREDICTION ENGINES:")
     sklearn_engine_status = "available" if SKLEARN_AVAILABLE else "unavailable"
     print("- rolling_majority: available baseline")
     print(f"- extratrees: {sklearn_engine_status}")
@@ -639,6 +663,7 @@ def build_parser() -> argparse.ArgumentParser:
         diag_short = subparsers.add_parser("diag", help="Quick diagnostics")
         diag_short.set_defaults(command="diag")
         diag_short.add_argument("--profile", default="")
+        diag_short.add_argument("--verbose", action="store_true")
 
         basket_parser = subparsers.add_parser("basket", help="Basket utilities")
         basket_parser.set_defaults(command="basket")
