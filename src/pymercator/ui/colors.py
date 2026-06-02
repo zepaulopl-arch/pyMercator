@@ -127,3 +127,54 @@ def colorize_value(value: Any, *, role: str = "", enabled: bool | None = None) -
     if key in {"LABEL", "PATH", "FALSE"}:
         return f"{PALETTE['gray']}{text}{RESET}"
     return colorize(text, key, enabled=True)
+
+
+def _to_float(value: object) -> float:
+    try:
+        return float(str(value).replace(",", "."))
+    except (TypeError, ValueError):
+        return 0.0
+
+
+def metric_status(metric: str, value: object) -> str:
+    name = str(metric or "").strip().lower()
+    number = _to_float(value)
+
+    if name in {"trend", "trend_score", "mom", "momentum", "momentum_score"}:
+        if number >= 60.0:
+            return "OK"
+        if number >= 45.0:
+            return "WATCH"
+        return "WEAK"
+
+    if name in {"vol", "volatility", "volatility_pct"}:
+        if number >= 80.0:
+            return "HIGH"
+        if number >= 55.0:
+            return "WATCH"
+        return "NORMAL"
+
+    if name in {"atr", "atr_pct", "qtr"}:
+        if number >= 8.0:
+            return "HIGH"
+        return "NORMAL"
+
+    return "NORMAL"
+
+
+def color_metric(
+    value: object,
+    metric: str,
+    *,
+    width: int = 0,
+    precision: int | None = None,
+    enabled: bool | None = None,
+) -> str:
+    number = _to_float(value)
+    if precision is None:
+        text = str(value)
+    else:
+        text = f"{number:.{precision}f}"
+    if width > 0:
+        text = f"{text:>{width}}"
+    return colorize(text, metric_status(metric, number), enabled=enabled)

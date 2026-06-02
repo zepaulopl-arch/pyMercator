@@ -10,7 +10,7 @@ from pymercator.data.universe_csv import (
     write_universe_template,
 )
 from pymercator.data.universe_diagnostics import diagnose_universe_csv
-from pymercator.ui import colorize, format_kv_section, muted_line, short_sector
+from pymercator.ui import color_metric, colorize, format_kv_section, muted_line, short_sector
 
 
 def _render_universe_check(payload: dict[str, Any]) -> str:
@@ -158,10 +158,10 @@ def _render_warnings_by_asset(payload: dict[str, Any]) -> list[str]:
             lines.append(
                 f"{item['ticker']:<8} "
                 f"{_fmt_sector(item['sector'], 16):<16} "
-                f"{item['volatility_pct']:>7} "
-                f"{item['atr_pct']:>7} "
-                f"{item['trend_score']:>7} "
-                f"{item['momentum_score']:>7} "
+                f"{color_metric(item['volatility_pct'], 'vol', width=7)} "
+                f"{color_metric(item['atr_pct'], 'atr', width=7)} "
+                f"{color_metric(item['trend_score'], 'trend', width=7)} "
+                f"{color_metric(item['momentum_score'], 'mom', width=7)} "
                 f"{item['label']}"
             )
 
@@ -255,10 +255,10 @@ def _render_universe_build(payload: dict[str, Any]) -> str:
             f"{asset['ticker']:<8} "
             f"{asset['sector']:<24} "
             f"{asset['last_close']:>9.2f} "
-            f"{asset['trend_score']:>8.2f} "
-            f"{asset['momentum_score']:>8.2f} "
-            f"{asset['volatility_pct']:>8.2f} "
-            f"{asset['atr_pct']:>8.2f} "
+            f"{color_metric(asset['trend_score'], 'trend', width=8, precision=2)} "
+            f"{color_metric(asset['momentum_score'], 'mom', width=8, precision=2)} "
+            f"{color_metric(asset['volatility_pct'], 'vol', width=8, precision=2)} "
+            f"{color_metric(asset['atr_pct'], 'atr', width=8, precision=2)} "
             f"{asset.get('news_score', 50.0):>8.2f}"
         )
 
