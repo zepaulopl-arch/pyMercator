@@ -9,15 +9,14 @@ ANSI_RE = re.compile(r"\x1b\[[0-9;]*m")
 COLOR_MODE = "auto"
 
 RESET = "\x1b[0m"
-DIM = "\x1b[2m"
 
 PALETTE = {
-    "green": "\x1b[2;32m",
-    "yellow": "\x1b[2;33m",
-    "red": "\x1b[2;31m",
-    "gray": "\x1b[2;37m",
-    "header": "\x1b[2;36m",
-    "number": "\x1b[37m",
+    "green": "\x1b[38;5;71m",
+    "yellow": "\x1b[38;5;179m",
+    "red": "\x1b[38;5;167m",
+    "gray": "\x1b[38;5;245m",
+    "header": "\x1b[38;5;110m",
+    "number": "\x1b[38;5;250m",
 }
 
 GREEN = {
