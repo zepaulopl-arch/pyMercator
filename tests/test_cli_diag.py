@@ -15,21 +15,24 @@ def test_cli_diag_shows_operational_prediction_stack(monkeypatch, capsys):
     assert "PYMERCATOR DIAG" in output
     assert "PREDICTION STACK:" in output
     assert "- status: OK" in output
+    assert "- config: config/prediction.json" in output
     assert "- backend: sklearn" in output
-    assert "- default_engine: multi_horizon_ridge" in output
+    assert "- engine: multi_horizon_ridge" in output
     assert "- horizons: D5,D20,D60" in output
+    assert "- weights: D5=0.25 D20=0.35 D60=0.40" in output
     assert "- base_models: extratrees,randomforest,gradientboosting" in output
+    assert "- combiner: ridge" in output
     assert "- per_horizon_combiner: ridge_ensemble" in output
-    assert "- final_observer: weighted" in output
-    assert "- baseline_available: rolling_majority" in output
+    assert "- observer: weighted" in output
     assert "- baseline_used: false" in output
-    assert "OPTIONAL BACKENDS:" in output
-    assert "- xgboost: not installed" in output
-    assert "- catboost: not installed" in output
+    assert "OPTIONAL BACKENDS:" not in output
+    assert "optional" not in output.lower()
+    assert "xgboost" not in output.lower()
+    assert "catboost" not in output.lower()
+    assert "rolling_majority" not in output
     assert "LIBRARIES:" not in output
     assert "TECHNICAL PREDICTION ENGINES:" not in output
     assert "- sklearn available:" not in output
-    assert "- rolling_majority: available baseline" not in output
     assert "- sklearn:" not in output
 
 

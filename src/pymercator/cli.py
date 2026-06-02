@@ -292,10 +292,11 @@ def _run_short_diag_command(args: argparse.Namespace) -> int:
     ]
     backend = "sklearn" if SKLEARN_AVAILABLE else "unavailable"
     stack_status = "OK" if SKLEARN_AVAILABLE else "DEGRADED"
-    optional_backend_status = {
-        "xgboost": "installed" if XGBOOST_AVAILABLE else "not installed",
-        "catboost": "installed" if CATBOOST_AVAILABLE else "not installed",
-    }
+    weights_text = " ".join(
+        f"{key}={float(weights[key]):.2f}"
+        for key in horizon_labels
+        if key in weights
+    )
 
     print("PYMERCATOR DIAG")
     print(ui.line(profile.get("ui", {}).get("width", 120)))
@@ -305,18 +306,16 @@ def _run_short_diag_command(args: argparse.Namespace) -> int:
     print("")
     print("PREDICTION STACK:")
     print(f"- status: {stack_status}")
+    print("- config: config/prediction.json")
     print(f"- backend: {backend}")
-    print(f"- default_engine: {prediction_config.get('default_engine', '-')}")
+    print(f"- engine: {prediction_config.get('default_engine', '-')}")
     print(f"- horizons: {','.join(horizon_labels)}")
+    print(f"- weights: {weights_text}")
     print(f"- base_models: {','.join(prediction_config.get('base_engines', []))}")
+    print(f"- combiner: {prediction_config.get('meta_model', '-')}")
     print(f"- per_horizon_combiner: {prediction_config.get('per_horizon_engine', '-')}")
-    print(f"- final_observer: {observer.get('mode', '-')}")
-    print("- baseline_available: rolling_majority")
+    print(f"- observer: {observer.get('mode', '-')}")
     print("- baseline_used: false")
-    print("")
-    print("OPTIONAL BACKENDS:")
-    print(f"- xgboost: {optional_backend_status['xgboost']}")
-    print(f"- catboost: {optional_backend_status['catboost']}")
 
     if not getattr(args, "verbose", False):
         return 0
@@ -333,14 +332,7 @@ def _run_short_diag_command(args: argparse.Namespace) -> int:
     print(f"- base_engines: {','.join(prediction_config.get('base_engines', []))}")
     print(f"- meta_model: {prediction_config.get('meta_model', '-')}")
     print(f"- observer: {observer.get('mode', '-')}")
-    print(
-        "- weights: "
-        + " ".join(
-            f"{key}={float(weights[key]):.2f}"
-            for key in horizon_labels
-            if key in weights
-        )
-    )
+    print(f"- weights: {weights_text}")
     print(f"- min_assets: {prediction_config.get('min_assets', '-')}")
     print(f"- autotune: {str(bool(training.get('autotune', False))).lower()}")
     print(f"- n_jobs: {training.get('n_jobs', '-')}")
