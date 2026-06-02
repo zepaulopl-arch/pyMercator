@@ -4,6 +4,10 @@ import json
 from pathlib import Path
 from typing import Any
 
+from pymercator.cli_predict import (
+    resolve_single_horizon_dataset_output,
+    resolve_single_horizon_evaluation_output,
+)
 from pymercator.features_matrix import write_feature_matrix
 from pymercator.indices_prices import check_indices_prices_dir, fetch_indices_prices
 from pymercator.market_context_auto import write_auto_market_context
@@ -173,8 +177,14 @@ def run_daily_auto(
     prediction_lab = run_prediction_lab(
         matrix=feature_matrix.get("output", feature_matrix_output),
         prices_dir=prices_dir,
-        dataset_output=prediction_dataset_output,
-        evaluation_output=prediction_evaluation_output,
+        dataset_output=resolve_single_horizon_dataset_output(
+            prediction_dataset_output,
+            prediction_horizon,
+        ),
+        evaluation_output=resolve_single_horizon_evaluation_output(
+            prediction_evaluation_output,
+            prediction_horizon,
+        ),
         horizon=prediction_horizon,
         min_history=prediction_min_history,
         min_train_rows=prediction_min_train_rows,

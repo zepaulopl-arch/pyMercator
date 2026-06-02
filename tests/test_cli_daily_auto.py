@@ -43,6 +43,8 @@ def test_daily_auto_command_with_existing_indices(tmp_path: Path, capsys):
     tickers_file = tmp_path / "tickers.csv"
     universe_output = tmp_path / "ibov_live.csv"
     feature_matrix_output = tmp_path / "latest_feature_matrix.csv"
+    prediction_dataset_output = tmp_path / "latest_prediction_dataset.csv"
+    prediction_evaluation_output = tmp_path / "latest_evaluation.json"
     run_dir = tmp_path / "scenario_runs"
 
     indices_dir.mkdir()
@@ -80,6 +82,10 @@ def test_daily_auto_command_with_existing_indices(tmp_path: Path, capsys):
             str(universe_output),
             "--feature-matrix-output",
             str(feature_matrix_output),
+            "--prediction-dataset-output",
+            str(prediction_dataset_output),
+            "--prediction-evaluation-output",
+            str(prediction_evaluation_output),
             "--run-dir",
             str(run_dir),
             "--skip-indices-fetch",

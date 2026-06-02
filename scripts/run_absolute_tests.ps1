@@ -164,7 +164,7 @@ Run-Native `
 
 Run-Native `
   -Name "Install editable" `
-  -Command @($Python, "-m", "pip", "install", "-e", ".") `
+  -Command @($Python, "-m", "pip", "install", "-e", ".", "--no-warn-script-location") `
   -LogFile (Join-Path $logDir "01_install_editable.txt")
 
 Run-PyMercator `
