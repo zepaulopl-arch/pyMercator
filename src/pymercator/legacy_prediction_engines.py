@@ -318,18 +318,36 @@ def tune_probability_threshold(
     if normalized_metric not in {"balanced_accuracy", "accuracy", "f1", "youden"}:
         normalized_metric = "balanced_accuracy"
 
-    target_up_rate = sum(actual_up) / len(actual_up)
-    best: tuple[float, float, float, float, float, int, dict[str, Any]] | None = None
+    normalized_actual = [1 if int(value) else 0 for value in actual_up]
+    clipped_probabilities = [_clip_probability(value) for value in probabilities]
+    total = len(clipped_probabilities)
+    total_positive = sum(normalized_actual)
+    total_negative = total - total_positive
+    target_up_rate = total_positive / total
+    ordered_pairs = sorted(
+        zip(clipped_probabilities, normalized_actual, strict=True),
+        key=lambda item: item[0],
+    )
+    best: tuple[float, float, float, float, float, float, int, dict[str, Any]] | None = None
+    tp = total_positive
+    fp = total_negative
+    cursor = 0
 
-    for candidate_index, threshold in enumerate(_probability_threshold_candidates(probabilities)):
-        predictions = [1 if _clip_probability(value) >= threshold else 0 for value in probabilities]
-        counts = _confusion_counts(actual_up, predictions)
-        tp = counts["true_positive"]
-        tn = counts["true_negative"]
-        fp = counts["false_positive"]
-        fn = counts["false_negative"]
-        total = len(predictions)
-        predicted_up_rate = sum(predictions) / total
+    for candidate_index, threshold in enumerate(
+        _probability_threshold_candidates(clipped_probabilities)
+    ):
+        while cursor < total and ordered_pairs[cursor][0] < threshold:
+            _probability, actual = ordered_pairs[cursor]
+            if actual:
+                tp -= 1
+            else:
+                fp -= 1
+            cursor += 1
+
+        fn = total_positive - tp
+        tn = total_negative - fp
+        predicted_positive = tp + fp
+        predicted_up_rate = predicted_positive / total
         recall = _rate(tp, tp + fn)
         specificity = _rate(tn, tn + fp)
         precision = _rate(tp, tp + fp)
@@ -345,10 +363,11 @@ def tune_probability_threshold(
         else:
             score = round((recall + specificity) / 2.0, 6)
 
-        degenerate_penalty = 0.05 if _is_degenerate_up_rate(predicted_up_rate) else 0.0
+        is_degenerate = _is_degenerate_up_rate(predicted_up_rate)
         ranked = (
-            score - degenerate_penalty,
+            0.0 if is_degenerate else 1.0,
             -abs(predicted_up_rate - target_up_rate),
+            score,
             -false_positive_rate,
             -abs(threshold - 0.5),
             threshold,
@@ -360,7 +379,7 @@ def tune_probability_threshold(
                 "predicted_up_rate": round(predicted_up_rate, 6),
                 "target_up_rate": round(target_up_rate, 6),
                 "false_positive_rate": false_positive_rate,
-                "quality_status": _quality_status_from_up_rate(predicted_up_rate),
+                "quality_status": "DEGENERATE" if is_degenerate else "OK",
                 "status": "OK",
             },
         )

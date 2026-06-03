@@ -20,6 +20,83 @@ def _rows(actual_up: list[int]) -> list[dict[str, Any]]:
     ]
 
 
+def _brute_force_threshold(
+    probabilities: list[float],
+    actual_up: list[int],
+    *,
+    metric: str,
+) -> dict[str, Any]:
+    values = sorted({max(0.0, min(1.0, float(value))) for value in probabilities})
+    candidates = {0.5, 0.0, 1.0, *values}
+    for left, right in zip(values, values[1:], strict=False):
+        candidates.add((left + right) / 2.0)
+
+    def rate(numerator: float, denominator: float) -> float:
+        return numerator / denominator if denominator else 0.0
+
+    normalized_actual = [1 if value else 0 for value in actual_up]
+    target_up_rate = sum(normalized_actual) / len(normalized_actual)
+    best: tuple[float, float, float, float, float, float, int, dict[str, Any]] | None = None
+
+    for candidate_index, threshold in enumerate(sorted(candidates)):
+        predictions = [1 if value >= threshold else 0 for value in probabilities]
+        pairs = list(zip(normalized_actual, predictions, strict=True))
+        tp = sum(1 for actual, pred in pairs if actual and pred)
+        tn = sum(1 for actual, pred in pairs if not actual and not pred)
+        fp = sum(1 for actual, pred in pairs if not actual and pred)
+        fn = sum(1 for actual, pred in pairs if actual and not pred)
+        predicted_up_rate = sum(predictions) / len(predictions)
+        recall = rate(tp, tp + fn)
+        specificity = rate(tn, tn + fp)
+        precision = rate(tp, tp + fp)
+        false_positive_rate = rate(fp, fp + tn)
+        accuracy = rate(tp + tn, len(predictions))
+
+        if metric == "accuracy":
+            score = accuracy
+        elif metric == "f1":
+            score = rate(2 * precision * recall, precision + recall)
+        elif metric == "youden":
+            score = round(recall - false_positive_rate, 6)
+        else:
+            score = round((recall + specificity) / 2.0, 6)
+
+        is_degenerate = predicted_up_rate > 0.80 or predicted_up_rate < 0.20
+        ranked = (
+            0.0 if is_degenerate else 1.0,
+            -abs(predicted_up_rate - target_up_rate),
+            score,
+            -false_positive_rate,
+            -abs(threshold - 0.5),
+            threshold,
+            -candidate_index,
+            {
+                "threshold": round(threshold, 6),
+                "metric": metric,
+                "score": round(score, 6),
+                "predicted_up_rate": round(predicted_up_rate, 6),
+                "target_up_rate": round(target_up_rate, 6),
+                "false_positive_rate": false_positive_rate,
+                "quality_status": "DEGENERATE" if is_degenerate else "OK",
+                "status": "OK",
+            },
+        )
+        if best is None or ranked > best:
+            best = ranked
+
+    return dict(best[-1])
+
+
+def test_threshold_tuning_matches_brute_force_candidates():
+    actual = [0, 1, 0, 1, 0, 1, 0]
+    probabilities = [0.15, 0.2, 0.2, 0.55, 0.55, 0.8, 0.95]
+
+    for metric in ["balanced_accuracy", "accuracy", "f1", "youden"]:
+        assert tune_probability_threshold(probabilities, actual, metric=metric) == (
+            _brute_force_threshold(probabilities, actual, metric=metric)
+        )
+
+
 def test_threshold_tuning_prevents_predicted_up_rate_collapse():
     actual = [0, 0, 0, 1, 1, 1]
     probabilities = [0.91, 0.92, 0.93, 0.94, 0.95, 0.96]
