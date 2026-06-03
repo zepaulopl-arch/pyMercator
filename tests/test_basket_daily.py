@@ -265,6 +265,8 @@ def test_basket_summary_uses_short_sector_labels() -> None:
 
     assert "cons_disc" in summary
     assert "consumer_discretionary" not in summary
+    assert "min_weight         0.10" in summary
+    assert "risk_per_trade     0.50%" in summary
     assert payload["rows"][0]["sector"] == "consumer_discretionary"
 
 

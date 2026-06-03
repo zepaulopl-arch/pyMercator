@@ -5,7 +5,13 @@ import json
 from pathlib import Path
 from typing import Any
 
-from pymercator.cli_run import run_decision_flow
+from pymercator.cli_run import (
+    TOP_REASONS_WIDTH,
+    format_observer_weights,
+    format_top_reason_legend,
+    format_top_reasons,
+    run_decision_flow,
+)
 from pymercator.data.universe_csv import REQUIRED_COLUMNS
 from pymercator.ui import colorize, format_kv_section, muted_line, truncate
 
@@ -279,6 +285,8 @@ def _render_summary(payload: dict[str, Any]) -> str:
     basket = run.get("basket") or {}
     prediction = run.get("prediction", {})
     quality = prediction.get("model_quality", {})
+    horizons = prediction.get("horizons", [])
+    horizon_text = ",".join(f"D{item}" for item in horizons) if horizons else "-"
     lines = [
         (
             f"SCENARIO RUN | PRESET {payload['preset']} | "
@@ -301,9 +309,22 @@ def _render_summary(payload: dict[str, Any]) -> str:
             "PREDICTION",
             [
                 ("engine", prediction.get("engine_used", "-")),
-                ("behavior", prediction.get("behavior", "-"), prediction.get("behavior", "-")),
-                ("dominant_horizon", prediction.get("dominant_horizon", "-")),
+                ("horizons", horizon_text),
+                ("observer", prediction.get("observer_mode", "-")),
+                ("weights", format_observer_weights(prediction.get("weights", {}))),
                 ("combined_score", prediction.get("combined_score", "-")),
+                ("behavior", prediction.get("behavior", "-"), prediction.get("behavior", "-")),
+                ("dominant", prediction.get("dominant_horizon", "-")),
+                (
+                    "alignment",
+                    prediction.get("horizon_alignment", "-"),
+                    prediction.get("horizon_alignment", "-"),
+                ),
+                (
+                    "dominance",
+                    prediction.get("dominance_strength", "-"),
+                    prediction.get("dominance_strength", "-"),
+                ),
             ],
         ),
         "",
@@ -334,18 +355,32 @@ def _render_summary(payload: dict[str, Any]) -> str:
         "",
         "TOP",
         muted_line(),
-        f"{'#':>2} {'TICKER':<8} {'STATUS':<10} {'SCORE':>8} {'REASONS':<36} {'BEHAVIOR':<14}",
+        (
+            f"{'#':>2} {'TICKER':<8} {'STATUS':<10} {'SCORE':>8} "
+            f"{'REASONS':<{TOP_REASONS_WIDTH}} {'BEHAVIOR':<14} "
+            f"{'DOM':<4} {'ALIGN':<14}"
+        ),
     ]
+    legend_codes: list[str] = []
     for index, item in enumerate(run.get("top", []), start=1):
-        behavior = f"{item.get('dominant_horizon', '-')} {item.get('behavior', '-')}"
+        behavior = str(item.get("behavior", "-") or "-")
+        dominant = str(item.get("dominant_horizon", "-") or "-")
+        alignment = str(item.get("horizon_alignment", "-") or "-")
         decision_text = f"{item['decision']:<10}"
+        reasons, used_codes = format_top_reasons(item)
+        legend_codes.extend(used_codes)
         lines.append(
             f"{index:>2} {item['ticker']:<8} "
             f"{colorize(decision_text, item['decision'])} "
             f"{float(item['score']):>8.2f} "
-            f"{truncate(item['guard'], 36):<36} "
-            f"{truncate(behavior, 14):<14}"
+            f"{reasons:<{TOP_REASONS_WIDTH}} "
+            f"{truncate(behavior, 14):<14} "
+            f"{truncate(dominant, 4):<4} "
+            f"{truncate(alignment, 14):<14}"
         )
+    legend = format_top_reason_legend(legend_codes)
+    if legend:
+        lines.extend(["", "LEGEND", legend])
     lines.extend(["", "CHECKS:"])
     for name, passed in payload["checks"].items():
         status = "PASS" if passed else "FAIL"

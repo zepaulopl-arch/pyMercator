@@ -1,0 +1,21 @@
+{
+  "enabled": true,
+  "weights": {
+    "trend": 0.35,
+    "momentum": 0.30,
+    "volatility_safety": 0.20,
+    "atr_safety": 0.15
+  },
+  "risk_penalty": {
+    "vol_high": 10,
+    "atr_high": 15
+  },
+  "show_when_no_actionable": true,
+  "max_candidates": 10,
+  "sector_summary": true,
+  "unsupervised": {
+    "enabled": false,
+    "method": "kmeans",
+    "clusters": 5
+  }
+}

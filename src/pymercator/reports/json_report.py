@@ -40,6 +40,10 @@ def _prediction_global(prediction: dict[str, Any] | None) -> dict[str, Any]:
         "combined_score": prediction.get("combined_score"),
         "dominant_horizon": prediction.get("dominant_horizon"),
         "behavior": prediction.get("behavior"),
+        "horizon_alignment": prediction.get("horizon_alignment"),
+        "dominance_strength": prediction.get("dominance_strength"),
+        "horizon_scores": prediction.get("horizon_scores"),
+        "horizon_spread": prediction.get("horizon_spread"),
         "weights": prediction.get("weights", {}),
         "model_quality": prediction.get("model_quality", {}),
     }
@@ -60,6 +64,8 @@ def _prediction_for_decision(prediction: dict[str, Any] | None) -> dict[str, Any
             "combined_score",
             "dominant_horizon",
             "behavior",
+            "horizon_alignment",
+            "dominance_strength",
         )
         if key in global_prediction
     }
@@ -72,6 +78,7 @@ def daily_report_to_dict(
     asset_blockers: dict[str, list[str]] | None = None,
     update_status: dict[str, Any] | None = None,
     basket: dict[str, Any] | None = None,
+    observation_candidates: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     raw = _convert(asdict(report))
     global_prediction = _prediction_global(prediction)
@@ -94,6 +101,9 @@ def daily_report_to_dict(
     if basket is not None:
         raw["basket"] = dict(basket)
 
+    if observation_candidates is not None:
+        raw["observation_candidates"] = _convert(observation_candidates)
+
     for index, decision in enumerate(report.decisions):
         ticker = decision.asset.ticker
         raw["decisions"][index]["decision_codes"] = list(decision_codes(decision))
@@ -115,6 +125,7 @@ def render_daily_report_json(
     asset_blockers: dict[str, list[str]] | None = None,
     update_status: dict[str, Any] | None = None,
     basket: dict[str, Any] | None = None,
+    observation_candidates: list[dict[str, Any]] | None = None,
 ) -> str:
     payload = daily_report_to_dict(
         report,
@@ -123,6 +134,7 @@ def render_daily_report_json(
         asset_blockers=asset_blockers,
         update_status=update_status,
         basket=basket,
+        observation_candidates=observation_candidates,
     )
     return json.dumps(payload, ensure_ascii=False, indent=indent)
 
@@ -135,6 +147,7 @@ def write_daily_report_json(
     asset_blockers: dict[str, list[str]] | None = None,
     update_status: dict[str, Any] | None = None,
     basket: dict[str, Any] | None = None,
+    observation_candidates: list[dict[str, Any]] | None = None,
 ) -> None:
     output_path = Path(path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -146,6 +159,7 @@ def write_daily_report_json(
             asset_blockers=asset_blockers,
             update_status=update_status,
             basket=basket,
+            observation_candidates=observation_candidates,
         ),
         encoding="utf-8",
     )

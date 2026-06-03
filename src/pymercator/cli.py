@@ -109,6 +109,12 @@ def _run_run_command(args: argparse.Namespace) -> int:
     return run_run_command(args)
 
 
+def _run_observe_command(args: argparse.Namespace) -> int:
+    from pymercator.cli_observe import run_observe_command
+
+    return run_observe_command(args)
+
+
 def _run_scenario_command(args: argparse.Namespace) -> int:
     from pymercator.cli_scenario import run_scenario_command
 
@@ -789,6 +795,7 @@ def build_parser() -> argparse.ArgumentParser:
         run_parser.add_argument("--context", default="storage/context/latest_market_context.json")
         run_parser.add_argument("--matrix", default="storage/features/latest_feature_matrix.csv")
         run_parser.add_argument("--evaluation", default="storage/prediction/latest_evaluation.json")
+        run_parser.add_argument("--observation-config", default="config/observation.json")
         run_parser.add_argument("--prices-dir", default="data/prices")
         run_parser.add_argument("--limit", type=int, default=20)
         run_parser.add_argument("--run-dir", default="storage/runs/latest")
@@ -814,6 +821,19 @@ def build_parser() -> argparse.ArgumentParser:
         )
         run_parser.add_argument("--allow-experimental-model", action="store_true")
         run_parser.add_argument("--json", action="store_true")
+
+        observe_parser = subparsers.add_parser(
+            "observe",
+            help="Rank assets for observation without generating trade signals.",
+            description="Rank assets for observation without generating trade signals.",
+        )
+        observe_parser.set_defaults(command="observe")
+        observe_parser.add_argument("--list", default="IBOV")
+        observe_parser.add_argument("--universe", default="data/universes/ibov_live.csv")
+        observe_parser.add_argument("--config", default="config/observation.json")
+        observe_parser.add_argument("--limit", type=int, default=20)
+        observe_parser.add_argument("--cluster", action="store_true")
+        observe_parser.add_argument("--json", action="store_true")
 
         lab_short = subparsers.add_parser("lab", help="Run prediction lab (shortcut)")
         lab_short.set_defaults(command="lab")
@@ -1441,6 +1461,9 @@ def main(argv: list[str] | None = None) -> int:
 
         if args.command == "run":
             return _run_run_command(args)
+
+        if args.command == "observe":
+            return _run_observe_command(args)
 
         if args.command == "lab":
             return _run_short_lab_command(args)

@@ -19,6 +19,20 @@ from pymercator.domain import (
 )
 
 
+def test_horizon_alignment_classifies_close_weak_scores_as_flat_weak() -> None:
+    from pymercator.horizon_observer import (
+        dominance_strength,
+        horizon_alignment,
+        horizon_spread,
+    )
+
+    scores = {"D5": 49.75, "D20": 48.94, "D60": 50.16}
+
+    assert horizon_spread(scores) == 1.22
+    assert dominance_strength(scores) == "NONE"
+    assert horizon_alignment(scores) == "FLAT_WEAK"
+
+
 def _write_context(path: Path) -> None:
     path.write_text(
         json.dumps(
@@ -326,6 +340,8 @@ def test_cli_run_positive_scenario_allows_actionable_and_basket(
     payload = json.loads(capsys.readouterr().out)
     assert payload["market"]["regime"] == "RISK_ON"
     assert payload["prediction"]["behavior"] == "TREND_CONFIRM"
+    assert payload["prediction"]["horizon_alignment"] == "ALIGNED_STRONG"
+    assert payload["prediction"]["dominance_strength"] == "MODERATE"
     assert payload["prediction"]["model_quality"]["status"] == "STRONG"
     assert payload["decision"]["actionable"] > 0
     assert payload["basket"]["status"] == "OK"
@@ -622,10 +638,19 @@ def test_cli_run_exposes_multi_horizon_prediction_observer(
     assert payload["prediction"]["combined_score"] == 59.85
     assert payload["prediction"]["dominant_horizon"] == "D60"
     assert payload["prediction"]["behavior"] == "POSITIONAL_SETUP"
+    assert all(
+        horizon not in payload["prediction"]["behavior"]
+        for horizon in ("D5", "D20", "D60")
+    )
+    assert payload["prediction"]["horizon_scores"] == {"D5": 51.0, "D20": 58.0, "D60": 66.0}
+    assert payload["prediction"]["horizon_spread"] == 15.0
+    assert payload["prediction"]["dominance_strength"] == "STRONG"
+    assert payload["prediction"]["horizon_alignment"] == "DIVERGENT"
     assert payload["prediction"]["weights"] == {"D5": 0.25, "D20": 0.35, "D60": 0.4}
     assert payload["prediction"]["model_quality"]["status"] == "OK"
     assert payload["top"][0]["dominant_horizon"] == "D60"
     assert payload["top"][0]["behavior"] == "POSITIONAL_SETUP"
+    assert payload["top"][0]["horizon_alignment"] == "DIVERGENT"
 
     report_payload = json.loads((tmp_path / "report.json").read_text(encoding="utf-8"))
     assert report_payload["prediction"]["engine"] == "multi_horizon_ridge"
@@ -633,6 +658,14 @@ def test_cli_run_exposes_multi_horizon_prediction_observer(
     assert report_payload["prediction"]["combined_score"] == 59.85
     assert report_payload["prediction"]["dominant_horizon"] == "D60"
     assert report_payload["prediction"]["behavior"] == "POSITIONAL_SETUP"
+    assert report_payload["prediction"]["horizon_scores"] == {
+        "D5": 51.0,
+        "D20": 58.0,
+        "D60": 66.0,
+    }
+    assert report_payload["prediction"]["horizon_spread"] == 15.0
+    assert report_payload["prediction"]["dominance_strength"] == "STRONG"
+    assert report_payload["prediction"]["horizon_alignment"] == "DIVERGENT"
     assert report_payload["update_status"]["status"] == "PARTIAL"
     assert report_payload["update_status"]["impact"] == "LOW"
     assert report_payload["blockers_count"] == {}
@@ -643,6 +676,8 @@ def test_cli_run_exposes_multi_horizon_prediction_observer(
         "combined_score": 59.85,
         "dominant_horizon": "D60",
         "behavior": "POSITIONAL_SETUP",
+        "horizon_alignment": "DIVERGENT",
+        "dominance_strength": "STRONG",
     }
     assert report_payload["decisions"][0]["blocker_reasons"] == []
 
@@ -702,6 +737,8 @@ def test_cli_run_blocks_actionable_when_model_quality_is_weak(
     assert result["decision"]["blocked"] == 1
     assert result["basket"]["status"] == "BLOCKED"
     assert result["basket"]["assets"] == 0
+    assert result["observation_candidates"]
+    assert result["observation_candidates"][0]["ticker"] == "PRIO3"
     assert result["blockers"] == {"MODEL_WEAK": 1}
     assert result["top"][0]["guard"] == "MODEL_WEAK"
     assert result["top"][0]["guard"] != "BLOCKED"
@@ -712,6 +749,13 @@ def test_cli_run_blocks_actionable_when_model_quality_is_weak(
     assert result["report"]["decisions"][0]["blocker_reasons"] == ["MODEL_WEAK"]
     assert result["report"]["model_quality"] == "WEAK"
     assert result["report"]["model_edge"] == -0.02
+    assert result["report"]["observation_candidates"]
+
+    report_payload = json.loads((tmp_path / "report.json").read_text(encoding="utf-8"))
+    assert report_payload["observation_candidates"]
+    assert report_payload["observation_candidates"][0]["ticker"] == "PRIO3"
+    assert report_payload["basket"]["status"] == "BLOCKED"
+    assert report_payload["basket"]["assets"] == 0
 
     summary = run_mod.render_run_summary(result)
     assert "MODEL QUALITY" in summary
@@ -719,7 +763,10 @@ def test_cli_run_blocks_actionable_when_model_quality_is_weak(
     assert "edge               -0.02" in summary
     assert "BLOCKERS" in summary
     assert "MODEL_WEAK           1" in summary
-    assert summary.count("TICKER") == 1
+    assert "NO ACTIONABLE ASSETS" in summary
+    assert "OBSERVATION CANDIDATES" in summary
+    assert "PRIO3" in summary
+    assert summary.count("TOP") == 1
 
 
 def test_cli_run_blocks_actionable_when_model_quality_is_degenerate(
@@ -787,6 +834,81 @@ def test_cli_run_blocks_actionable_when_model_quality_is_degenerate(
     assert "MODEL_WEAK: model quality is degenerate" in (
         result["report"]["decisions"][0]["permission"]["reasons"]
     )
+
+
+def test_run_summary_abbreviates_top_reasons_without_mid_token_truncation() -> None:
+    import pymercator.cli_run as run_mod
+
+    payload = {
+        "status": "OK",
+        "profile": "CON",
+        "list": "IBOV",
+        "market": {
+            "regime": "RISK_OFF",
+            "context": "storage/context/latest_market_context.json",
+            "update_status": {},
+        },
+        "prediction": {
+            "engine_used": "multi_horizon_ridge",
+            "horizons": [5, 20, 60],
+            "combined_score": 49.63,
+            "dominant_horizon": "D60",
+            "behavior": "AVOID",
+            "horizon_alignment": "FLAT_WEAK",
+            "dominance_strength": "NONE",
+            "model_quality": {"status": "WEAK", "edge": -0.0037},
+        },
+        "decision": {
+            "actionable": 0,
+            "watch": 0,
+            "blocked": 5,
+            "rejected": 0,
+        },
+        "blockers": {},
+        "top": [
+            {
+                "ticker": "USIM5",
+                "decision": "BLOCKED",
+                "score": 73.5,
+                "guard": "MODEL_WEAK+RISK_OFF+BEHAVIOR_AVOID+VOL_HIGH+ATR_HIGH+TREND_CONFIRM",
+                "blockers": [
+                    "MODEL_WEAK",
+                    "RISK_OFF",
+                    "BEHAVIOR_AVOID",
+                    "VOL_HIGH",
+                    "ATR_HIGH",
+                    "TREND_CONFIRM",
+                ],
+                "dominant_horizon": "D60",
+                "behavior": "AVOID",
+                "horizon_alignment": "FLAT_WEAK",
+                "dominance_strength": "NONE",
+            }
+        ],
+        "files": {
+            "report": "storage/reports/latest_daily_report.txt",
+            "json": "storage/reports/latest_daily_report.json",
+            "run_dir": "storage/runs/latest",
+        },
+        "basket": None,
+    }
+
+    summary = run_mod.render_run_summary(payload)
+
+    assert "MW+RO+AVOID+VOL+2" in summary
+    assert "BEHAVIOR" in summary
+    assert "DOM" in summary
+    assert "ALIGN" in summary
+    assert "FLAT_WEAK" in summary
+    assert "D60 AVOID" not in summary
+    assert "MODEL_WEAK+RISK_OFF" not in summary
+    assert "BEHAVIOR_AVOID+VO" not in summary
+    assert "MW=model weak" in summary
+    assert "RO=risk off" in summary
+    assert "AVOID=behavior avoid" in summary
+    assert "VOL=volatility high" in summary
+    assert "ATR=ATR high" not in summary
+    assert "\n1\nTOP" not in summary
 
 
 def test_cli_run_blocks_non_ok_prediction_evaluation(

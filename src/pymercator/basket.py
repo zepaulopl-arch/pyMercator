@@ -431,6 +431,22 @@ def _write_txt(output_txt: str | Path, payload: dict[str, Any]) -> None:
     output_path.write_text(render_basket_summary(payload), encoding="utf-8")
 
 
+def _format_rate(value: Any, *, precision: int = 2) -> str:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return "-"
+    return f"{number:.{precision}f}"
+
+
+def _format_percent(value: Any, *, precision: int = 2) -> str:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return "-"
+    return f"{number * 100:.{precision}f}%"
+
+
 def render_basket_summary(
     payload: dict[str, Any],
     *,
@@ -443,8 +459,8 @@ def render_basket_summary(
         ("slots", payload["slots"]),
         ("assets", len(payload.get("rows", []))),
         ("min_sectors", payload["min_sectors"]),
-        ("min_weight", payload["min_weight"]),
-        ("risk_per_trade", payload["risk_per_trade"]),
+        ("min_weight", _format_rate(payload["min_weight"])),
+        ("risk_per_trade", _format_percent(payload["risk_per_trade"])),
         ("stop_mode", payload["stop_mode"]),
         ("targets", payload["targets"]),
     ]

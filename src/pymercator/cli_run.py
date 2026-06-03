@@ -9,7 +9,14 @@ from typing import Any
 from pymercator.basket import run_daily_basket
 from pymercator.domain import DailyReport, ExecutionStatus
 from pymercator.explain import decision_codes, decision_label
+from pymercator.horizon_observer import (
+    dominance_strength,
+    horizon_alignment,
+    horizon_spread,
+    normalize_horizon_scores,
+)
 from pymercator.market_context import load_market_context
+from pymercator.observation import observation_from_decisions, render_observation_candidates
 from pymercator.pipeline import run_daily_pipeline
 from pymercator.policy import normalize_profile
 from pymercator.reports.json_report import daily_report_to_dict, write_daily_report_json
@@ -38,10 +45,118 @@ GLOBAL_BLOCKER_PRIORITY = (
     "VOL_HIGH",
 )
 BLOCKING_MODEL_QUALITY = {"WEAK", "DEGENERATE"}
+TOP_REASONS_WIDTH = 20
+TOP_REASON_ABBREVIATIONS = {
+    "MODEL_WEAK": "MW",
+    "RISK_OFF": "RO",
+    "BEHAVIOR_AVOID": "AVOID",
+    "VOL_HIGH": "VOL",
+    "ATR_HIGH": "ATR",
+    "MODEL_STRONG": "MS",
+    "RISK_ON": "RON",
+    "TREND_CONFIRM": "TC",
+    "WATCH": "W",
+    "BLOCKED": "B",
+}
+TOP_REASON_LEGEND = {
+    "MW": "model weak",
+    "RO": "risk off",
+    "AVOID": "behavior avoid",
+    "VOL": "volatility high",
+    "ATR": "ATR high",
+    "MS": "model strong",
+    "RON": "risk on",
+    "TC": "trend confirm",
+    "W": "watch",
+    "B": "blocked",
+}
 
 
 def _dedupe(values: list[str] | tuple[str, ...]) -> tuple[str, ...]:
     return tuple(dict.fromkeys(item for item in values if item))
+
+
+def _top_reason_tokens(item: dict[str, Any]) -> list[str]:
+    blockers = item.get("blockers", [])
+    if isinstance(blockers, list) and blockers:
+        return [str(token).strip() for token in blockers if str(token).strip()]
+
+    guard = str(item.get("guard", "") or "").strip()
+    if not guard:
+        return []
+    return [token.strip() for token in guard.split("+") if token.strip()]
+
+
+def format_top_reasons(
+    item: dict[str, Any],
+    *,
+    width: int = TOP_REASONS_WIDTH,
+) -> tuple[str, list[str]]:
+    tokens = _top_reason_tokens(item)
+    if not tokens:
+        return "-", []
+
+    codes: list[str] = []
+    legend_codes: list[str] = []
+    for token in tokens:
+        normalized = token.split(":", 1)[0].strip().upper()
+        code = TOP_REASON_ABBREVIATIONS.get(normalized, normalized)
+        codes.append(code)
+        if normalized in TOP_REASON_ABBREVIATIONS and code in TOP_REASON_LEGEND:
+            legend_codes.append(code)
+
+    selected: list[str] = []
+    for index, code in enumerate(codes):
+        remaining = len(codes) - index - 1
+        candidate_codes = [*selected, code]
+        suffix = f"+{remaining}" if remaining else ""
+        candidate = "+".join(candidate_codes) + suffix
+        if len(candidate) <= width or not selected:
+            selected.append(code)
+            continue
+        break
+
+    omitted = len(codes) - len(selected)
+    display = "+".join(selected)
+    if omitted:
+        display = f"{display}+{omitted}" if display else f"+{omitted}"
+
+    used_legend_codes = [
+        code
+        for code in selected
+        if code in legend_codes
+    ]
+    return display, used_legend_codes
+
+
+def format_top_reason_legend(codes: list[str]) -> str:
+    ordered = list(dict.fromkeys(code for code in codes if code in TOP_REASON_LEGEND))
+    return " | ".join(f"{code}={TOP_REASON_LEGEND[code]}" for code in ordered)
+
+
+def _compact_decimal(value: Any, precision: int) -> str:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return "-"
+    text = f"{number:.{precision}f}"
+    return text[1:] if text.startswith("0.") else text
+
+
+def _horizon_sort_key(value: Any) -> int:
+    try:
+        return int(str(value).upper().removeprefix("D"))
+    except ValueError:
+        return 999
+
+
+def format_observer_weights(weights: dict[str, Any]) -> str:
+    if not isinstance(weights, dict) or not weights:
+        return "-"
+    parts = []
+    for horizon in sorted(weights, key=_horizon_sort_key):
+        parts.append(f"{str(horizon).upper()}={_compact_decimal(weights[horizon], 3)}")
+    return " ".join(parts)
 
 
 def _model_quality_status(prediction: dict[str, Any]) -> str:
@@ -158,10 +273,21 @@ def _load_prediction_observer(path: str) -> dict[str, Any]:
     observer = payload.get("horizon_observer", {})
     if not isinstance(observer, dict):
         observer = {}
+    observer_config = payload.get("observer", {})
+    if not isinstance(observer_config, dict):
+        observer_config = {}
 
     scores = observer.get("scores", {})
     if not isinstance(scores, dict):
         scores = {}
+    horizon_scores = normalize_horizon_scores(
+        payload.get("horizon_scores")
+        if isinstance(payload.get("horizon_scores"), dict)
+        else observer.get("horizon_scores", scores)
+    )
+    weights = observer.get("weights", payload.get("weights", {}))
+    if not isinstance(weights, dict):
+        weights = {}
 
     return {
         "engine_used": "multi_horizon_ridge",
@@ -170,11 +296,24 @@ def _load_prediction_observer(path: str) -> dict[str, Any]:
         "experimental": bool(payload.get("experimental", False)),
         "reason": payload.get("reason", ""),
         "horizons": payload.get("horizons", []),
-        "observer_mode": observer.get("mode", payload.get("observer", {}).get("mode", "-")),
-        "weights": observer.get("weights", payload.get("weights", {})),
-        "d5_score": scores.get("D5"),
-        "d20_score": scores.get("D20"),
-        "d60_score": scores.get("D60"),
+        "observer_mode": observer.get("mode", observer_config.get("mode", "-")),
+        "weights": weights,
+        "horizon_scores": horizon_scores,
+        "horizon_spread": payload.get(
+            "horizon_spread",
+            observer.get("horizon_spread", horizon_spread(horizon_scores)),
+        ),
+        "horizon_alignment": payload.get(
+            "horizon_alignment",
+            observer.get("horizon_alignment", horizon_alignment(horizon_scores)),
+        ),
+        "dominance_strength": payload.get(
+            "dominance_strength",
+            observer.get("dominance_strength", dominance_strength(horizon_scores)),
+        ),
+        "d5_score": horizon_scores.get("D5"),
+        "d20_score": horizon_scores.get("D20"),
+        "d60_score": horizon_scores.get("D60"),
         "combined_score": observer.get("combined_score"),
         "dominant_horizon": observer.get("dominant_horizon"),
         "behavior": observer.get("behavior"),
@@ -195,6 +334,8 @@ def _top_rows_with_prediction(
         "combined_score": prediction.get("combined_score"),
         "dominant_horizon": prediction.get("dominant_horizon"),
         "behavior": prediction.get("behavior"),
+        "horizon_alignment": prediction.get("horizon_alignment"),
+        "dominance_strength": prediction.get("dominance_strength"),
     }
     rows: list[dict[str, Any]] = []
     for item in report.decisions[:limit]:
@@ -362,6 +503,7 @@ def run_decision_flow(
     matrix: str = "storage/features/latest_feature_matrix.csv",
     evaluation: str = "storage/prediction/latest_evaluation.json",
     prices_dir: str = "data/prices",
+    observation_config: str = "config/observation.json",
     limit: int = 20,
     run_dir: str = "storage/runs/latest",
     report_output: str = "storage/reports/latest_daily_report.txt",
@@ -461,6 +603,18 @@ def run_decision_flow(
         (run_path / "report.txt").write_text(rendered, encoding="utf-8")
 
         ready_tickers = _tickers_by_status(report, ExecutionStatus.READY)
+        observation_payload = observation_from_decisions(
+            report.decisions,
+            config_path=observation_config,
+        )
+        observation_candidates: list[dict[str, Any]] = []
+        if (
+            not ready_tickers
+            and observation_payload.get("enabled", True)
+            and observation_payload.get("show_when_no_actionable", True)
+        ):
+            observation_candidates = list(observation_payload.get("candidates", []))
+
         basket_payload: dict[str, Any] | None = None
         if basket:
             basket_payload = run_daily_basket(
@@ -498,6 +652,7 @@ def run_decision_flow(
             asset_blockers=asset_blockers,
             update_status=update_status_payload,
             basket=basket_summary,
+            observation_candidates=observation_candidates,
         )
         write_daily_report_json(
             report,
@@ -507,6 +662,7 @@ def run_decision_flow(
             asset_blockers=asset_blockers,
             update_status=update_status_payload,
             basket=basket_summary,
+            observation_candidates=observation_candidates,
         )
 
     except Exception as exc:
@@ -548,6 +704,7 @@ def run_decision_flow(
         ),
         "files": files,
         "basket": basket_summary,
+        "observation_candidates": observation_candidates,
         "report": daily_report_to_dict(
             report,
             prediction=prediction_payload,
@@ -555,6 +712,7 @@ def run_decision_flow(
             asset_blockers=asset_blockers,
             update_status=update_status_payload,
             basket=basket_summary,
+            observation_candidates=observation_candidates,
         ),
     }
 
@@ -586,6 +744,7 @@ def render_run_summary(payload: dict[str, Any]) -> str:
     files = payload["files"]
     horizons = prediction.get("horizons", [])
     horizon_text = ",".join(f"D{item}" for item in horizons) if horizons else "-"
+    weights_text = format_observer_weights(prediction.get("weights", {}))
     lines.extend(
         [
             "",
@@ -617,12 +776,24 @@ def render_run_summary(payload: dict[str, Any]) -> str:
                 [
                     ("engine", prediction.get("engine_used", "-")),
                     ("horizons", horizon_text),
+                    ("observer", prediction.get("observer_mode", "-")),
+                    ("weights", weights_text),
                     ("combined_score", prediction.get("combined_score", "-")),
-                    ("dominant_horizon", prediction.get("dominant_horizon", "-")),
                     (
                         "behavior",
                         prediction.get("behavior", "-"),
                         prediction.get("behavior", "-"),
+                    ),
+                    ("dominant", prediction.get("dominant_horizon", "-")),
+                    (
+                        "alignment",
+                        prediction.get("horizon_alignment", "-"),
+                        prediction.get("horizon_alignment", "-"),
+                    ),
+                    (
+                        "dominance",
+                        prediction.get("dominance_strength", "-"),
+                        prediction.get("dominance_strength", "-"),
                     ),
                 ],
             ),
@@ -667,23 +838,39 @@ def render_run_summary(payload: dict[str, Any]) -> str:
             "",
             "TOP",
             muted_line(),
-            f"{'#':>2} {'TICKER':<8} {'STATUS':<10} {'SCORE':>8} {'REASONS':<38} {'BEHAVIOR':<14}",
+            (
+                f"{'#':>2} {'TICKER':<8} {'STATUS':<10} {'SCORE':>8} "
+                f"{'REASONS':<{TOP_REASONS_WIDTH}} {'BEHAVIOR':<14} "
+                f"{'DOM':<4} {'ALIGN':<14}"
+            ),
         ]
     )
 
+    legend_codes: list[str] = []
     if not top_rows:
         lines.append("No rows.")
     for index, item in enumerate(top_rows, start=1):
-        behavior = "-"
-        if item.get("dominant_horizon") and item.get("behavior"):
-            behavior = f"{item['dominant_horizon']} {item['behavior']}"
+        behavior = str(item.get("behavior", "-") or "-")
+        dominant = str(item.get("dominant_horizon", "-") or "-")
+        alignment = str(item.get("horizon_alignment", "-") or "-")
         status_text = colorize(f"{item['decision']:<10}", item["decision"])
+        reasons, used_codes = format_top_reasons(item)
+        legend_codes.extend(used_codes)
         lines.append(
             f"{index:>2} {item['ticker']:<8} {status_text} "
             f"{float(item['score']):>8.2f} "
-            f"{truncate(item['guard'], 38):<38} "
-            f"{truncate(behavior, 14):<14}"
+            f"{reasons:<{TOP_REASONS_WIDTH}} "
+            f"{truncate(behavior, 14):<14} "
+            f"{truncate(dominant, 4):<4} "
+            f"{truncate(alignment, 14):<14}"
         )
+    legend = format_top_reason_legend(legend_codes)
+    if legend:
+        lines.extend(["", "LEGEND", legend])
+
+    observation_candidates = payload.get("observation_candidates", [])
+    if decision.get("actionable", 0) == 0 and observation_candidates:
+        lines.extend(["", *render_observation_candidates(observation_candidates)])
 
     lines.extend(
         [
@@ -724,6 +911,7 @@ def run_run_command(args: Any) -> int:
         context=args.context,
         matrix=args.matrix,
         evaluation=args.evaluation,
+        observation_config=args.observation_config,
         prices_dir=args.prices_dir,
         limit=args.limit,
         run_dir=args.run_dir,

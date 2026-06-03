@@ -43,6 +43,8 @@ def test_positive_operational_scenario_command_releases_actionable_basket(
     assert all(payload["checks"].values())
     assert run["market"]["regime"] == "RISK_ON"
     assert run["prediction"]["behavior"] == "TREND_CONFIRM"
+    assert run["prediction"]["horizon_alignment"] == "ALIGNED_STRONG"
+    assert run["prediction"]["dominance_strength"] == "MODERATE"
     assert run["prediction"]["model_quality"]["status"] == "STRONG"
     assert run["prediction"]["model_quality"]["edge"] > 0
     assert run["decision"]["actionable"] > 0
@@ -58,6 +60,7 @@ def test_positive_operational_scenario_command_releases_actionable_basket(
     report_payload = json.loads(report_json.read_text(encoding="utf-8"))
     assert report_payload["prediction"]["engine"] == "multi_horizon_ridge"
     assert report_payload["prediction"]["behavior"] == "TREND_CONFIRM"
+    assert report_payload["prediction"]["horizon_alignment"] == "ALIGNED_STRONG"
     assert report_payload["model_quality"] == "STRONG"
     assert "blockers" in report_payload
     assert report_payload["basket"]["status"] == "OK"

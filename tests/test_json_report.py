@@ -64,13 +64,23 @@ def test_daily_report_json_can_embed_multi_horizon_prediction():
             "combined_score": 59.85,
             "dominant_horizon": "D60",
             "behavior": "POSITIONAL_SETUP",
+            "horizon_alignment": "DIVERGENT",
+            "dominance_strength": "STRONG",
+            "horizon_scores": {"D5": 51.0, "D20": 58.0, "D60": 66.0},
+            "horizon_spread": 15.0,
             "weights": {"D5": 0.25, "D20": 0.35, "D60": 0.4},
         },
     )
 
     assert payload["prediction"]["engine"] == "multi_horizon_ridge"
     assert payload["prediction"]["horizons"] == [5, 20, 60]
+    assert payload["prediction"]["horizon_alignment"] == "DIVERGENT"
+    assert payload["prediction"]["dominance_strength"] == "STRONG"
+    assert payload["prediction"]["horizon_scores"] == {"D5": 51.0, "D20": 58.0, "D60": 66.0}
+    assert payload["prediction"]["horizon_spread"] == 15.0
     assert payload["decisions"][0]["prediction"]["d5_score"] == 51.0
     assert payload["decisions"][0]["prediction"]["d20_score"] == 58.0
     assert payload["decisions"][0]["prediction"]["d60_score"] == 66.0
     assert payload["decisions"][0]["prediction"]["behavior"] == "POSITIONAL_SETUP"
+    assert payload["decisions"][0]["prediction"]["horizon_alignment"] == "DIVERGENT"
+    assert payload["decisions"][0]["prediction"]["dominance_strength"] == "STRONG"

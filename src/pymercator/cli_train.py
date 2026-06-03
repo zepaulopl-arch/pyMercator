@@ -8,6 +8,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from pymercator.horizon_observer import (
+    dominance_strength,
+    horizon_alignment,
+    horizon_spread,
+)
 from pymercator.legacy_prediction_engines import (
     CATBOOST_AVAILABLE,
     SKLEARN_AVAILABLE,
@@ -310,6 +315,7 @@ def _observer_summary(
         4,
     )
     dominant_horizon = max(scores, key=lambda key: scores[key]) if scores else "-"
+    spread = horizon_spread(scores)
 
     return {
         "engine_used": "horizon_observer",
@@ -322,6 +328,10 @@ def _observer_summary(
         "combined_score": combined_score,
         "dominant_horizon": dominant_horizon,
         "behavior": _behavior(scores),
+        "horizon_alignment": horizon_alignment(scores),
+        "dominance_strength": dominance_strength(scores),
+        "horizon_scores": scores,
+        "horizon_spread": spread,
         "behavior_labels": [
             "TACTICAL",
             "SWING",
@@ -1107,6 +1117,10 @@ def run_train_flow(
             if isinstance(model, dict)
         },
         "horizon_observer": observer,
+        "horizon_scores": observer.get("horizon_scores", observer.get("scores", {})),
+        "horizon_spread": observer.get("horizon_spread", 0.0),
+        "horizon_alignment": observer.get("horizon_alignment", "-"),
+        "dominance_strength": observer.get("dominance_strength", "-"),
         "row_count_by_horizon": row_count_by_horizon,
         "asset_count_by_horizon": asset_count_by_horizon,
         "dropped_assets_by_horizon": dropped_assets_by_horizon,
@@ -1989,6 +2003,16 @@ def _observer_detail_lines(observer: dict[str, Any]) -> list[str]:
                 "behavior",
                 observer.get("behavior", "-"),
                 status=observer.get("behavior", "-"),
+            ),
+            _detail_report_kv(
+                "alignment",
+                observer.get("horizon_alignment", "-"),
+                status=observer.get("horizon_alignment", "-"),
+            ),
+            _detail_report_kv(
+                "dominance",
+                observer.get("dominance_strength", "-"),
+                status=observer.get("dominance_strength", "-"),
             ),
         ]
     )

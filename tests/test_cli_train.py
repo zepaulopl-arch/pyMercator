@@ -220,6 +220,14 @@ def test_cli_train_generates_multi_horizon_evaluation_by_default(
     assert set(payload["horizon_models"]) == {"D5", "D20", "D60"}
     assert payload["horizon_observer"]["mode"] == "weighted"
     assert payload["horizon_observer"]["dominant_horizon"] == "D60"
+    assert payload["horizon_observer"]["horizon_scores"] == {
+        "D5": 61.0,
+        "D20": 64.0,
+        "D60": 67.0,
+    }
+    assert payload["horizon_observer"]["horizon_spread"] == 6.0
+    assert payload["horizon_observer"]["horizon_alignment"] == "ALIGNED_STRONG"
+    assert payload["horizon_observer"]["dominance_strength"] == "WEAK"
     assert payload["horizon_observer"]["behavior"] in {
         "TREND_CONFIRM",
         "POSITIONAL_SETUP",
