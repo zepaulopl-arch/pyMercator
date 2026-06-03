@@ -249,6 +249,7 @@ function Write-BlockerVerdict {
 function Write-ProfileSummary {
     param([object[]]$Summaries)
 
+    $rows = @($Summaries | Where-Object { $null -ne $_ })
     $plainLines = New-Object System.Collections.Generic.List[string]
     $plainLines.Add("")
     $plainLines.Add("PROFILE SUMMARY")
@@ -260,13 +261,22 @@ function Write-ProfileSummary {
     Write-Host "--------------------------------------------------------------------------------"
     Write-Host (Format-ProfileSummaryHeader)
 
-    foreach ($summary in $Summaries) {
+    if ($rows.Count -eq 0) {
+        $message = "No profile summaries available."
+        $plainLines.Add($message)
+        Write-Host $message
+        $summaryLog = Join-Path $logDir "profile_summary.txt"
+        $plainLines | Set-Content -LiteralPath $summaryLog -Encoding UTF8
+        return
+    }
+
+    foreach ($summary in $rows) {
         $plainLines.Add((Format-ProfileSummaryLine -Summary $summary))
         Write-ProfileSummaryLine -Summary $summary
     }
 
-    $actionable = @($Summaries | Where-Object { $_.Actionable -gt 0 })
-    $blockers = @(Get-GlobalBlockers -Summaries $Summaries)
+    $actionable = @($rows | Where-Object { $_.Actionable -gt 0 })
+    $blockers = @(Get-GlobalBlockers -Summaries $rows)
 
     $plainLines.Add("")
     $plainLines.Add("VERDICT")
@@ -314,7 +324,7 @@ Invoke-PyMercatorStep `
     -LogFile (Join-Path $logDir "00_update.txt") `
     -Critical $false
 
-$summaries = New-Object System.Collections.Generic.List[object]
+$summaries = New-Object System.Collections.ArrayList
 
 foreach ($profile in $profiles) {
     $profileName = [string]$profile["Name"]
@@ -340,10 +350,10 @@ foreach ($profile in $profiles) {
         -LogFile $paths.Log
 
     $payload = Read-ProfileJson -Path $paths.Json
-    $summaries.Add((Get-ProfileSummary -Profile $profileName -Payload $payload))
+    [void]$summaries.Add((Get-ProfileSummary -Profile $profileName -Payload $payload))
 }
 
-Write-ProfileSummary -Summaries @($summaries)
+Write-ProfileSummary -Summaries @($summaries.ToArray())
 
 Write-Host ""
 Write-Host "============================================================"
