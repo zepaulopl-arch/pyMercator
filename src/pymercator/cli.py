@@ -115,6 +115,12 @@ def _run_observe_command(args: argparse.Namespace) -> int:
     return run_observe_command(args)
 
 
+def _run_positions_command(args: argparse.Namespace) -> int:
+    from pymercator.cli_positions import run_positions_command
+
+    return run_positions_command(args)
+
+
 def _run_scenario_command(args: argparse.Namespace) -> int:
     from pymercator.cli_scenario import run_scenario_command
 
@@ -796,6 +802,7 @@ def build_parser() -> argparse.ArgumentParser:
         run_parser.add_argument("--matrix", default="storage/features/latest_feature_matrix.csv")
         run_parser.add_argument("--evaluation", default="storage/prediction/latest_evaluation.json")
         run_parser.add_argument("--observation-config", default="config/observation.json")
+        run_parser.add_argument("--positions", default="storage/positions/current_positions.csv")
         run_parser.add_argument("--prices-dir", default="data/prices")
         run_parser.add_argument("--limit", type=int, default=20)
         run_parser.add_argument("--run-dir", default="storage/runs/latest")
@@ -834,6 +841,26 @@ def build_parser() -> argparse.ArgumentParser:
         observe_parser.add_argument("--limit", type=int, default=20)
         observe_parser.add_argument("--cluster", action="store_true")
         observe_parser.add_argument("--json", action="store_true")
+
+        pos_parser = subparsers.add_parser("pos", help="Position file utilities")
+        pos_parser.set_defaults(command="pos")
+        pos_parser.add_argument("--json", action="store_true", dest="pos_json")
+        pos_subparsers = pos_parser.add_subparsers(dest="pos_command")
+        pos_show_parser = pos_subparsers.add_parser("show", help="Show current positions")
+        pos_show_parser.set_defaults(pos_command="show")
+        pos_show_parser.add_argument(
+            "--file",
+            default="storage/positions/current_positions.csv",
+        )
+        pos_show_parser.add_argument("--json", action="store_true")
+        pos_import_parser = pos_subparsers.add_parser("import", help="Import positions CSV")
+        pos_import_parser.set_defaults(pos_command="import")
+        pos_import_parser.add_argument("--file", required=True)
+        pos_import_parser.add_argument(
+            "--output",
+            default="storage/positions/current_positions.csv",
+        )
+        pos_import_parser.add_argument("--json", action="store_true")
 
         lab_short = subparsers.add_parser("lab", help="Run prediction lab (shortcut)")
         lab_short.set_defaults(command="lab")
@@ -1464,6 +1491,9 @@ def main(argv: list[str] | None = None) -> int:
 
         if args.command == "observe":
             return _run_observe_command(args)
+
+        if args.command == "pos":
+            return _run_positions_command(args)
 
         if args.command == "lab":
             return _run_short_lab_command(args)

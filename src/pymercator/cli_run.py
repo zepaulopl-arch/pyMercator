@@ -18,6 +18,7 @@ from pymercator.horizon_observer import (
 from pymercator.market_context import load_market_context
 from pymercator.observation import observation_from_decisions, render_observation_candidates
 from pymercator.pipeline import run_daily_pipeline
+from pymercator.position_actions import build_position_actions, render_position_books
 from pymercator.policy import normalize_profile
 from pymercator.reports.json_report import daily_report_to_dict, write_daily_report_json
 from pymercator.reports.terminal import render_daily_report
@@ -504,6 +505,7 @@ def run_decision_flow(
     evaluation: str = "storage/prediction/latest_evaluation.json",
     prices_dir: str = "data/prices",
     observation_config: str = "config/observation.json",
+    positions: str = "storage/positions/current_positions.csv",
     limit: int = 20,
     run_dir: str = "storage/runs/latest",
     report_output: str = "storage/reports/latest_daily_report.txt",
@@ -530,6 +532,7 @@ def run_decision_flow(
         "run_dir": run_dir,
         "basket": basket_output,
         "update_status": str(_update_status_path_for_context(context)),
+        "positions": positions,
     }
 
     try:
@@ -614,6 +617,13 @@ def run_decision_flow(
             and observation_payload.get("show_when_no_actionable", True)
         ):
             observation_candidates = list(observation_payload.get("candidates", []))
+        position_actions = build_position_actions(
+            report,
+            prediction_payload,
+            positions_path=positions,
+            long_limit=min(10, max(1, limit)),
+            short_limit=min(10, max(1, limit)),
+        )
 
         basket_payload: dict[str, Any] | None = None
         if basket:
@@ -653,6 +663,7 @@ def run_decision_flow(
             update_status=update_status_payload,
             basket=basket_summary,
             observation_candidates=observation_candidates,
+            position_actions=position_actions,
         )
         write_daily_report_json(
             report,
@@ -663,6 +674,7 @@ def run_decision_flow(
             update_status=update_status_payload,
             basket=basket_summary,
             observation_candidates=observation_candidates,
+            position_actions=position_actions,
         )
 
     except Exception as exc:
@@ -705,6 +717,10 @@ def run_decision_flow(
         "files": files,
         "basket": basket_summary,
         "observation_candidates": observation_candidates,
+        "position_actions": position_actions,
+        "exit_book": position_actions.get("exit_book", {}),
+        "short_candidates": position_actions.get("short_candidates", []),
+        "hedge_candidates": position_actions.get("hedge_candidates", []),
         "report": daily_report_to_dict(
             report,
             prediction=prediction_payload,
@@ -713,6 +729,7 @@ def run_decision_flow(
             update_status=update_status_payload,
             basket=basket_summary,
             observation_candidates=observation_candidates,
+            position_actions=position_actions,
         ),
     }
 
@@ -872,6 +889,10 @@ def render_run_summary(payload: dict[str, Any]) -> str:
     if decision.get("actionable", 0) == 0 and observation_candidates:
         lines.extend(["", *render_observation_candidates(observation_candidates)])
 
+    position_actions = payload.get("position_actions", {})
+    if position_actions:
+        lines.extend(["", *render_position_books(position_actions)])
+
     lines.extend(
         [
             "",
@@ -912,6 +933,7 @@ def run_run_command(args: Any) -> int:
         matrix=args.matrix,
         evaluation=args.evaluation,
         observation_config=args.observation_config,
+        positions=args.positions,
         prices_dir=args.prices_dir,
         limit=args.limit,
         run_dir=args.run_dir,

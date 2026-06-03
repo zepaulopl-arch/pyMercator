@@ -79,6 +79,7 @@ def daily_report_to_dict(
     update_status: dict[str, Any] | None = None,
     basket: dict[str, Any] | None = None,
     observation_candidates: list[dict[str, Any]] | None = None,
+    position_actions: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     raw = _convert(asdict(report))
     global_prediction = _prediction_global(prediction)
@@ -104,6 +105,13 @@ def daily_report_to_dict(
     if observation_candidates is not None:
         raw["observation_candidates"] = _convert(observation_candidates)
 
+    if position_actions is not None:
+        converted_actions = _convert(position_actions)
+        raw["position_actions"] = converted_actions
+        raw["exit_book"] = converted_actions.get("exit_book", {})
+        raw["short_candidates"] = converted_actions.get("short_candidates", [])
+        raw["hedge_candidates"] = converted_actions.get("hedge_candidates", [])
+
     for index, decision in enumerate(report.decisions):
         ticker = decision.asset.ticker
         raw["decisions"][index]["decision_codes"] = list(decision_codes(decision))
@@ -126,6 +134,7 @@ def render_daily_report_json(
     update_status: dict[str, Any] | None = None,
     basket: dict[str, Any] | None = None,
     observation_candidates: list[dict[str, Any]] | None = None,
+    position_actions: dict[str, Any] | None = None,
 ) -> str:
     payload = daily_report_to_dict(
         report,
@@ -135,6 +144,7 @@ def render_daily_report_json(
         update_status=update_status,
         basket=basket,
         observation_candidates=observation_candidates,
+        position_actions=position_actions,
     )
     return json.dumps(payload, ensure_ascii=False, indent=indent)
 
@@ -148,6 +158,7 @@ def write_daily_report_json(
     update_status: dict[str, Any] | None = None,
     basket: dict[str, Any] | None = None,
     observation_candidates: list[dict[str, Any]] | None = None,
+    position_actions: dict[str, Any] | None = None,
 ) -> None:
     output_path = Path(path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -160,6 +171,7 @@ def write_daily_report_json(
             update_status=update_status,
             basket=basket,
             observation_candidates=observation_candidates,
+            position_actions=position_actions,
         ),
         encoding="utf-8",
     )
