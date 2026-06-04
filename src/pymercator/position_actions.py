@@ -13,7 +13,11 @@ from pymercator.ui import muted_line, truncate
 
 DEFAULT_POSITIONS_PATH = "storage/positions/current_positions.csv"
 POSITION_COLUMNS = ("ticker", "side", "qty", "avg_price", "entry_date")
-OPTIONAL_POSITION_COLUMNS = ("stop",)
+OPTIONAL_POSITION_COLUMNS = ("stop", "trade_mode")
+DEFAULT_BUY_TRADE_MODE = "SWING"
+DEFAULT_EXIT_TRADE_MODE = "POSITION"
+DEFAULT_SHORT_TRADE_MODE = "SWING"
+VALID_TRADE_MODES = {"DAY_TRADE", "SWING", "POSITION"}
 
 
 @dataclass(frozen=True)
@@ -24,6 +28,7 @@ class Position:
     avg_price: float
     entry_date: str
     stop: float | None = None
+    trade_mode: str = DEFAULT_EXIT_TRADE_MODE
 
 
 def _ticker(value: Any) -> str:
@@ -39,6 +44,16 @@ def _to_float(value: Any, default: float = 0.0) -> float:
 
 def _clamp(value: float, low: float = 0.0, high: float = 100.0) -> float:
     return max(low, min(high, value))
+
+
+def _direction(value: Any, *, default: str = "FLAT") -> str:
+    text = str(value or "").strip().upper()
+    return text if text in {"LONG", "SHORT", "FLAT"} else default
+
+
+def _trade_mode(value: Any, *, default: str = DEFAULT_BUY_TRADE_MODE) -> str:
+    text = str(value or "").strip().upper()
+    return text if text in VALID_TRADE_MODES else default
 
 
 def load_positions(
@@ -78,6 +93,10 @@ def load_positions(
                         _to_float(row.get("stop"))
                         if str(row.get("stop") or "").strip()
                         else None
+                    ),
+                    trade_mode=_trade_mode(
+                        row.get("trade_mode"),
+                        default=DEFAULT_EXIT_TRADE_MODE,
                     ),
                 )
             )
@@ -183,6 +202,8 @@ def build_long_book(report: DailyReport, *, limit: int = 10) -> list[dict[str, A
         rows.append(
             {
                 "ticker": decision.asset.ticker,
+                "direction": "LONG",
+                "trade_mode": DEFAULT_BUY_TRADE_MODE,
                 "action": action,
                 "score": round(float(decision.ranking.context_score), 2),
                 "reason": _long_reason(decision),
@@ -221,6 +242,8 @@ def _exit_row(
     if decision is None:
         return {
             "ticker": position.ticker,
+            "direction": _direction(position.side),
+            "trade_mode": _trade_mode(position.trade_mode, default=DEFAULT_EXIT_TRADE_MODE),
             "action": "HOLD",
             "pnl_pct": None,
             "risk": "UNKNOWN",
@@ -259,6 +282,8 @@ def _exit_row(
     if stop_hit:
         return {
             "ticker": position.ticker,
+            "direction": _direction(position.side),
+            "trade_mode": _trade_mode(position.trade_mode, default=DEFAULT_EXIT_TRADE_MODE),
             "action": "STOP_LOSS",
             "pnl_pct": round(pnl, 2),
             "risk": "STOP",
@@ -269,6 +294,8 @@ def _exit_row(
     if pnl <= stop_loss_pct:
         return {
             "ticker": position.ticker,
+            "direction": _direction(position.side),
+            "trade_mode": _trade_mode(position.trade_mode, default=DEFAULT_EXIT_TRADE_MODE),
             "action": "STOP_LOSS",
             "pnl_pct": round(pnl, 2),
             "risk": "STOP",
@@ -279,6 +306,8 @@ def _exit_row(
     if profit_relevant and deteriorating:
         return {
             "ticker": position.ticker,
+            "direction": _direction(position.side),
+            "trade_mode": _trade_mode(position.trade_mode, default=DEFAULT_EXIT_TRADE_MODE),
             "action": "TAKE_PROFIT",
             "pnl_pct": round(pnl, 2),
             "risk": "OK" if not (vol_high or atr_high) else "HIGH",
@@ -288,6 +317,8 @@ def _exit_row(
     if pnl >= trail_profit_pct and (vol_high or atr_high):
         return {
             "ticker": position.ticker,
+            "direction": _direction(position.side),
+            "trade_mode": _trade_mode(position.trade_mode, default=DEFAULT_EXIT_TRADE_MODE),
             "action": "TRAIL_STOP",
             "pnl_pct": round(pnl, 2),
             "risk": "HIGH",
@@ -297,6 +328,8 @@ def _exit_row(
     if defensive and vol_high and atr_high:
         return {
             "ticker": position.ticker,
+            "direction": _direction(position.side),
+            "trade_mode": _trade_mode(position.trade_mode, default=DEFAULT_EXIT_TRADE_MODE),
             "action": "EXIT_FULL",
             "pnl_pct": round(pnl, 2),
             "risk": "HIGH",
@@ -307,6 +340,8 @@ def _exit_row(
     if defensive:
         return {
             "ticker": position.ticker,
+            "direction": _direction(position.side),
+            "trade_mode": _trade_mode(position.trade_mode, default=DEFAULT_EXIT_TRADE_MODE),
             "action": "REDUCE",
             "pnl_pct": round(pnl, 2),
             "risk": "HIGH" if (vol_high or atr_high) else "CAUTION",
@@ -316,6 +351,8 @@ def _exit_row(
     if asset.trend_score >= 55.0 and asset.momentum_score >= 50.0 and not (vol_high or atr_high):
         return {
             "ticker": position.ticker,
+            "direction": _direction(position.side),
+            "trade_mode": _trade_mode(position.trade_mode, default=DEFAULT_EXIT_TRADE_MODE),
             "action": "HOLD",
             "pnl_pct": round(pnl, 2),
             "risk": "OK",
@@ -324,6 +361,8 @@ def _exit_row(
         }
     return {
         "ticker": position.ticker,
+        "direction": _direction(position.side),
+        "trade_mode": _trade_mode(position.trade_mode, default=DEFAULT_EXIT_TRADE_MODE),
         "action": "REDUCE",
         "pnl_pct": round(pnl, 2),
         "risk": "HIGH" if (vol_high or atr_high) else "CAUTION",
@@ -482,6 +521,8 @@ def build_short_book(
         rows.append(
             {
                 "ticker": decision.asset.ticker,
+                "direction": "SHORT",
+                "trade_mode": DEFAULT_SHORT_TRADE_MODE,
                 "action": action,
                 "score": round(score, 2),
                 "reason": reason,
@@ -575,9 +616,16 @@ def render_position_books(position_actions: dict[str, Any]) -> list[str]:
         return []
 
     lines = [
-        "LONG BOOK",
+        "BUY / LONG BOOK",
         muted_line(),
-        f"{'#':>2} {'TICKER':<8} {'ACTION':<10} {'SCORE':>7} REASON",
+        "direction         LONG",
+        "meaning           bought/long position; benefits from price rising",
+        f"mode              {DEFAULT_BUY_TRADE_MODE}",
+        "",
+        (
+            f"{'#':>2} {'TICKER':<8} {'DIR':<5} {'MODE':<10} "
+            f"{'ACTION':<10} {'SCORE':>7} REASON"
+        ),
     ]
     long_rows = position_actions.get("long_book", [])
     if not isinstance(long_rows, list) or not long_rows:
@@ -585,7 +633,10 @@ def render_position_books(position_actions: dict[str, Any]) -> list[str]:
     else:
         for index, row in enumerate(long_rows, start=1):
             lines.append(
-                f"{index:>2} {row['ticker']:<8} {row['action']:<10} "
+                f"{index:>2} {row['ticker']:<8} "
+                f"{str(row.get('direction', 'LONG')):<5} "
+                f"{str(row.get('trade_mode', DEFAULT_BUY_TRADE_MODE)):<10} "
+                f"{row['action']:<10} "
                 f"{float(row['score']):>7.2f} {truncate(row['reason'], 48)}"
             )
 
@@ -597,7 +648,7 @@ def render_position_books(position_actions: dict[str, Any]) -> list[str]:
             "EXIT BOOK",
             muted_line(),
             (
-                f"{'#':>2} {'TICKER':<8} {'ACTION':<12} {'PNL%':>7} "
+                f"{'#':>2} {'TICKER':<8} {'DIR':<5} {'MODE':<10} {'ACTION':<12} {'PNL%':>7} "
                 f"{'RISK':<7} {'REVIEW':<6} REASON"
             ),
         ]
@@ -613,7 +664,10 @@ def render_position_books(position_actions: dict[str, Any]) -> list[str]:
             pnl = "n/a" if pnl_value is None else f"{float(pnl_value):+7.1f}"
             review = "YES" if row.get("manual_review_required") else "NO"
             lines.append(
-                f"{index:>2} {row['ticker']:<8} {row['action']:<12} "
+                f"{index:>2} {row['ticker']:<8} "
+                f"{str(row.get('direction', 'LONG')):<5} "
+                f"{str(row.get('trade_mode', DEFAULT_EXIT_TRADE_MODE)):<10} "
+                f"{row['action']:<12} "
                 f"{pnl:>7} {row['risk']:<7} {review:<6} {truncate(row['reason'], 44)}"
             )
 
@@ -621,9 +675,17 @@ def render_position_books(position_actions: dict[str, Any]) -> list[str]:
     lines.extend(
         [
             "",
-            "SHORT / HEDGE BOOK",
+            "SELL-SHORT / HEDGE BOOK",
             muted_line(),
-            f"{'#':>2} {'TICKER':<8} {'ACTION':<16} {'SCORE':>7} REASON",
+            "direction         SHORT",
+            "meaning           sold/borrowed position; benefits from price falling",
+            f"mode              {DEFAULT_SHORT_TRADE_MODE}",
+            "requires          borrow availability, borrow cost and short risk checks",
+            "",
+            (
+                f"{'#':>2} {'TICKER':<8} {'DIR':<5} {'MODE':<10} "
+                f"{'ACTION':<16} {'SCORE':>7} REASON"
+            ),
         ]
     )
     if not isinstance(short_rows, list) or not short_rows:
@@ -631,7 +693,10 @@ def render_position_books(position_actions: dict[str, Any]) -> list[str]:
     else:
         for index, row in enumerate(short_rows, start=1):
             lines.append(
-                f"{index:>2} {row['ticker']:<8} {row['action']:<16} "
+                f"{index:>2} {row['ticker']:<8} "
+                f"{str(row.get('direction', 'SHORT')):<5} "
+                f"{str(row.get('trade_mode', DEFAULT_SHORT_TRADE_MODE)):<10} "
+                f"{row['action']:<16} "
                 f"{float(row['score']):>7.1f} {truncate(row['reason'], 44)}"
             )
     return lines

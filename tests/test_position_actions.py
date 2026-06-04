@@ -319,4 +319,5 @@ def test_run_json_contains_position_action_books_and_keeps_long_basket_blocked(
     summary = run_mod.render_run_summary(result)
     assert "OBSERVATION CANDIDATES" in summary
     assert "EXIT BOOK" in summary
-    assert "SHORT / HEDGE BOOK" in summary
+    assert "BUY / LONG BOOK" in summary
+    assert "SELL-SHORT / HEDGE BOOK" in summary
