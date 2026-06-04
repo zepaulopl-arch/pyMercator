@@ -207,7 +207,7 @@ def test_position_in_defensive_context_generates_reduce(tmp_path: Path) -> None:
     assert payload["exit_book"]["rows"][0]["action"] == "REDUCE"
 
 
-def test_stop_hit_generates_exit_full(tmp_path: Path) -> None:
+def test_stop_hit_generates_stop_loss(tmp_path: Path) -> None:
     report = _report((_decision("ABCD3", trend=70.0, momentum=70.0, last_close=89.0),))
     positions = tmp_path / "positions.csv"
     positions.write_text(
@@ -217,10 +217,12 @@ def test_stop_hit_generates_exit_full(tmp_path: Path) -> None:
 
     payload = build_position_actions(report, positions_path=positions)
 
-    assert payload["exit_book"]["rows"][0]["action"] == "EXIT_FULL"
+    row = payload["exit_book"]["rows"][0]
+    assert row["action"] == "STOP_LOSS"
+    assert row["reason"] == "stop reached"
 
 
-def test_weak_asset_without_position_generates_short_candidate_not_sell() -> None:
+def test_weak_asset_without_position_generates_short_blocked_not_sell() -> None:
     report = _report(
         (_decision("WEAK3", trend=20.0, momentum=20.0, score=20.0),),
         regime=MarketRegime.RISK_OFF,
@@ -231,8 +233,9 @@ def test_weak_asset_without_position_generates_short_candidate_not_sell() -> Non
         {"combined_score": 42.0, "model_quality": {"status": "WEAK"}},
     )
 
-    assert payload["short_candidates"]
-    assert payload["short_candidates"][0]["action"] == "SHORT_CANDIDATE"
+    assert payload["short_book"]
+    assert payload["short_book"][0]["action"] == "SHORT_BLOCKED"
+    assert payload["short_candidates"] == []
     assert "SELL" not in json.dumps(payload)
 
 
@@ -298,7 +301,8 @@ def test_run_json_contains_position_action_books_and_keeps_long_basket_blocked(
     result = json.loads(capsys.readouterr().out)
     assert result["decision"]["actionable"] == 0
     assert result["basket"]["status"] == "BLOCKED"
-    assert result["short_candidates"][0]["action"] == "SHORT_CANDIDATE"
+    assert result["short_candidates"] == []
+    assert result["position_actions"]["short_book"][0]["action"] == "SHORT_BLOCKED"
     assert result["position_actions"]["exit_book"]["message"] == (
         "no open positions loaded."
     )
@@ -308,7 +312,8 @@ def test_run_json_contains_position_action_books_and_keeps_long_basket_blocked(
 
     payload = json.loads(report_json.read_text(encoding="utf-8"))
     assert payload["exit_book"]["message"] == "no open positions loaded."
-    assert payload["short_candidates"][0]["action"] == "SHORT_CANDIDATE"
+    assert payload["short_candidates"] == []
+    assert payload["position_actions"]["short_book"][0]["action"] == "SHORT_BLOCKED"
     assert payload["hedge_candidates"] == []
 
     summary = run_mod.render_run_summary(result)

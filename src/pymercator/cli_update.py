@@ -5,6 +5,7 @@ from datetime import date
 from pathlib import Path
 from typing import Any
 
+from pymercator.artifact_metadata import artifact_metadata
 from pymercator.data.prices_csv import check_prices_dir
 from pymercator.data.prices_yahoo import fetch_yahoo_prices_from_ticker_file
 from pymercator.data.universe_builder import build_universe_csv_from_prices
@@ -14,6 +15,7 @@ from pymercator.features_matrix import write_feature_matrix
 from pymercator.indices_prices import check_indices_prices_dir, fetch_indices_prices
 from pymercator.market_context import validate_market_context
 from pymercator.market_context_auto import write_auto_market_context
+from pymercator.update_freshness import build_data_freshness
 
 DEFAULT_UPDATE_START = "2000-01-01"
 DEFAULT_INDICES_START = "2000-01-01"
@@ -101,13 +103,28 @@ def _build_update_status(
     if status == "FAIL" and failed_step in {"prices", "indices", "context", "context_check"}:
         context_valid = False
 
+    freshness = build_data_freshness(steps)
+    freshness_status = str(freshness.get("freshness_status", "OK")).upper()
+    if freshness_status == "FAIL":
+        status = "FAIL"
+        failed_step = failed_step or "freshness"
+        impact = "HIGH"
+        regime_reliability = "DEGRADED"
+        context_valid = False
+    elif freshness_status == "WARNING" and status == "OK":
+        status = "PARTIAL"
+        impact = "LOW" if impact == "LOW" else impact
+
     return {
+        "schema_version": "update_status.v1",
         "status": status,
         "impact": impact,
         "context_valid": "YES" if context_valid else "NO",
         "regime_reliability": regime_reliability,
         "warnings": warnings,
         "failed_step": failed_step,
+        "freshness": freshness,
+        "runtime": artifact_metadata(),
     }
 
 
@@ -423,6 +440,7 @@ def run_update_flow(
         steps=steps,
         warnings=warnings,
     )
+    final_status = str(update_status.get("status", final_status))
     files["update_status"] = _write_update_status(context_output, update_status)
 
     return {
@@ -432,6 +450,8 @@ def run_update_flow(
         "impact": update_status["impact"],
         "context_valid": update_status["context_valid"],
         "regime_reliability": update_status["regime_reliability"],
+        "failed_step": update_status.get("failed_step", ""),
+        "reason": "data freshness failed" if final_status == "FAIL" else "",
         "start": start,
         "end": resolved_end,
         "use_cache": use_cache,
@@ -453,6 +473,24 @@ def render_update_summary(payload: dict[str, Any]) -> str:
         f"- context_valid: {payload.get('context_valid', '-')}",
         f"- regime_reliability: {payload.get('regime_reliability', '-')}",
     ]
+    freshness = payload.get("update_status", {}).get("freshness", {})
+
+    def append_freshness() -> None:
+        if isinstance(freshness, dict) and freshness:
+            lines.extend(
+                [
+                    "",
+                    "DATA FRESHNESS",
+                    "--------------------------------------------------------------------------------",
+                    f"prices_last_date      {freshness.get('prices_last_date', '-') or '-'}",
+                    f"indices_last_date     {freshness.get('indices_last_date', '-') or '-'}",
+                    f"max_staleness_days    {freshness.get('max_staleness_days', 0)}",
+                    f"stale_assets          {freshness.get('stale_assets', 0)}",
+                    f"stale_indices         {freshness.get('stale_indices', 0)}",
+                    f"freshness_status      {freshness.get('freshness_status', '-')}",
+                    f"data_quality_score    {freshness.get('data_quality_score', '-')}",
+                ]
+            )
 
     if status == "FAIL":
         lines.extend(
@@ -462,6 +500,7 @@ def render_update_summary(payload: dict[str, Any]) -> str:
             ]
         )
         lines.extend(impact_lines)
+        append_freshness()
         return "\n".join(lines)
 
     lines.extend(["", "DATA:"])
@@ -491,6 +530,8 @@ def render_update_summary(payload: dict[str, Any]) -> str:
             lines.append(f"- {name}: {step.get('status', '-')}")
 
     lines.extend(impact_lines)
+
+    append_freshness()
 
     files = payload.get("files", {})
     if payload.get("warnings"):

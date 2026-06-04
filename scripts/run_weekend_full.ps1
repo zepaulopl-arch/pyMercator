@@ -1,4 +1,4 @@
-param([string]$PY = "C:\Users\zepau\anaconda3\python.exe")
+param([string]$PY = "")
 
 $ErrorActionPreference = "Stop"
 $env:NO_COLOR = "1"
@@ -7,9 +7,12 @@ $env:CLICOLOR = "0"
 
 . (Join-Path $PSScriptRoot "ops_common.ps1")
 
-$PY = Initialize-PyMercatorScript -RequestedPython $PY
-$logDir = New-PyMercatorLogDir -Prefix "weekend_full"
+$scriptName = Split-Path -Leaf $PSCommandPath
+$PY = Initialize-PyMercatorScript -RequestedPython $PY -ScriptName $scriptName
+$logDir = New-PyMercatorLogDir -Prefix "weekend_full" -ScriptName $scriptName
+$listName = $script:PYMERCATOR_DEFAULT_LIST
 $profiles = @("CON", "BAL", "AGR", "RLX")
+$updateStatus = "storage\context\latest_update_status.json"
 
 function New-ProfilePaths {
     param([string]$Profile)
@@ -23,11 +26,7 @@ function New-ProfilePaths {
     }
 }
 
-Write-Host ""
-Write-Host "PYMERCATOR WEEKEND FULL"
-Write-Host "PYTHON : $PY"
-Write-Host "RUNTIME: $logDir"
-Write-Host ""
+Write-PyMercatorRuntimeHeader -Title "PYMERCATOR WEEKEND FULL"
 
 Invoke-NativeStep `
     -Name "Install editable package" `
@@ -42,8 +41,8 @@ Invoke-PyMercatorStep `
 
 Invoke-PyMercatorStep `
     -Python $PY `
-    -Name "Update IBOV" `
-    -PyArgs @("update", "--list", "IBOV") `
+    -Name "Update $listName" `
+    -PyArgs @("update", "--list", $listName) `
     -LogFile (Join-Path $logDir "02_update_ibov.log")
 
 Invoke-PyMercatorStep `
@@ -129,6 +128,15 @@ Invoke-NativeStep `
     -Name "Pytest" `
     -Command @($PY, "-m", "pytest", "tests", "-q") `
     -LogFile (Join-Path $logDir "10_pytest.log")
+
+Write-RunManifest -Status "OK" -Outputs @{
+    train_detail_report = "storage\prediction\latest_train_detail_report.txt"
+    update_status = $updateStatus
+    scenario_report_json = (Join-Path $logDir "scenario_positive_report.json")
+    scenario_basket_csv = (Join-Path $logDir "scenario_positive_basket.csv")
+    pytest_log = (Join-Path $logDir "10_pytest.log")
+    runtime_dir = $logDir
+}
 
 Write-Host ""
 Write-Host "============================================================"

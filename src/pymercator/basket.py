@@ -6,6 +6,7 @@ import math
 from pathlib import Path
 from typing import Any
 
+from pymercator.artifact_metadata import artifact_metadata
 from pymercator.terminal_ui import render_table, render_warning_list
 from pymercator.ui import format_kv_section
 
@@ -520,9 +521,11 @@ def run_daily_basket(
     def finish(status: str, rows: list[dict[str, Any]], warnings: list[str]) -> dict[str, Any]:
         reason = blocked_reason if status == "BLOCKED" else ""
         payload = {
+            "schema_version": "basket.v1",
             "status": status,
             "reason": reason,
             "slots": slots,
+            "assets": len(rows),
             "min_sectors": min_sectors,
             "min_weight": min_weight,
             "capital": capital,
@@ -536,6 +539,7 @@ def run_daily_basket(
             "rows": rows,
             "warnings": warnings,
             "evaluation": False,
+            "runtime": artifact_metadata(),
         }
         _write_csv(output_csv, rows)
         _write_json(output_json, payload)
@@ -599,9 +603,11 @@ def run_daily_basket(
             warnings.append(f"{built['ticker']}: {built['warnings']}")
 
     payload = {
+        "schema_version": "basket.v1",
         "status": "OK" if len(rows_payload) == slots else "FAILED",
         "reason": "",
         "slots": slots,
+        "assets": len(rows_payload),
         "min_sectors": min_sectors,
         "min_weight": min_weight,
         "capital": capital,
@@ -615,6 +621,7 @@ def run_daily_basket(
         "rows": rows_payload,
         "warnings": warnings,
         "evaluation": bool(evaluation_payload),
+        "runtime": artifact_metadata(),
     }
 
     _write_csv(output_csv, rows_payload)

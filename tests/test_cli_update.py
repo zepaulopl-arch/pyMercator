@@ -320,7 +320,9 @@ def test_cli_update_partial_index_cache_fallback_includes_operational_impact(
     manifest = context_output.with_name("latest_update_status.json")
     assert manifest.exists()
     manifest_payload = json.loads(manifest.read_text(encoding="utf-8"))
+    assert manifest_payload["schema_version"] == "update_status.v1"
     assert manifest_payload["impact"] == "LOW"
+    assert manifest_payload["freshness"]["freshness_status"] == "OK"
 
 
 def test_cli_update_required_index_failure_is_fail(

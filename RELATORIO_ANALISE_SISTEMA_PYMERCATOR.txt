@@ -1,0 +1,1047 @@
+RELATORIO DE ANALISE COMPLETA DO SISTEMA pyMercator
+Data: 2026-06-03
+Repositorio: c:\Users\zepau\ML\projetos\pyMercator
+Escopo: arquitetura, codigo, funcionalidades, contratos, testes, riscos e roadmap
+
+===============================================================================
+1. RESUMO EXECUTIVO
+===============================================================================
+
+O pyMercator evoluiu para um sistema operacional de permissao de risco, nao para
+um robo de trading. Essa distincao esta corretamente refletida na arquitetura
+principal:
+
+1. update constroi contexto, universo e feature matrix.
+2. train gera avaliacao multi-horizonte e governanca de qualidade do modelo.
+3. run combina regime, universo, ranking, validacao, permissao, modelo, basket,
+   observacao e posicoes.
+4. observe produz ranking relativo de observacao, sem gerar compra.
+5. pos/position_actions separa EXIT/SHORT/HEDGE de BUY.
+6. scripts operacionais consolidam rotinas em weekend, daily train e daily signal.
+
+Diagnostico geral:
+
+- O desenho conceitual esta forte: ha separacao clara entre oportunidade,
+  risco, autorizacao operacional, observacao e acao sobre posicoes existentes.
+- O sistema esta conservador por padrao. Isso e bom para o dominio: modelos
+  fracos, comportamento AVOID, regime RISK_OFF e falta de contexto bloqueiam
+  operacao longa.
+- A superficie de teste e ampla: 237 testes definidos, 236 passed, 1 skipped
+  na ultima execucao observada.
+- A principal divida tecnica nao e a logica de risco. A principal divida e
+  organizacional: arquivos CLI grandes demais, especialmente cli_train.py,
+  cli.py e cli_run.py.
+- A principal divida quantitativa e a calibracao empirica dos thresholds de
+  observation, exit e short. Eles funcionam como heuristicas defensivas, mas
+  ainda nao sao uma politica estatisticamente validada fora dos testes.
+- A principal divida operacional e a dependencia de ambiente Python fixo nos
+  scripts: os scripts usam C:\Users\zepau\anaconda3\python.exe, enquanto a
+  suite foi validada aqui com C:\Users\zepau\anaconda3\envs\trading\python.exe.
+
+Veredito:
+
+O sistema esta apto como camada de analise e permissao operacional com humano no
+loop. Ele nao deve ser tratado como executor automatico. O projeto esta em fase
+boa para endurecimento de contratos, reducao de acoplamento e validacao
+estatistica adicional.
+
+===============================================================================
+2. METRICAS OBJETIVAS DO REPOSITORIO
+===============================================================================
+
+Pacote:
+- Nome: pymercator
+- Python minimo: >=3.10
+- Dependencias diretas: pandas, yfinance, PyYAML, scikit-learn
+- Entry point publicado: mercator = pymercator.cli:main
+
+Tamanho observado:
+- Arquivos fonte Python: 76
+- Linhas fonte Python: 17.549
+- Arquivos de teste: 85
+- Linhas de teste: 8.021
+- Testes definidos por regex "def test_": 237
+- Ultima suite completa executada: 236 passed, 1 skipped
+
+Maiores arquivos fonte:
+- src\pymercator\cli_train.py: 2255 linhas
+- src\pymercator\legacy_prediction_engines.py: 1541 linhas
+- src\pymercator\cli.py: 1387 linhas
+- src\pymercator\cli_run.py: 852 linhas
+- src\pymercator\prediction_lab.py: 723 linhas
+- src\pymercator\basket.py: 532 linhas
+- src\pymercator\cli_update.py: 480 linhas
+- src\pymercator\real_run.py: 466 linhas
+- src\pymercator\position_actions.py: 461 linhas
+- src\pymercator\cli_scenario.py: 428 linhas
+- src\pymercator\scenario_pack.py: 423 linhas
+- src\pymercator\observation.py: 398 linhas
+
+Interpretacao:
+
+O projeto tem cobertura de testes significativa para o seu tamanho. A relacao
+teste/codigo e saudavel para um sistema operacional em desenvolvimento. A
+complexidade esta concentrada em poucos arquivos grandes; isso facilita achar
+fluxos centrais, mas aumenta risco de regressao local e dificulta manutencao de
+longo prazo.
+
+===============================================================================
+3. ARQUITETURA ATUAL
+===============================================================================
+
+Arquitetura funcional:
+
+update
+  -> baixa precos e indices
+  -> cria contexto automatico de mercado
+  -> monta universo vivo
+  -> valida universo
+  -> valida catalogo de features
+  -> escreve feature matrix
+  -> escreve latest_update_status.json
+
+train
+  -> le feature matrix e precos
+  -> treina horizontes D5, D20, D60
+  -> usa base engines extratrees, randomforest, gradientboosting
+  -> combina por ridge
+  -> gera observer ponderado
+  -> gera model_quality
+  -> escreve latest_evaluation.json e latest_multi_horizon_evaluation.json
+
+run
+  -> carrega contexto e avaliacao
+  -> executa pipeline base: regime, universe health, ranking, validation,
+     permission
+  -> aplica guardas de model_quality e behavior
+  -> gera blockers e TOP
+  -> gera observation_candidates quando actionable=0
+  -> gera position_actions: long_book, exit_book, short/hedge book
+  -> chama basket apenas com tickers READY
+  -> escreve report txt/json e run_dir
+
+observe
+  -> calcula OBS_INDEX para o universo
+  -> resume setores
+  -> nao gera compra
+
+pos
+  -> importa e mostra arquivo de posicoes
+  -> alimenta EXIT BOOK no run
+
+basket
+  -> monta cesta longa apenas com elegiveis READY
+  -> grava csv/json/txt em modo ANALYSIS_ONLY
+
+scripts
+  -> run_daily_signal.ps1: rotina normal, sem treino
+  -> run_daily_train.ps1: rotina com treino sem autotune
+  -> run_weekend_full.ps1: auditoria pesada, autotune, scenario e pytest
+
+Ponto forte arquitetural:
+
+O sistema passou a separar quatro conceitos que normalmente ficam perigosamente
+misturados em sistemas de trading:
+
+1. Sinal de compra longa.
+2. Ranking de observacao.
+3. Acao sobre posicao existente.
+4. Short/hedge observacional.
+
+Essa separacao reduz muito o risco semantico de interpretar "nao comprar" como
+"vender" ou "shortear".
+
+===============================================================================
+4. MODELO DE DOMINIO
+===============================================================================
+
+Arquivo central:
+- src\pymercator\domain.py
+
+Entidades principais:
+
+- Permission: ALLOW, CAUTION, DENY, UNKNOWN
+- ExecutionStatus: READY, WATCH, BLOCKED, MANUAL_ONLY, INVALID
+- HeadlineRisk: OFF, WATCH, ACTIVE, EXTREME
+- MarketRegime: RISK_ON, RISK_OFF, CHOPPY, EVENT_RISK, CRISIS, UNKNOWN
+- UniverseHealth: BROAD, NORMAL, NARROW, BROKEN, UNKNOWN
+- AssetSnapshot
+- MarketRegimeResult
+- UniverseHealthResult
+- RankingRow
+- TradeValidationResult
+- ExecutionPermissionResult
+- AssetDecision
+- DailyReport
+
+Analise:
+
+O dominio esta enxuto e adequado. Os dataclasses congelados tornam o pipeline
+mais previsivel, e o uso de replace em guards evita mutacao acidental. Isso e
+uma boa escolha para sistema de decisao.
+
+Risco:
+
+ExecutionStatus ainda representa somente o livro LONG. As acoes novas
+BUY_READY, HOLD, REDUCE, TAKE_PROFIT, EXIT_FULL, TRAIL_STOP, STOP_LOSS,
+SHORT_CANDIDATE, HEDGE_CANDIDATE e SHORT_BLOCKED vivem como strings em
+position_actions.py. Isso e aceitavel nesta fase, mas no medio prazo deve virar
+Enum separado, por exemplo:
+
+- LongAction
+- ExitAction
+- ShortHedgeAction
+
+Isso reduziria erro de digitacao e facilitaria contratos JSON.
+
+===============================================================================
+5. PIPELINE OPERACIONAL BASE
+===============================================================================
+
+Arquivo:
+- src\pymercator\pipeline.py
+
+Fluxo:
+
+1. load_policy
+2. load_universe_csv
+3. classify_market_regime
+4. evaluate_universe_health
+5. rank_assets
+6. validate_trade
+7. decide_execution_permission
+8. DailyReport
+
+Pontos fortes:
+
+- Pipeline limpo, linear e auditavel.
+- Cada etapa tem motor separado em src\pymercator\engines.
+- Posture final STAND_ASIDE/WATCH_ONLY/SELECTIVE/NORMAL e derivado de estados.
+- A decisao operacional tem razoes rastreaveis.
+
+Pontos fracos:
+
+- O pipeline base nao sabe sobre modelo preditivo. O modelo e aplicado depois
+  em cli_run.py como guard global. Conceitualmente isso esta correto para
+  governanca, mas estruturalmente coloca parte importante da decisao fora do
+  pipeline base.
+- A validacao de trade assume somente long: stop abaixo da entrada, target
+  acima da entrada. Isso esta correto para LONG BOOK, mas reforca a necessidade
+  de manter EXIT/SHORT fora desse pipeline.
+
+Recomendacao:
+
+Manter o pipeline base como "long permission pipeline". Criar no futuro uma
+classe ou modulo orquestrador, por exemplo OperationalDecisionService, que una:
+
+- long_permission_report
+- model_guard_report
+- observation_report
+- position_action_report
+- basket_report
+
+Isso reduziria a carga de cli_run.py.
+
+===============================================================================
+6. MARKET REGIME E CONTEXTO
+===============================================================================
+
+Arquivos:
+- src\pymercator\engines\regime.py
+- src\pymercator\market_context_auto.py
+- src\pymercator\cli_update.py
+
+O regime usa:
+
+- headline_risk
+- headline_tags
+- market_trend
+- market_volatility
+- policy.market_regime
+- policy.headline_risk
+
+O contexto automatico usa:
+
+- ^BVSP para trend/vol
+- BZ=F para stress de petroleo
+- USDBRL=X para stress cambial
+
+Pontos fortes:
+
+- O contexto e simples, explicavel e apropriado para operador humano.
+- update grava status e impacto operacional.
+- PARTIAL com fallback/cache pode manter operacao, com impacto/reliability
+  visiveis.
+
+Riscos:
+
+- A classificacao UP/DOWN/CHOPPY usa thresholds fixos de retorno e SMA. Isso
+  pode ficar instavel em regimes com volatilidade estruturalmente diferente.
+- O modelo atual nao tem "confidence" de contexto. Ele tem status/reliability,
+  mas a decisao de regime em si e deterministica.
+- Se indices exigidos falham, update bloqueia; isso e seguro. Mas se dados
+  existem e estao velhos, a qualidade depende do check de precos/indices.
+
+Recomendacao:
+
+Adicionar ao contexto:
+
+- last_data_date por indice
+- staleness_days
+- confidence ou data_quality_score
+- razao explicita para RISK_ON/RISK_OFF/CHOPPY
+
+Isso aumentaria confianca operacional em dias com Yahoo instavel.
+
+===============================================================================
+7. UNIVERSE HEALTH, RANKING, VALIDATION E PERMISSION
+===============================================================================
+
+Arquivos:
+- src\pymercator\engines\universe.py
+- src\pymercator\engines\ranking.py
+- src\pymercator\engines\validation.py
+- src\pymercator\engines\permission.py
+
+Universe health:
+
+- valida ativos, liquidez, volatilidade, ATR, trend e momentum
+- calcula breadth e concentracao setorial
+- retorna ALLOW/CAUTION/DENY
+
+Ranking:
+
+- usa pesos de trend, momentum, liquidity, quality, news e volatility_score
+- aplica fator de contexto por regime e sensibilidade setorial
+
+Validation:
+
+- checa entry/stop/target
+- calcula RR
+- checa liquidez, volatilidade, ATR
+- define READY se validacao nao tem razoes de veto
+
+Permission:
+
+- bloqueia regime DENY/UNKNOWN
+- bloqueia universo DENY/UNKNOWN
+- bloqueia validation invalid
+- WATCH se context_score < 55
+- WATCH se headline cap ou CAUTION
+- READY somente se tudo passa
+
+Pontos fortes:
+
+- A permissao operacional e defensiva.
+- As razoes sao legiveis e aparecem nos relatorios.
+- Perfis CON/BAL/AGR/RLX ajustam RR, volatilidade, ATR e tamanho.
+
+Pontos de atencao:
+
+- O threshold context_score < 55 esta hardcoded em permission.py. Poderia estar
+  em policy.json.
+- A conversao de volatilidade para score usa 100 - volatility_pct * 10. Isso
+  presume escala especifica. Como volatility_pct e anualizada no universo real,
+  essa penalizacao pode ser agressiva demais quando volatilidade anualizada
+  passa de 10%.
+- A validacao long exige stop abaixo e target acima. Correto para long, mas nao
+  deve ser reutilizado para short.
+
+Recomendacao:
+
+Mover para policy.json:
+
+- min_context_score_ready
+- min_context_score_watch
+- volatility_score_transform
+- permission thresholds por perfil
+
+===============================================================================
+8. TREINO MULTI-HORIZONTE
+===============================================================================
+
+Arquivos:
+- src\pymercator\cli_train.py
+- src\pymercator\prediction_config.py
+- src\pymercator\prediction_lab.py
+- src\pymercator\legacy_prediction_engines.py
+- src\pymercator\horizon_observer.py
+
+Arquitetura atual:
+
+- default operational engine: multi_horizon_ridge
+- horizons: D5, D20, D60
+- per horizon engine: ridge_ensemble
+- base engines: extratrees, randomforest, gradientboosting
+- meta: ridge
+- observer: weighted
+- weights: D5=0.25 D20=0.35 D60=0.40
+- calibration: sigmoid, cv=3, threshold_metric=balanced_accuracy
+- operational overrides nao padrao exigem --experimental
+
+Pontos fortes:
+
+- O sistema rejeita horizontes/engines/weights nao padrao sem --experimental.
+- O treino operacional e profile-independent. Isso e correto.
+- O output final inclui model_quality, observer, horizon_scores, alignment,
+  dominance e behavior.
+- O report detalhado de treino e rico: scoreboard, ridge weights, probability
+  profile, confusion summary, observer e verdict.
+
+Pontos de atencao:
+
+- cli_train.py tem 2255 linhas. Isso e o maior risco de manutencao do projeto.
+- Ha muito conhecimento estatistico, formatacao de terminal, validacao de
+  config, orquestracao e escrita de artefatos no mesmo arquivo.
+- legacy_prediction_engines.py ainda e grande e carrega motores novos e legados.
+
+Risco quantitativo:
+
+O report de treino e sofisticado, mas a qualidade real depende de:
+
+- tamanho de amostra por horizonte
+- distribuicao de classes
+- estabilidade temporal
+- vazamento de dados via feature engineering
+- calibracao de probabilidade fora da amostra
+
+Os testes cobrem contratos e cenarios, mas nao substituem validacao de pesquisa:
+
+- walk-forward validation
+- backtest por janela temporal
+- estabilidade de thresholds
+- stress test de regimes
+- analise de falso positivo por setor
+
+Recomendacao de refatoracao:
+
+Dividir cli_train.py em:
+
+- train_config_guard.py
+- train_data_diagnostic.py
+- train_multi_horizon.py
+- train_model_quality.py
+- train_detail_report.py
+- train_cli.py
+
+Objetivo: deixar cli_train.py como fachada fina.
+
+===============================================================================
+9. OBSERVER MULTI-HORIZONTE
+===============================================================================
+
+Arquivo:
+- src\pymercator\horizon_observer.py
+
+Funcoes:
+
+- normalize_horizon_scores
+- horizon_spread
+- dominance_strength
+- horizon_alignment
+
+Pontos fortes:
+
+- Resolveu corretamente a ambiguidade entre behavior combinado e horizonte
+  dominante.
+- Dominance e alignment sao conceitos separados.
+- Scores proximos geram NONE/FLAT_WEAK, evitando narrativa falsa de dominio.
+
+Ponto de atencao:
+
+Dominance strength e horizon alignment sao regras discretas com thresholds
+fixos. Elas sao explicaveis, mas ainda nao sao calibradas estatisticamente.
+
+Recomendacao:
+
+Adicionar no futuro um modulo de validacao:
+
+- distribuicao historica do spread D5/D20/D60
+- frequencia de cada alignment
+- taxa de acerto condicional por alignment
+- impacto no bloqueio operacional
+
+===============================================================================
+10. RUN OPERACIONAL
+===============================================================================
+
+Arquivo:
+- src\pymercator\cli_run.py
+
+Funcao central:
+- run_decision_flow
+
+Responsabilidades atuais:
+
+- carregar contexto
+- carregar update_status
+- carregar prediction observer
+- bloquear avaliacao experimental se nao autorizada
+- executar pipeline base
+- aplicar model_quality guard
+- aplicar behavior guard
+- calcular blockers
+- renderizar relatorio diario txt
+- gerar observation candidates
+- gerar position actions
+- montar basket
+- escrever JSON final
+- renderizar tela de terminal
+
+Pontos fortes:
+
+- Modelo fraco/degenerado bloqueia operacoes.
+- behavior AVOID bloqueia operacoes.
+- experimental prediction exige --allow-experimental-model.
+- basket recebe apenas ready_tickers.
+- observation e short candidates nao entram no basket.
+- output JSON contem o mesmo contrato que a tela precisa.
+
+Riscos:
+
+- cli_run.py tambem esta grande. Ele mistura orquestracao, formatacao,
+  governanca de modelo, abreviacao de TOP, output e escrita de artefatos.
+- Se context/evaluation forem invalidos, run retorna payload BLOCKED sem gerar
+  report json padrao. Isso e seguro, mas pode criar lacuna operacional se o
+  operador espera sempre um latest_daily_report.json.
+- A governanca de model_quality esta parcialmente em policy.json e parcialmente
+  em defaults de codigo. Isso e robusto, mas pode surpreender em auditoria se o
+  config nao explicitar DEGENERATE.
+
+Recomendacao:
+
+Criar:
+
+- model_governance.py
+- run_artifacts.py
+- run_terminal.py
+- top_reasons.py
+- operational_run_service.py
+
+Isso reduziria o risco de regressao ao mexer na tela.
+
+===============================================================================
+11. OBSERVATION INDEX
+===============================================================================
+
+Arquivo:
+- src\pymercator\observation.py
+- config\observation.json
+
+Formula:
+
+OBS_INDEX =
+  0.35 * trend
++ 0.30 * momentum
++ 0.20 * volatility_safety
++ 0.15 * atr_safety
+
+Onde:
+
+- volatility_safety = 100 - normalized_vol
+- atr_safety = 100 - normalized_atr
+
+Classes:
+
+- OBS_READY
+- MOM_HIGH_RISK
+- WATCH
+- STABLE_WEAK
+- WEAK
+- DANGER
+
+Pontos fortes:
+
+- A camada e explicitamente not_trade_signal.
+- O run so mostra candidates quando actionable=0.
+- O JSON inclui observation_candidates.
+- O setor e resumido por avg_obs e best_class.
+
+Riscos:
+
+- A normalizacao de risco usa heuristica: valores entre 0 e 100 com max > 20
+  sao tratados como ja escalados; caso contrario usa percentis 5/95. Isso e
+  razoavel, mas pode gerar classificacao diferente quando ATR/vol mudarem de
+  escala ou quando o universo for pequeno.
+- OBS_READY como nome pode ser confundido com BUY_READY por operador apressado.
+  O relatorio diz "relative observation only", mas o nome ainda carrega "READY".
+
+Recomendacao:
+
+- Renomear OBS_READY para OBS_FAVORABLE ou OBS_RELATIVE_READY.
+- Logar no payload o normalization_mode usado para vol e atr.
+- Adicionar thresholds de classes no config/observation.json.
+
+===============================================================================
+12. POSITION ACTION, EXIT BOOK E SHORT/HEDGE BOOK
+===============================================================================
+
+Arquivo:
+- src\pymercator\position_actions.py
+- src\pymercator\cli_positions.py
+
+Comandos:
+
+- python -m pymercator pos show
+- python -m pymercator pos import --file ...
+- python -m pymercator run --positions storage/positions/current_positions.csv
+
+Livros:
+
+- LONG BOOK: BUY_READY, WATCH, BLOCKED
+- EXIT BOOK: HOLD, REDUCE, TAKE_PROFIT, EXIT_FULL, TRAIL_STOP
+- SHORT/HEDGE BOOK: SHORT_CANDIDATE, HEDGE_CANDIDATE, SHORT_BLOCKED
+
+Pontos fortes:
+
+- EXIT depende de posicao carregada.
+- Sem arquivo de posicoes, mostra "no open positions loaded."
+- TAKE_PROFIT/REDUCE nao aparecem sem posicao.
+- SHORT_CANDIDATE nao e SELL.
+- SHORT_CANDIDATE e OBSERVATIONAL_ONLY.
+- JSON expoe position_actions, exit_book, short_candidates, hedge_candidates.
+
+Riscos:
+
+- As regras de exit e short sao hardcoded.
+- STOP_LOSS esta previsto conceitualmente, mas a implementacao atual retorna
+  EXIT_FULL para stop atingido. Isso e defensivo, mas nao preserva a taxonomia
+  desejada de STOP_LOSS.
+- O risco de short ainda nao conhece aluguel, disponibilidade, custo de aluguel,
+  squeeze risk real, recalls ou restricoes por corretora.
+- Uma posicao em ativo fora do universo vira HOLD com risco UNKNOWN. Isso evita
+  liquidacao automatica indevida, mas pode esconder posicoes que merecem revisao
+  manual imediata.
+
+Recomendacao:
+
+- Criar config/position_actions.json.
+- Separar thresholds de exit, short e hedge.
+- Adicionar action STOP_LOSS quando stop atingido com pnl negativo; manter
+  EXIT_FULL para saida total por risco estrutural.
+- Expor "manual_review_required": true para posicao fora do universo.
+- Integrar dados de aluguel antes de qualquer short operacional.
+
+===============================================================================
+13. BASKET
+===============================================================================
+
+Arquivo:
+- src\pymercator\basket.py
+
+Propriedades:
+
+- execution_mode: ANALYSIS_ONLY
+- usa apenas eligible_tickers quando chamado pelo run
+- retorna BLOCKED quando eligible_tickers esta vazio
+- escreve csv/json/txt
+- dimensiona por capital, peso, risco por trade e lote
+- usa stop progressivo baseado em ATR
+
+Ponto muito positivo:
+
+O basket long nao recebe observation_candidates nem short_candidates. Isso e
+critico e esta correto.
+
+Risco arquitetural:
+
+O basket re-scoreia ativos usando feature matrix e avaliacao, em vez de ordenar
+diretamente pelo ranking/score do DailyReport. Como ele e filtrado por
+eligible_tickers READY, isso nao libera ativos indevidos. Mas a ordem/peso final
+pode divergir da tabela TOP do run.
+
+Recomendacao:
+
+No futuro, passar ao basket um payload de candidatos ja rankeados pelo run,
+incluindo:
+
+- ticker
+- sector
+- context_score
+- validation
+- permission
+- model fields
+
+Assim o basket vira sizing/diversification engine, nao outro ranking engine.
+
+===============================================================================
+14. UPDATE E INTEGRIDADE DE DADOS
+===============================================================================
+
+Arquivo:
+- src\pymercator\cli_update.py
+
+Pontos fortes:
+
+- Fluxo end-to-end claro.
+- Usa temp file para feature matrix e so substitui se a etapa passa.
+- Escreve update_status com impact e regime_reliability.
+- Retorna 0 para OK/PARTIAL e 1 para FAIL.
+- Indices requeridos vs opcionais sao separados.
+
+Pontos de atencao:
+
+- Dependencia de yfinance e uma fonte externa instavel.
+- O update considera matrix FAIL se matrix_assets < universe_assets. Isso e
+  conservador, mas pode bloquear quando apenas ativos perifericos falham.
+- O status PARTIAL e operacionalmente tolerado, mas a decisao exata depende de
+  impact/reliability lidos no run.
+
+Recomendacao:
+
+- Gravar snapshot de "data freshness" por arquivo de preco.
+- Adicionar diff entre universo anterior e novo.
+- Permitir politica configuravel para tolerancia de perda de ativos, desde que
+  liquidez/representatividade sejam preservadas.
+
+===============================================================================
+15. RELATORIOS, JSON E CONTRATOS
+===============================================================================
+
+Arquivos:
+- src\pymercator\reports\terminal.py
+- src\pymercator\reports\json_report.py
+- src\pymercator\cli_run.py
+- src\pymercator\cli_train.py
+
+Pontos fortes:
+
+- O JSON diario inclui prediction, model_quality, blockers, update_status,
+  basket, observation_candidates e position_actions.
+- Decision-level prediction inclui behavior separado de dominant_horizon.
+- Terminal do run tem PREDICTION, MODEL QUALITY, DECISION, BLOCKERS, TOP,
+  OBSERVATION CANDIDATES, LONG BOOK, EXIT BOOK, SHORT/HEDGE BOOK, FILES e
+  BASKET.
+- Abreviacoes de TOP reduzem truncamento ruim.
+
+Riscos:
+
+- Nao ha schema formal versionado para latest_daily_report.json.
+- O contrato JSON cresce por acrescimo. Isso e pragmatico, mas pode quebrar
+  consumidores externos sem aviso.
+- Alguns campos top-level duplicam informacao dentro de position_actions
+  por conveniencia. Isso e util, mas precisa ser tratado como contrato.
+
+Recomendacao:
+
+- Adicionar "schema_version" ao report JSON.
+- Criar testes de schema minimo com campos obrigatorios.
+- Documentar contratos em docs/json_contracts.md ou arquivo similar.
+
+===============================================================================
+16. CLI E USABILIDADE
+===============================================================================
+
+Arquivo:
+- src\pymercator\cli.py
+
+Comandos principais:
+
+- update
+- train
+- run
+- observe
+- pos
+- basket
+- scenario
+- daily-auto
+- context
+- execution
+- indices
+- prices
+- universe
+- features
+- predict
+- legacy
+
+Pontos fortes:
+
+- CLI e ampla e cobre operacao, diagnostico, dados, treino, reports e legado.
+- Configs podem ser inspecionados com cfg.
+- O parser ja suporta argumentos globais de cor/UI.
+
+Risco:
+
+cli.py tem 1387 linhas e concentra parser, helpers e dispatch. Isso e um
+classico ponto de fragilidade. Cada novo comando aumenta a chance de conflito de
+dest, ordem de argumentos e help inconsistente.
+
+Recomendacao:
+
+Dividir builders por comando:
+
+- cli_parser_update.py
+- cli_parser_train.py
+- cli_parser_run.py
+- cli_parser_data.py
+- cli_parser_legacy.py
+
+O main continua unico, mas build_parser fica modular.
+
+===============================================================================
+17. SCRIPTS OPERACIONAIS
+===============================================================================
+
+Arquivos atuais uteis:
+
+- scripts\run_daily_signal.ps1
+- scripts\run_daily_train.ps1
+- scripts\run_weekend_full.ps1
+- scripts\ops_common.ps1
+
+Legados:
+
+- scripts\legacy\run_absolute_tests.ps1
+- scripts\legacy\run_daily_operation.ps1
+- scripts\legacy\run_daily_profiles.ps1
+- scripts\legacy\run_initial_full_check.ps1
+- scripts\legacy\run_operational_tests.ps1
+- scripts\legacy\run_weekly_training.ps1
+
+Pontos fortes:
+
+- A consolidacao reduziu ruido operacional.
+- Cada script cria runtime com timestamp.
+- Cada comando grava log proprio.
+- Falha critica mostra ultimas 100 linhas do log.
+- pymercator roda com --no-color e variaveis NO_COLOR/PY_COLORS/CLICOLOR.
+- Outputs de run ficam em runtime e nao sobrescrevem perfis.
+
+Pontos de atencao:
+
+- Os scripts usam por regra C:\Users\zepau\anaconda3\python.exe. A suite neste
+  ambiente foi executada com envs\trading\python.exe. Isso pode causar diferenca
+  de dependencia, versao de Python ou comportamento de sklearn.
+- run_daily_signal trata update como critico para FAIL, mas update PARTIAL sai
+  com codigo 0. Isso satisfaz a regra de tolerar PARTIAL com baixo impacto,
+  desde que o proprio update classifique corretamente o impacto.
+
+Recomendacao:
+
+- Padronizar ambiente: ou base anaconda3\python.exe, ou envs\trading.
+- Registrar no log: python version, executable e pip freeze resumido.
+- Opcional: adicionar etapa "python -m pymercator diag" no daily_train tambem.
+
+===============================================================================
+18. TESTES
+===============================================================================
+
+Estado observado:
+
+- 237 testes definidos
+- 236 passed, 1 skipped
+- Suite executada com:
+  C:\Users\zepau\anaconda3\envs\trading\python.exe -m pytest -q
+
+Cobertura funcional observada:
+
+- CLI update
+- CLI train
+- CLI run
+- train multi-horizon
+- model quality
+- behavior/alignment/dominance
+- JSON report
+- basket
+- observation
+- position actions
+- context
+- prices
+- indices
+- features
+- universe
+- terminal output
+- scenario positive
+- experimental guard
+
+Pontos fortes:
+
+- Testes de regressao protegem as mudancas recentes.
+- Ha bons testes de contrato para JSON, terminal e bloqueios.
+- A suite cobre tanto caminho positivo quanto bloqueios.
+
+Gaps:
+
+- Nao ha coverage report quantitativo.
+- Nao ha testes de performance/tempo por script.
+- Nao ha testes de walk-forward quantitativo.
+- Nao ha validacao estatistica de thresholds observation/exit/short.
+- Nao ha testes com dados reais envelhecidos/stale.
+- Nao ha testes de schema versionado.
+
+Recomendacao:
+
+- Adicionar coverage com meta minima por modulo critico.
+- Adicionar tests/test_json_schema_contracts.py.
+- Adicionar testes de data freshness.
+- Adicionar fixture de posicao fora do universo com manual_review_required.
+- Adicionar teste de STOP_LOSS explicito.
+
+===============================================================================
+19. RISCOS POR SEVERIDADE
+===============================================================================
+
+CRITICO
+
+Nenhum bug critico imediato foi identificado na analise estatica e na suite
+executada. O sistema permanece analysis-only e defensivo.
+
+ALTO
+
+1. cli_train.py grande demais
+   Impacto: manutencao, regressao, dificuldade de revisao.
+   Recomendacao: modularizar report, treinamento, diagnostico e guardas.
+
+2. Ambiente Python dos scripts diferente do ambiente usado nos testes
+   Impacto: comportamento divergente em producao local.
+   Recomendacao: padronizar interpreter ou validar ambos.
+
+3. Contratos JSON sem schema_version
+   Impacto: consumidores externos podem quebrar silenciosamente.
+   Recomendacao: versionar schema e testar contrato minimo.
+
+MEDIO
+
+4. Basket re-scoreia candidatos em vez de consumir ranking do run
+   Impacto: divergencia entre TOP e basket.
+   Recomendacao: basket deve virar sizing/diversification engine sobre candidatos
+   ja ordenados pelo run.
+
+5. Position actions com thresholds hardcoded
+   Impacto: dificil calibrar e auditar.
+   Recomendacao: config/position_actions.json.
+
+6. Observation normalization heuristic
+   Impacto: classificacao pode mudar com escala dos dados.
+   Recomendacao: expor normalization_mode e thresholds no config.
+
+7. Regime automatico com thresholds fixos
+   Impacto: sensibilidade a regimes diferentes.
+   Recomendacao: data_quality_score e calibracao por historico.
+
+BAIXO
+
+8. Arquivos legacy ainda existem
+   Impacto: confusao eventual.
+   Recomendacao: manter legacy por uma janela e depois remover se nao usados.
+
+9. OBS_READY pode confundir com BUY_READY
+   Impacto: interpretacao visual.
+   Recomendacao: renomear para OBS_FAVORABLE.
+
+10. STOP_LOSS previsto conceitualmente, mas stop atual vira EXIT_FULL
+    Impacto: granularidade semantica.
+    Recomendacao: diferenciar STOP_LOSS de EXIT_FULL.
+
+===============================================================================
+20. PONTOS DE FORCA DO SISTEMA
+===============================================================================
+
+1. Filosofia correta:
+   O sistema nao promete trade automatico. Ele autoriza ou bloqueia risco.
+
+2. Humano no loop:
+   READY ainda exige confirmacao humana.
+
+3. Analysis-only:
+   execution_policy e basket reforcam ANALYSIS_ONLY.
+
+4. Separacao semantica:
+   BUY, OBSERVE, EXIT e SHORT/HEDGE estao separados.
+
+5. Guardas globais:
+   MODEL_WEAK, DEGENERATE, BEHAVIOR_AVOID e RISK_OFF dominam quando necessario.
+
+6. Transparencia:
+   Terminal e JSON explicam razoes, blockers e status.
+
+7. Testabilidade:
+   O sistema tem muitos testes de contrato e regressao.
+
+8. Operacao:
+   Scripts recentes reduzem a confusao e refletem a arquitetura atual.
+
+===============================================================================
+21. ROADMAP RECOMENDADO
+===============================================================================
+
+FASE 1: ENDURECIMENTO DE CONTRATOS
+
+1. Adicionar schema_version nos JSONs principais.
+2. Criar schemas minimos para:
+   - latest_daily_report.json
+   - latest_evaluation.json
+   - basket json
+   - position_actions
+3. Criar testes de schema.
+4. Padronizar Python dos scripts e dos testes.
+5. Adicionar data freshness em update.
+
+FASE 2: REFATORACAO DE MODULOS GRANDES
+
+1. Quebrar cli_train.py.
+2. Quebrar cli_run.py.
+3. Modularizar cli.py.
+4. Separar renderizacao de negocio.
+5. Extrair model_governance.py.
+
+FASE 3: CALIBRACAO OPERACIONAL
+
+1. Validar thresholds de model_quality.
+2. Validar horizon_alignment por historico.
+3. Validar observation classes por performance futura.
+4. Validar exit actions com posicoes simuladas.
+5. Criar walk-forward por regime.
+
+FASE 4: POSICOES E RISCO
+
+1. Criar config/position_actions.json.
+2. Diferenciar STOP_LOSS de EXIT_FULL.
+3. Adicionar manual_review_required.
+4. Adicionar borrowing/cost/availability para short.
+5. Adicionar portfolio exposure e concentracao de posicoes existentes.
+
+FASE 5: OPERACAO E AUDITORIA
+
+1. Gerar manifest por runtime dos scripts.
+2. Salvar versao Git e hash de commit em cada run.
+3. Salvar python executable e version em cada log.
+4. Criar relatorio comparativo semanal automatico.
+5. Criar dashboard textual consolidado de:
+   - update
+   - train quality
+   - run CON/BAL/AGR/RLX
+   - observation
+   - exits
+   - basket
+
+===============================================================================
+22. CONCLUSAO
+===============================================================================
+
+O pyMercator esta conceitualmente muito mais maduro do que um simples gerador de
+sinal. Ele ja opera como sistema de permissao em camadas, com governanca de
+modelo, separacao entre oportunidade e risco, bloqueios defensivos, observacao
+relativa, posicoes existentes e candidatos short/hedge apenas observacionais.
+
+O maior valor atual do sistema e impedir acoes ruins, nao encontrar a proxima
+compra. Essa e uma propriedade desejavel.
+
+O sistema esta pronto para uso como cockpit de decisao analysis-only com humano
+no loop. O proximo salto de qualidade deve ser engenharia de contratos e
+modularizacao, seguido por validacao quantitativa historica dos thresholds.
+
+Prioridade maxima recomendada:
+
+1. Padronizar ambiente Python.
+2. Versionar schemas JSON.
+3. Refatorar cli_train.py.
+4. Configurar thresholds de position_actions.
+5. Adicionar data freshness e commit hash nos artefatos operacionais.
+
+Status final desta analise:
+
+- Nenhuma falha critica imediata encontrada.
+- Suite completa verde: 236 passed, 1 skipped.
+- Riscos principais sao de manutencao, contrato e calibracao, nao de filosofia
+  operacional.

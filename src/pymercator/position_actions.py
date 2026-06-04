@@ -8,10 +8,12 @@ from typing import Any
 
 from pymercator.domain import AssetDecision, DailyReport, ExecutionStatus, MarketRegime
 from pymercator.explain import decision_codes
+from pymercator.position_actions_config import load_position_actions_config
 from pymercator.ui import muted_line, truncate
 
 DEFAULT_POSITIONS_PATH = "storage/positions/current_positions.csv"
 POSITION_COLUMNS = ("ticker", "side", "qty", "avg_price", "entry_date")
+OPTIONAL_POSITION_COLUMNS = ("stop",)
 
 
 @dataclass(frozen=True)
@@ -21,6 +23,7 @@ class Position:
     qty: float
     avg_price: float
     entry_date: str
+    stop: float | None = None
 
 
 def _ticker(value: Any) -> str:
@@ -71,6 +74,11 @@ def load_positions(
                     qty=qty,
                     avg_price=avg_price,
                     entry_date=str(row.get("entry_date") or "").strip(),
+                    stop=(
+                        _to_float(row.get("stop"))
+                        if str(row.get("stop") or "").strip()
+                        else None
+                    ),
                 )
             )
     return positions
@@ -86,7 +94,15 @@ def write_positions(
         writer = csv.DictWriter(file, fieldnames=POSITION_COLUMNS)
         writer.writeheader()
         for position in positions:
-            writer.writerow(asdict(position))
+            writer.writerow(
+                {
+                    "ticker": position.ticker,
+                    "side": position.side,
+                    "qty": position.qty,
+                    "avg_price": position.avg_price,
+                    "entry_date": position.entry_date,
+                }
+            )
 
 
 def import_positions_file(
@@ -183,10 +199,13 @@ def _pnl_pct(position: Position, current_price: float) -> float:
     return ((current_price - position.avg_price) / position.avg_price) * 100.0
 
 
-def _risk_flags(decision: AssetDecision) -> tuple[bool, bool]:
+def _risk_flags(decision: AssetDecision, config: dict[str, Any]) -> tuple[bool, bool]:
     asset = decision.asset
-    vol_high = asset.volatility_pct >= 8.0 or not decision.validation.volatility_ok
-    atr_high = asset.atr_pct >= 6.0 or not decision.validation.atr_ok
+    exit_config = config.get("exit", {}) if isinstance(config, dict) else {}
+    vol_limit = _to_float(exit_config.get("vol_high_pct"), 8.0)
+    atr_limit = _to_float(exit_config.get("atr_high_pct"), 6.0)
+    vol_high = asset.volatility_pct >= vol_limit or not decision.validation.volatility_ok
+    atr_high = asset.atr_pct >= atr_limit or not decision.validation.atr_ok
     return vol_high, atr_high
 
 
@@ -195,37 +214,67 @@ def _exit_row(
     decision: AssetDecision | None,
     report: DailyReport,
     prediction: dict[str, Any] | None,
+    config: dict[str, Any],
 ) -> dict[str, Any]:
+    exit_config = config.get("exit", {}) if isinstance(config, dict) else {}
+    manual_review = config.get("manual_review", {}) if isinstance(config, dict) else {}
     if decision is None:
         return {
             "ticker": position.ticker,
             "action": "HOLD",
-            "pnl_pct": 0.0,
+            "pnl_pct": None,
             "risk": "UNKNOWN",
-            "reason": "position not in current universe",
+            "manual_review_required": bool(
+                manual_review.get("position_outside_universe", True)
+            ),
+            "reason": "position outside current universe",
         }
 
     asset = decision.asset
     current_price = float(asset.last_close)
     pnl = _pnl_pct(position, current_price)
-    stop = decision.validation.stop or asset.stop
-    stop_hit = bool(stop is not None and current_price <= float(stop))
-    vol_high, atr_high = _risk_flags(decision)
-    profit_relevant = pnl >= 8.0
+    stop = position.stop or decision.validation.stop or asset.stop
+    if position.side == "SHORT":
+        stop_hit = bool(stop is not None and current_price >= float(stop))
+    else:
+        stop_hit = bool(stop is not None and current_price <= float(stop))
+    vol_high, atr_high = _risk_flags(decision, config)
+    take_profit_pct = _to_float(exit_config.get("take_profit_pct"), 8.0)
+    stop_loss_pct = _to_float(exit_config.get("stop_loss_pct"), -3.0)
+    trail_profit_pct = _to_float(exit_config.get("trail_profit_pct"), 5.0)
+    profit_relevant = pnl >= take_profit_pct
     deteriorating = asset.trend_score < 55.0 or asset.momentum_score < 55.0
     defensive = (
-        _is_risk_off(report)
-        or _prediction_quality(prediction) in {"WEAK", "DEGENERATE"}
-        or _prediction_behavior(prediction) == "AVOID"
+        (bool(exit_config.get("risk_off_reduce", True)) and _is_risk_off(report))
+        or (
+            bool(exit_config.get("model_weak_reduce", True))
+            and _prediction_quality(prediction) in {"WEAK", "DEGENERATE"}
+        )
+        or (
+            bool(exit_config.get("behavior_avoid_reduce", True))
+            and _prediction_behavior(prediction) == "AVOID"
+        )
     )
 
     if stop_hit:
         return {
             "ticker": position.ticker,
-            "action": "EXIT_FULL",
+            "action": "STOP_LOSS",
             "pnl_pct": round(pnl, 2),
             "risk": "STOP",
+            "severity": "HIGH",
+            "manual_review_required": False,
             "reason": "stop reached",
+        }
+    if pnl <= stop_loss_pct:
+        return {
+            "ticker": position.ticker,
+            "action": "STOP_LOSS",
+            "pnl_pct": round(pnl, 2),
+            "risk": "STOP",
+            "severity": "HIGH",
+            "manual_review_required": False,
+            "reason": "loss threshold",
         }
     if profit_relevant and deteriorating:
         return {
@@ -233,15 +282,27 @@ def _exit_row(
             "action": "TAKE_PROFIT",
             "pnl_pct": round(pnl, 2),
             "risk": "OK" if not (vol_high or atr_high) else "HIGH",
+            "manual_review_required": False,
             "reason": "profit with trend/mom deterioration",
         }
-    if profit_relevant and (vol_high or atr_high):
+    if pnl >= trail_profit_pct and (vol_high or atr_high):
         return {
             "ticker": position.ticker,
             "action": "TRAIL_STOP",
             "pnl_pct": round(pnl, 2),
             "risk": "HIGH",
+            "manual_review_required": False,
             "reason": "profit with rising volatility",
+        }
+    if defensive and vol_high and atr_high:
+        return {
+            "ticker": position.ticker,
+            "action": "EXIT_FULL",
+            "pnl_pct": round(pnl, 2),
+            "risk": "HIGH",
+            "severity": "HIGH",
+            "manual_review_required": False,
+            "reason": "structural risk breach",
         }
     if defensive:
         return {
@@ -249,6 +310,7 @@ def _exit_row(
             "action": "REDUCE",
             "pnl_pct": round(pnl, 2),
             "risk": "HIGH" if (vol_high or atr_high) else "CAUTION",
+            "manual_review_required": False,
             "reason": "defensive regime/model/behavior",
         }
     if asset.trend_score >= 55.0 and asset.momentum_score >= 50.0 and not (vol_high or atr_high):
@@ -257,6 +319,7 @@ def _exit_row(
             "action": "HOLD",
             "pnl_pct": round(pnl, 2),
             "risk": "OK",
+            "manual_review_required": False,
             "reason": "trend still valid",
         }
     return {
@@ -264,6 +327,7 @@ def _exit_row(
         "action": "REDUCE",
         "pnl_pct": round(pnl, 2),
         "risk": "HIGH" if (vol_high or atr_high) else "CAUTION",
+        "manual_review_required": False,
         "reason": "trend/momentum deteriorating",
     }
 
@@ -275,8 +339,10 @@ def build_exit_book(
     *,
     positions_file: str | Path = DEFAULT_POSITIONS_PATH,
     loaded: bool = False,
+    config: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     decisions = _decision_map(report)
+    resolved_config = config or load_position_actions_config()
     if not positions:
         return {
             "positions_loaded": loaded,
@@ -285,7 +351,13 @@ def build_exit_book(
             "message": "no open positions loaded.",
         }
     rows = [
-        _exit_row(position, decisions.get(_ticker(position.ticker)), report, prediction)
+        _exit_row(
+            position,
+            decisions.get(_ticker(position.ticker)),
+            report,
+            prediction,
+            resolved_config,
+        )
         for position in positions
     ]
     return {
@@ -313,6 +385,7 @@ def _short_score(
     report: DailyReport,
     prediction: dict[str, Any] | None,
     sector_weakness: dict[str, float],
+    config: dict[str, Any],
 ) -> float:
     asset = decision.asset
     weak_trend = 100.0 - _clamp(asset.trend_score)
@@ -331,9 +404,12 @@ def _short_score(
         + 0.10 * regime_pressure
         + 0.10 * sector_weakness.get(asset.sector, 0.0)
     )
-    if asset.volatility_pct >= 15.0:
+    short_config = config.get("short", {}) if isinstance(config, dict) else {}
+    max_volatility = _to_float(short_config.get("max_volatility"), 60.0)
+    max_atr = _to_float(short_config.get("max_atr"), 7.0)
+    if asset.volatility_pct >= max_volatility:
         score -= 15.0
-    if asset.atr_pct >= 10.0:
+    if asset.atr_pct >= max_atr:
         score -= 15.0
     if asset.liquidity_score < 40.0:
         score -= 20.0
@@ -345,10 +421,18 @@ def _short_action(
     score: float,
     report: DailyReport,
     prediction: dict[str, Any] | None,
+    config: dict[str, Any],
 ) -> tuple[str, str]:
     asset = decision.asset
+    short_config = config.get("short", {}) if isinstance(config, dict) else {}
+    hedge_config = config.get("hedge", {}) if isinstance(config, dict) else {}
+    if not bool(short_config.get("enabled", True)) and not bool(hedge_config.get("enabled", True)):
+        return "", ""
+    min_short_score = _to_float(short_config.get("min_short_score"), 65.0)
+    max_volatility = _to_float(short_config.get("max_volatility"), 60.0)
+    max_atr = _to_float(short_config.get("max_atr"), 7.0)
     weak_asset = asset.trend_score < 45.0 and asset.momentum_score < 45.0
-    extreme_risk = asset.volatility_pct >= 15.0 or asset.atr_pct >= 10.0
+    extreme_risk = asset.volatility_pct >= max_volatility or asset.atr_pct >= max_atr
     low_liquidity = asset.liquidity_score < 40.0
     defensive_market = (
         _is_risk_off(report)
@@ -356,11 +440,22 @@ def _short_action(
         or _prediction_behavior(prediction) == "AVOID"
     )
 
-    if weak_asset and (extreme_risk or low_liquidity):
+    short_enabled = bool(short_config.get("enabled", True))
+    if short_enabled and weak_asset and (extreme_risk or low_liquidity):
         return "SHORT_BLOCKED", "weak asset but short risk unavailable"
-    if weak_asset and score >= 60.0:
+    if short_enabled and weak_asset and score >= min_short_score:
+        if (
+            bool(short_config.get("requires_borrow_data", True))
+            and bool(short_config.get("block_without_borrow_data", True))
+        ):
+            return "SHORT_BLOCKED", "borrow/cost data unavailable"
         return "SHORT_CANDIDATE", "weak trend + weak mom + risk off"
-    if defensive_market and score >= 55.0:
+    if (
+        bool(hedge_config.get("enabled", True))
+        and bool(hedge_config.get("risk_off_hedge_candidate", True))
+        and defensive_market
+        and score >= max(0.0, min_short_score - 10.0)
+    ):
         return "HEDGE_CANDIDATE", "defensive hedge candidate"
     return "", ""
 
@@ -371,15 +466,17 @@ def build_short_book(
     prediction: dict[str, Any] | None = None,
     *,
     limit: int = 10,
+    config: dict[str, Any] | None = None,
 ) -> dict[str, list[dict[str, Any]]]:
+    resolved_config = config or load_position_actions_config()
     positioned = {_ticker(position.ticker) for position in positions if position.side == "LONG"}
     sector_scores = _sector_weakness(report)
     rows: list[dict[str, Any]] = []
     for decision in report.decisions:
         if _ticker(decision.asset.ticker) in positioned:
             continue
-        score = _short_score(decision, report, prediction, sector_scores)
-        action, reason = _short_action(decision, score, report, prediction)
+        score = _short_score(decision, report, prediction, sector_scores, resolved_config)
+        action, reason = _short_action(decision, score, report, prediction, resolved_config)
         if not action:
             continue
         rows.append(
@@ -412,7 +509,9 @@ def build_position_actions(
     positions_path: str | Path = DEFAULT_POSITIONS_PATH,
     long_limit: int = 10,
     short_limit: int = 10,
+    config_path: str | Path = "config/position_actions.json",
 ) -> dict[str, Any]:
+    config = load_position_actions_config(config_path)
     source = Path(positions_path)
     positions = load_positions(source)
     loaded = source.exists() and len(positions) > 0
@@ -422,14 +521,23 @@ def build_position_actions(
         prediction,
         positions_file=source,
         loaded=loaded,
+        config=config,
     )
     short_book = build_short_book(
         report,
         positions,
         prediction,
         limit=short_limit,
+        config=config,
     )
     return {
+        "schema_version": "position_actions.v1",
+        "config": {
+            "schema_version": config.get("schema_version"),
+            "source": config.get("config_source", str(config_path)),
+            "status": config.get("config_status", "UNKNOWN"),
+            "warning": config.get("config_warning", ""),
+        },
         "positions_file": str(source),
         "positions_loaded": loaded,
         "positions": positions_to_dicts(positions),
@@ -488,7 +596,10 @@ def render_position_books(position_actions: dict[str, Any]) -> list[str]:
             "",
             "EXIT BOOK",
             muted_line(),
-            f"{'#':>2} {'TICKER':<8} {'ACTION':<12} {'PNL%':>7} {'RISK':<7} REASON",
+            (
+                f"{'#':>2} {'TICKER':<8} {'ACTION':<12} {'PNL%':>7} "
+                f"{'RISK':<7} {'REVIEW':<6} REASON"
+            ),
         ]
     )
     if not exit_rows:
@@ -498,10 +609,12 @@ def render_position_books(position_actions: dict[str, Any]) -> list[str]:
         lines.append(message)
     else:
         for index, row in enumerate(exit_rows, start=1):
-            pnl = float(row.get("pnl_pct", 0.0))
+            pnl_value = row.get("pnl_pct")
+            pnl = "n/a" if pnl_value is None else f"{float(pnl_value):+7.1f}"
+            review = "YES" if row.get("manual_review_required") else "NO"
             lines.append(
                 f"{index:>2} {row['ticker']:<8} {row['action']:<12} "
-                f"{pnl:>+7.1f} {row['risk']:<7} {truncate(row['reason'], 44)}"
+                f"{pnl:>7} {row['risk']:<7} {review:<6} {truncate(row['reason'], 44)}"
             )
 
     short_rows = position_actions.get("short_book", [])

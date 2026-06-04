@@ -1,4 +1,4 @@
-param([string]$PY = "C:\Users\zepau\anaconda3\python.exe")
+param([string]$PY = "")
 
 $ErrorActionPreference = "Stop"
 $env:NO_COLOR = "1"
@@ -7,9 +7,12 @@ $env:CLICOLOR = "0"
 
 . (Join-Path $PSScriptRoot "ops_common.ps1")
 
-$PY = Initialize-PyMercatorScript -RequestedPython $PY
-$logDir = New-PyMercatorLogDir -Prefix "daily_train"
+$scriptName = Split-Path -Leaf $PSCommandPath
+$PY = Initialize-PyMercatorScript -RequestedPython $PY -ScriptName $scriptName
+$logDir = New-PyMercatorLogDir -Prefix "daily_train" -ScriptName $scriptName
+$listName = $script:PYMERCATOR_DEFAULT_LIST
 $profiles = @("CON", "BAL", "AGR", "RLX")
+$updateStatus = "storage\context\latest_update_status.json"
 
 function New-ProfilePaths {
     param([string]$Profile)
@@ -23,17 +26,19 @@ function New-ProfilePaths {
     }
 }
 
-Write-Host ""
-Write-Host "PYMERCATOR DAILY TRAIN"
-Write-Host "PYTHON : $PY"
-Write-Host "RUNTIME: $logDir"
-Write-Host ""
+Write-PyMercatorRuntimeHeader -Title "PYMERCATOR DAILY TRAIN"
 
 Invoke-PyMercatorStep `
     -Python $PY `
-    -Name "Update IBOV" `
-    -PyArgs @("update", "--list", "IBOV") `
+    -Name "Update $listName" `
+    -PyArgs @("update", "--list", $listName) `
     -LogFile (Join-Path $logDir "00_update_ibov.log")
+
+Invoke-PyMercatorStep `
+    -Python $PY `
+    -Name "Diag" `
+    -PyArgs @("diag") `
+    -LogFile (Join-Path $logDir "00_diag.log")
 
 Invoke-PyMercatorStep `
     -Python $PY `
@@ -101,6 +106,14 @@ Invoke-PyMercatorStep `
     -PyArgs @("basket", "--profile", "CON", "show", "--output", $conBasket) `
     -LogFile (Join-Path $logDir "07_basket_show_CON.log") `
     -Critical $false
+
+Write-RunManifest -Status "OK" -Outputs @{
+    train_detail_report = "storage\prediction\latest_train_detail_report.txt"
+    update_status = $updateStatus
+    con_basket_csv = $conBasket
+    con_basket_json = [System.IO.Path]::ChangeExtension($conBasket, ".json")
+    runtime_dir = $logDir
+}
 
 Write-Host ""
 Write-Host "============================================================"

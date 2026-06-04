@@ -8,6 +8,8 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from pymercator import train_detail_report as train_detail_report_mod
+from pymercator.artifact_metadata import artifact_metadata
 from pymercator.horizon_observer import (
     dominance_strength,
     horizon_alignment,
@@ -116,7 +118,11 @@ def _write_evaluation_metadata(
     if output.exists():
         payload = json.loads(output.read_text(encoding="utf-8-sig"))
 
+    payload.setdefault("schema_version", "prediction_evaluation.v1")
+    payload.setdefault("runtime", artifact_metadata())
     payload.update(metadata)
+    payload.setdefault("schema_version", "prediction_evaluation.v1")
+    payload.setdefault("runtime", artifact_metadata())
     output.parent.mkdir(parents=True, exist_ok=True)
     output.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
 
@@ -895,6 +901,7 @@ def run_train_flow(
         trained_at = _trained_at()
         metrics = _primary_metrics(payload, engine_used)
         metadata = {
+            "schema_version": "prediction_evaluation.v1",
             "engine_used": engine_used,
             "is_baseline": True,
             "status": "BASELINE",
@@ -913,10 +920,12 @@ def run_train_flow(
                 "min_history": selected_min_history,
                 "min_train_rows": selected_min_train_rows,
             },
+            "runtime": artifact_metadata(),
             **availability,
         }
         _write_evaluation_metadata(path=evaluation_output, metadata=metadata)
         return {
+            "schema_version": "prediction_evaluation.v1",
             "command": "train",
             "horizons": [selected_horizons[0]],
             "status": "BASELINE",
@@ -1069,6 +1078,7 @@ def run_train_flow(
         horizon_models=horizon_models,
     )
     final_payload = {
+        "schema_version": "prediction_evaluation.v1",
         "engine_used": "multi_horizon_ridge",
         "is_baseline": False,
         "trained_models": ["multi_horizon_ridge"],
@@ -1136,6 +1146,7 @@ def run_train_flow(
             "behavior": observer.get("behavior", "AVOID"),
             "model_quality_status": model_quality.get("status", "WEAK"),
         },
+        "runtime": artifact_metadata(),
         **availability,
     }
 
@@ -1145,6 +1156,7 @@ def run_train_flow(
             payload=final_payload,
         )
         return {
+            "schema_version": "prediction_evaluation.v1",
             "command": "train",
             "horizons": selected_horizons,
             "status": status,
@@ -1204,6 +1216,7 @@ def run_train_flow(
     )
 
     return {
+        "schema_version": "prediction_evaluation.v1",
         "command": "train",
         "horizons": selected_horizons,
         "status": status,
@@ -2494,7 +2507,7 @@ def run_train_command(args: Any) -> int:
     elif getattr(args, "details", False):
         detail_payload = _load_train_detail_payload(args.evaluation_output, payload)
         include_full = bool(getattr(args, "full", False))
-        report = render_train_detail_report(
+        report = train_detail_report_mod.render_train_detail_report(
             detail_payload,
             include_engines=bool(getattr(args, "detail_engines", False)) or include_full,
             include_prob_dist=bool(getattr(args, "prob_dist", False)) or include_full,

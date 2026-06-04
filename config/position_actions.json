@@ -1,0 +1,31 @@
+{
+  "schema_version": "position_actions_config.v1",
+  "exit": {
+    "take_profit_pct": 8.0,
+    "reduce_profit_pct": 4.0,
+    "stop_loss_pct": -3.0,
+    "trail_profit_pct": 5.0,
+    "risk_off_reduce": true,
+    "model_weak_reduce": true,
+    "behavior_avoid_reduce": true,
+    "vol_high_pct": 8.0,
+    "atr_high_pct": 6.0
+  },
+  "short": {
+    "enabled": true,
+    "observational_only": true,
+    "min_short_score": 65.0,
+    "requires_borrow_data": true,
+    "block_without_borrow_data": true,
+    "max_volatility": 60.0,
+    "max_atr": 7.0
+  },
+  "hedge": {
+    "enabled": true,
+    "observational_only": true,
+    "risk_off_hedge_candidate": true
+  },
+  "manual_review": {
+    "position_outside_universe": true
+  }
+}

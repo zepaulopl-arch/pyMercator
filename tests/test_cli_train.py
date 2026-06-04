@@ -209,6 +209,7 @@ def test_cli_train_generates_multi_horizon_evaluation_by_default(
     assert [call["autotune"] for call in calls] == [False, False, False]
 
     payload = json.loads(capsys.readouterr().out)
+    assert payload["schema_version"] == "prediction_evaluation.v1"
     assert payload["status"] == "OK"
     assert payload["engine_used"] == "multi_horizon_ridge"
     assert payload["is_baseline"] is False
@@ -246,6 +247,7 @@ def test_cli_train_generates_multi_horizon_evaluation_by_default(
         )
     )
     assert evaluation_payload == multi_payload
+    assert evaluation_payload["schema_version"] == "prediction_evaluation.v1"
     assert evaluation_payload["engine_used"] == "multi_horizon_ridge"
     assert evaluation_payload["operational"] is True
     assert evaluation_payload["experimental"] is False

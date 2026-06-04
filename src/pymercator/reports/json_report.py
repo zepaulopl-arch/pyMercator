@@ -5,6 +5,7 @@ from dataclasses import asdict
 from pathlib import Path
 from typing import Any
 
+from pymercator.artifact_metadata import artifact_metadata
 from pymercator.domain import DailyReport
 from pymercator.explain import decision_codes, decision_label
 
@@ -82,6 +83,8 @@ def daily_report_to_dict(
     position_actions: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     raw = _convert(asdict(report))
+    raw["schema_version"] = "daily_report.v1"
+    raw["runtime"] = artifact_metadata()
     global_prediction = _prediction_global(prediction)
     decision_prediction = _prediction_for_decision(prediction)
 
@@ -91,26 +94,60 @@ def daily_report_to_dict(
         if isinstance(quality, dict):
             raw["model_quality"] = quality.get("status")
             raw["model_edge"] = quality.get("edge")
+    else:
+        raw["prediction"] = {}
+        raw["model_quality"] = raw.get("model_quality", "")
 
     if blockers_count is not None:
         raw["blockers_count"] = dict(blockers_count)
         raw["blockers"] = dict(blockers_count)
+    else:
+        raw["blockers_count"] = {}
+        raw["blockers"] = {}
+
+    raw["decision"] = {
+        "actionable": sum(
+            1
+            for decision in report.decisions
+            if str(decision.permission.status.value).upper() == "READY"
+        ),
+        "watch": sum(
+            1
+            for decision in report.decisions
+            if str(decision.permission.status.value).upper() == "WATCH"
+        ),
+        "blocked": sum(
+            1
+            for decision in report.decisions
+            if str(decision.permission.status.value).upper() == "BLOCKED"
+        ),
+        "rejected": 0,
+    }
 
     if update_status:
         raw["update_status"] = dict(update_status)
+    else:
+        raw["update_status"] = {}
 
     if basket is not None:
         raw["basket"] = dict(basket)
+    else:
+        raw["basket"] = {}
 
     if observation_candidates is not None:
         raw["observation_candidates"] = _convert(observation_candidates)
+    else:
+        raw["observation_candidates"] = []
 
     if position_actions is not None:
         converted_actions = _convert(position_actions)
+        converted_actions.setdefault("schema_version", "position_actions.v1")
         raw["position_actions"] = converted_actions
         raw["exit_book"] = converted_actions.get("exit_book", {})
         raw["short_candidates"] = converted_actions.get("short_candidates", [])
         raw["hedge_candidates"] = converted_actions.get("hedge_candidates", [])
+    else:
+        raw["position_actions"] = {"schema_version": "position_actions.v1"}
 
     for index, decision in enumerate(report.decisions):
         ticker = decision.asset.ticker

@@ -6,6 +6,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
+from pymercator import model_governance as governance
 from pymercator.basket import run_daily_basket
 from pymercator.domain import DailyReport, ExecutionStatus
 from pymercator.explain import decision_codes, decision_label
@@ -22,6 +23,12 @@ from pymercator.position_actions import build_position_actions, render_position_
 from pymercator.policy import normalize_profile
 from pymercator.reports.json_report import daily_report_to_dict, write_daily_report_json
 from pymercator.reports.terminal import render_daily_report
+from pymercator.top_reasons import (
+    TOP_REASONS_WIDTH,
+    format_top_reason_legend,
+    format_top_reasons,
+)
+from pymercator.update_freshness import build_data_freshness
 from pymercator.ui import colorize, format_kv_section, muted_line, truncate
 
 
@@ -46,93 +53,10 @@ GLOBAL_BLOCKER_PRIORITY = (
     "VOL_HIGH",
 )
 BLOCKING_MODEL_QUALITY = {"WEAK", "DEGENERATE"}
-TOP_REASONS_WIDTH = 20
-TOP_REASON_ABBREVIATIONS = {
-    "MODEL_WEAK": "MW",
-    "RISK_OFF": "RO",
-    "BEHAVIOR_AVOID": "AVOID",
-    "VOL_HIGH": "VOL",
-    "ATR_HIGH": "ATR",
-    "MODEL_STRONG": "MS",
-    "RISK_ON": "RON",
-    "TREND_CONFIRM": "TC",
-    "WATCH": "W",
-    "BLOCKED": "B",
-}
-TOP_REASON_LEGEND = {
-    "MW": "model weak",
-    "RO": "risk off",
-    "AVOID": "behavior avoid",
-    "VOL": "volatility high",
-    "ATR": "ATR high",
-    "MS": "model strong",
-    "RON": "risk on",
-    "TC": "trend confirm",
-    "W": "watch",
-    "B": "blocked",
-}
 
 
 def _dedupe(values: list[str] | tuple[str, ...]) -> tuple[str, ...]:
     return tuple(dict.fromkeys(item for item in values if item))
-
-
-def _top_reason_tokens(item: dict[str, Any]) -> list[str]:
-    blockers = item.get("blockers", [])
-    if isinstance(blockers, list) and blockers:
-        return [str(token).strip() for token in blockers if str(token).strip()]
-
-    guard = str(item.get("guard", "") or "").strip()
-    if not guard:
-        return []
-    return [token.strip() for token in guard.split("+") if token.strip()]
-
-
-def format_top_reasons(
-    item: dict[str, Any],
-    *,
-    width: int = TOP_REASONS_WIDTH,
-) -> tuple[str, list[str]]:
-    tokens = _top_reason_tokens(item)
-    if not tokens:
-        return "-", []
-
-    codes: list[str] = []
-    legend_codes: list[str] = []
-    for token in tokens:
-        normalized = token.split(":", 1)[0].strip().upper()
-        code = TOP_REASON_ABBREVIATIONS.get(normalized, normalized)
-        codes.append(code)
-        if normalized in TOP_REASON_ABBREVIATIONS and code in TOP_REASON_LEGEND:
-            legend_codes.append(code)
-
-    selected: list[str] = []
-    for index, code in enumerate(codes):
-        remaining = len(codes) - index - 1
-        candidate_codes = [*selected, code]
-        suffix = f"+{remaining}" if remaining else ""
-        candidate = "+".join(candidate_codes) + suffix
-        if len(candidate) <= width or not selected:
-            selected.append(code)
-            continue
-        break
-
-    omitted = len(codes) - len(selected)
-    display = "+".join(selected)
-    if omitted:
-        display = f"{display}+{omitted}" if display else f"+{omitted}"
-
-    used_legend_codes = [
-        code
-        for code in selected
-        if code in legend_codes
-    ]
-    return display, used_legend_codes
-
-
-def format_top_reason_legend(codes: list[str]) -> str:
-    ordered = list(dict.fromkeys(code for code in codes if code in TOP_REASON_LEGEND))
-    return " | ".join(f"{code}={TOP_REASON_LEGEND[code]}" for code in ordered)
 
 
 def _compact_decimal(value: Any, precision: int) -> str:
@@ -340,7 +264,7 @@ def _top_rows_with_prediction(
     }
     rows: list[dict[str, Any]] = []
     for item in report.decisions[:limit]:
-        blockers = _blockers_for_decision(item, report, prediction)
+        blockers = governance.blockers_for_decision(item, report, prediction)
         row = {
             "ticker": item.asset.ticker,
             "decision": item.permission.status.value,
@@ -479,7 +403,15 @@ def _update_status_path_for_context(context_path: str) -> Path:
 def _load_update_status(context_path: str) -> dict[str, Any]:
     source = _update_status_path_for_context(context_path)
     if not source.exists():
-        return {}
+        return {
+            "schema_version": "update_status.v1",
+            "status": "UNKNOWN",
+            "impact": "UNKNOWN",
+            "context_valid": "UNKNOWN",
+            "regime_reliability": "UNKNOWN",
+            "freshness": build_data_freshness([]),
+            "source": str(source),
+        }
     try:
         payload = json.loads(source.read_text(encoding="utf-8-sig"))
     except Exception as exc:
@@ -490,6 +422,8 @@ def _load_update_status(context_path: str) -> dict[str, Any]:
             "error": "update status must be a JSON object",
             "source": str(source),
         }
+    payload.setdefault("schema_version", "update_status.v1")
+    payload.setdefault("freshness", build_data_freshness([]))
     payload.setdefault("source", str(source))
     return payload
 
@@ -589,10 +523,10 @@ def run_decision_flow(
                 },
             )
 
-        report = _apply_model_quality_guard(report, prediction_payload, policy)
-        report = _apply_prediction_behavior_guard(report, prediction_payload)
-        asset_blockers = _asset_blockers(report, prediction_payload)
-        blockers_count = _blocker_counts(asset_blockers)
+        report = governance.apply_model_quality_guard(report, prediction_payload, policy)
+        report = governance.apply_prediction_behavior_guard(report, prediction_payload)
+        asset_blockers = governance.asset_blockers(report, prediction_payload)
+        blockers_count = governance.blocker_counts(asset_blockers)
 
         rendered = render_daily_report(report, limit=limit)
         report_path = Path(report_output)
@@ -754,6 +688,9 @@ def render_run_summary(payload: dict[str, Any]) -> str:
 
     market = payload["market"]
     update_status = market.get("update_status", {})
+    update_freshness = update_status.get("freshness", {})
+    if not isinstance(update_freshness, dict):
+        update_freshness = {}
     prediction = payload.get("prediction", {})
     model_quality = prediction.get("model_quality", {})
     decision = payload["decision"]
@@ -785,6 +722,13 @@ def render_run_summary(payload: dict[str, Any]) -> str:
                         update_status.get("regime_reliability", "-"),
                         update_status.get("regime_reliability", "-"),
                     ),
+                    (
+                        "freshness",
+                        update_freshness.get("freshness_status", "-"),
+                        update_freshness.get("freshness_status", "-"),
+                    ),
+                    ("max_staleness", f"{update_freshness.get('max_staleness_days', 0)}d"),
+                    ("data_quality", update_freshness.get("data_quality_score", "-")),
                 ],
             ),
             "",
