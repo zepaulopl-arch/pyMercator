@@ -1,0 +1,196 @@
+PYMERCATOR REFACTOR REPORT
+================================================================================
+timestamp: 20260604_165553
+root: C:\Users\zepau\ML\projetos\pyMercator
+code_audit: runtime/code_audit_20260604_141850/code_audit.json
+
+SUMMARY
+--------------------------------------------------------------------------------
+Conservative refactor completed without changing model, horizons, observer, basket rules or scenario positive logic.
+The three main operational scripts were executed; they were not refactored in this pass.
+The largest line reduction came from removing generated artifacts from version control.
+
+LINES BEFORE / AFTER
+--------------------------------------------------------------------------------
+active_source_lines_before        36591
+active_source_lines_after         36416
+active_source_delta               -175 (-0.48%)
+active_source_nonempty_before     31175
+active_source_nonempty_after      31032
+project_source_lines_before       37797
+project_source_lines_after        37622
+project_source_delta              -175 (-0.46%)
+
+TRACKED ARTIFACT CLEANUP
+--------------------------------------------------------------------------------
+Removed generated tracked artifacts from src/pymercator.egg-info/ and storage/legacy_inventory/.
+Measured against HEAD tracked text files: 830460 -> 596525 lines (-233935, -28.17%).
+This is repository weight reduction, not active trading-code reduction.
+
+FILES MOVED TO LEGACY
+--------------------------------------------------------------------------------
+No additional scripts had to be moved in this pass; scripts/legacy/ already contained the legacy PowerShell scripts.
+Added scripts/legacy/README.md with replacement mapping and retention rules.
+
+FILES CREATED
+--------------------------------------------------------------------------------
+- config/borrow_policy.json
+- config/short_policy.json
+- config/short_thresholds.json
+- scripts/legacy/README.md
+- src/pymercator/cli_args.py
+- src/pymercator/cli_borrow.py
+- src/pymercator/config_loader.py
+- src/pymercator/market_context_sources.py
+- src/pymercator/short_policy.py
+- src/pymercator/short_render.py
+- src/pymercator/terminal_render.py
+
+FILES DELETED FROM VERSION CONTROL
+--------------------------------------------------------------------------------
+- src/pymercator.egg-info/PKG-INFO
+- src/pymercator.egg-info/SOURCES.txt
+- src/pymercator.egg-info/dependency_links.txt
+- src/pymercator.egg-info/entry_points.txt
+- src/pymercator.egg-info/requires.txt
+- src/pymercator.egg-info/top_level.txt
+- storage/legacy_inventory/legacy_classification.json
+- storage/legacy_inventory/legacy_classification.txt
+- storage/legacy_inventory/legacy_inventory.json
+- storage/legacy_inventory/legacy_inventory.txt
+
+FILES MODIFIED
+--------------------------------------------------------------------------------
+- .gitignore
+- scripts/ops_common.ps1
+- scripts/run_daily_signal.ps1
+- scripts/run_daily_train.ps1
+- scripts/run_weekend_full.ps1
+- src/pymercator.egg-info/PKG-INFO
+- src/pymercator.egg-info/SOURCES.txt
+- src/pymercator/basket.py
+- src/pymercator/borrow_data.py
+- src/pymercator/cli.py
+- src/pymercator/cli_basket.py
+- src/pymercator/cli_context.py
+- src/pymercator/cli_daily_auto.py
+- src/pymercator/cli_observe.py
+- src/pymercator/cli_packs.py
+- src/pymercator/cli_parsers.py
+- src/pymercator/cli_predict.py
+- src/pymercator/cli_run.py
+- src/pymercator/cli_train.py
+- src/pymercator/cli_update.py
+- src/pymercator/features_matrix.py
+- src/pymercator/manifest.py
+- src/pymercator/market_context_consolidator.py
+- src/pymercator/observation.py
+- src/pymercator/position_actions.py
+- src/pymercator/position_actions_config.py
+- src/pymercator/prediction_config.py
+- src/pymercator/reports/json_report.py
+- tests/test_cli_context.py
+- tests/test_cli_observe.py
+- tests/test_cli_run_simplified.py
+- tests/test_cli_train.py
+- tests/test_cli_update.py
+- tests/test_market_context_consolidator.py
+- tests/test_position_actions.py
+- tests/test_position_actions_direction.py
+- tests/test_runtime_manifest.py
+
+FUNCTIONS / DUPLICATIONS CONSOLIDATED
+--------------------------------------------------------------------------------
+- Created terminal_render.py as terminal rendering facade over pymercator.ui.
+- Moved position/book rendering into short_render.py; position_actions.py keeps compatibility wrapper.
+- Centralized recursive config merge in config_loader.deep_merge.
+- Centralized CLI CSV parsing in cli_args.parse_csv_arg.
+- Reused manifest.write_json for basket/context JSON writing; manifest.write_json now creates parent directories.
+- Removed dead duplicate blockers/guards from cli_run.py now handled by model_governance.
+- Removed dead _observer_lines from cli_train.py.
+- Removed dead _read_json and _pack_top_from_summary from cli.py.
+
+BEHAVIOR GUARDED / NOT CHANGED
+--------------------------------------------------------------------------------
+- multi_horizon_ridge unchanged.
+- D5/D20/D60 unchanged.
+- weighted observer unchanged.
+- model_quality guard remains delegated to model_governance.
+- behavior guard remains delegated to model_governance.
+- basket remains analysis-only.
+- scenario positive passed in weekend_full.
+- short/defensive output remains observational/manual; it does not enter the long basket.
+
+TESTS EXECUTED
+--------------------------------------------------------------------------------
+- python -m pytest -q -> 281 passed, 1 skipped.
+- run_daily_signal.ps1 -> OK, runtime/daily_signal_20260604_143849.
+- run_daily_train.ps1 -> OK, runtime/daily_train_20260604_144319; PROFILE SUMMARY generated.
+- run_weekend_full.ps1 -> OK, runtime/weekend_full_20260604_154732; scenario positive and pytest inside script OK.
+
+OUTPUT CHECKS
+--------------------------------------------------------------------------------
+- No standalone "0" lines found in scanned daily_signal/daily_train/weekend logs/stdout.
+- No ANSI escape sequences found in scanned JSON/CSV/TXT/log artifacts.
+- train --details did not show BASE ENGINE METRICS by default.
+- DEFENSIVE BOOK appeared in run profile logs when long basket was blocked.
+
+RISKS / FAILURES
+--------------------------------------------------------------------------------
+- Active source-code line reduction target of 10%-20% was not reached; current safe reduction is about 0.48% on the audit baseline.
+- The 10%-20% target was exceeded only for tracked repository text because generated artifacts were removed (-28.17%).
+- weekend_full autotune is long: the successful run took roughly 54 minutes in train --autotune.
+- Further source reduction would require extracting cli_train/cli_run/cli_update render and service layers more aggressively.
+- Prediction-lab private algorithms were not removed despite heuristic unused detection, because model behavior is frozen.
+
+FUTURE SAFE PATH
+--------------------------------------------------------------------------------
+1. Move train detail renderer helpers from cli_train.py into train_detail_report.py with golden-output tests.
+2. Extract cli_run.render_run_summary into run_render.py and keep run_decision_flow as service only.
+3. Split cli_update summary rendering into update_render.py.
+4. Convert more terminal sections to terminal_render.py after snapshot tests are added.
+5. After one stable cycle, consider removing or archiving legacy command modules only with explicit proof and tests.
+
+DIFF STAT
+--------------------------------------------------------------------------------
+ .gitignore                                         |      1 +
+ scripts/ops_common.ps1                             |    167 +-
+ scripts/run_daily_signal.ps1                       |     21 +-
+ scripts/run_daily_train.ps1                        |     33 +-
+ scripts/run_weekend_full.ps1                       |     37 +-
+ src/pymercator.egg-info/SOURCES.txt                |     41 +-
+ src/pymercator/basket.py                           |     11 +-
+ src/pymercator/borrow_data.py                      |    476 +-
+ src/pymercator/cli.py                              |     52 +-
+ src/pymercator/cli_basket.py                       |      7 +-
+ src/pymercator/cli_context.py                      |    114 +
+ src/pymercator/cli_daily_auto.py                   |     10 +-
+ src/pymercator/cli_observe.py                      |     30 +-
+ src/pymercator/cli_packs.py                        |      8 +-
+ src/pymercator/cli_parsers.py                      |     64 +
+ src/pymercator/cli_predict.py                      |     12 +-
+ src/pymercator/cli_run.py                          |    213 +-
+ src/pymercator/cli_train.py                        |     19 -
+ src/pymercator/cli_update.py                       |     59 +-
+ src/pymercator/features_matrix.py                  |     13 +-
+ src/pymercator/manifest.py                         |      1 +
+ src/pymercator/market_context_consolidator.py      |     70 +-
+ src/pymercator/observation.py                      |     31 +-
+ src/pymercator/position_actions.py                 |    513 +-
+ src/pymercator/position_actions_config.py          |     14 +-
+ src/pymercator/prediction_config.py                |     14 +-
+ src/pymercator/reports/json_report.py              |      1 +
+ .../legacy_inventory/legacy_classification.json    | 149001 ------------------
+ storage/legacy_inventory/legacy_classification.txt |    233 -
+ storage/legacy_inventory/legacy_inventory.json     |  85618 ----------
+ storage/legacy_inventory/legacy_inventory.txt      |    206 -
+ tests/test_cli_context.py                          |    113 +-
+ tests/test_cli_observe.py                          |     27 +-
+ tests/test_cli_run_simplified.py                   |      3 +
+ tests/test_cli_train.py                            |     42 +
+ tests/test_cli_update.py                           |     75 +
+ tests/test_market_context_consolidator.py          |      3 +
+ tests/test_position_actions.py                     |    113 +-
+ tests/test_position_actions_direction.py           |      3 +-
+ tests/test_runtime_manifest.py                     |     15 +
+ 40 files changed, 1775 insertions(+), 235709 deletions(-)

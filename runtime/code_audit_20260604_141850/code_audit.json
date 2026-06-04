@@ -1,0 +1,1557 @@
+{
+  "schema_version": "code_audit.v1",
+  "timestamp": "20260604_141850",
+  "root": "C:\\Users\\zepau\\ML\\projetos\\pyMercator",
+  "baseline": {
+    "active_source": {
+      "files": 186,
+      "lines": 36591,
+      "nonempty_lines": 31175
+    },
+    "project_source": {
+      "files": 192,
+      "lines": 37797,
+      "nonempty_lines": 32173
+    }
+  },
+  "top_40_by_lines": [
+    {
+      "file": "storage/prediction/d5/latest_dataset.csv",
+      "lines": 350831,
+      "nonempty_lines": 350831,
+      "active": false
+    },
+    {
+      "file": "storage/prediction/d20/latest_dataset.csv",
+      "lines": 349661,
+      "nonempty_lines": 349661,
+      "active": false
+    },
+    {
+      "file": "storage/prediction/d60/latest_dataset.csv",
+      "lines": 346541,
+      "nonempty_lines": 346541,
+      "active": false
+    },
+    {
+      "file": "storage/legacy_inventory/legacy_classification.json",
+      "lines": 149001,
+      "nonempty_lines": 149001,
+      "active": false
+    },
+    {
+      "file": "storage/legacy_inventory/legacy_inventory.json",
+      "lines": 85618,
+      "nonempty_lines": 85618,
+      "active": false
+    },
+    {
+      "file": "data/indices/^BVSP.csv",
+      "lines": 8199,
+      "nonempty_lines": 8199,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_signal_20260604_093505/report_CON.json",
+      "lines": 7150,
+      "nonempty_lines": 7150,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_signal_20260604_093505/run_CON/report.json",
+      "lines": 7150,
+      "nonempty_lines": 7150,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_train_20260604_101812/report_CON.json",
+      "lines": 7150,
+      "nonempty_lines": 7150,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_train_20260604_101812/run_CON/report.json",
+      "lines": 7150,
+      "nonempty_lines": 7150,
+      "active": false
+    },
+    {
+      "file": "runtime/weekend_full_20260604_111946/report_CON.json",
+      "lines": 7150,
+      "nonempty_lines": 7150,
+      "active": false
+    },
+    {
+      "file": "runtime/weekend_full_20260604_111946/run_CON/report.json",
+      "lines": 7150,
+      "nonempty_lines": 7150,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_train_20260604_101812/report_BAL.json",
+      "lines": 7064,
+      "nonempty_lines": 7064,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_train_20260604_101812/run_BAL/report.json",
+      "lines": 7064,
+      "nonempty_lines": 7064,
+      "active": false
+    },
+    {
+      "file": "runtime/weekend_full_20260604_111946/report_BAL.json",
+      "lines": 7064,
+      "nonempty_lines": 7064,
+      "active": false
+    },
+    {
+      "file": "runtime/weekend_full_20260604_111946/run_BAL/report.json",
+      "lines": 7064,
+      "nonempty_lines": 7064,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_train_20260604_101812/report_AGR.json",
+      "lines": 6993,
+      "nonempty_lines": 6993,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_train_20260604_101812/run_AGR/report.json",
+      "lines": 6993,
+      "nonempty_lines": 6993,
+      "active": false
+    },
+    {
+      "file": "runtime/weekend_full_20260604_111946/report_AGR.json",
+      "lines": 6993,
+      "nonempty_lines": 6993,
+      "active": false
+    },
+    {
+      "file": "runtime/weekend_full_20260604_111946/run_AGR/report.json",
+      "lines": 6993,
+      "nonempty_lines": 6993,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_train_20260604_101812/report_RLX.json",
+      "lines": 6965,
+      "nonempty_lines": 6965,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_train_20260604_101812/run_RLX/report.json",
+      "lines": 6965,
+      "nonempty_lines": 6965,
+      "active": false
+    },
+    {
+      "file": "runtime/weekend_full_20260604_111946/report_RLX.json",
+      "lines": 6965,
+      "nonempty_lines": 6965,
+      "active": false
+    },
+    {
+      "file": "runtime/weekend_full_20260604_111946/run_RLX/report.json",
+      "lines": 6965,
+      "nonempty_lines": 6965,
+      "active": false
+    },
+    {
+      "file": "data/prices/AXIA3.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/BBAS3.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/BBDC3.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/BRAP4.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/BRKM5.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/CMIG4.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/CPFE3.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/CPLE3.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/CSNA3.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/CYRE3.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/EMBJ3.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/GGBR4.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/GOAU4.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/ISAE4.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/ITSA4.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/PETR3.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    }
+  ],
+  "top_40_by_nonempty_lines": [
+    {
+      "file": "storage/prediction/d5/latest_dataset.csv",
+      "lines": 350831,
+      "nonempty_lines": 350831,
+      "active": false
+    },
+    {
+      "file": "storage/prediction/d20/latest_dataset.csv",
+      "lines": 349661,
+      "nonempty_lines": 349661,
+      "active": false
+    },
+    {
+      "file": "storage/prediction/d60/latest_dataset.csv",
+      "lines": 346541,
+      "nonempty_lines": 346541,
+      "active": false
+    },
+    {
+      "file": "storage/legacy_inventory/legacy_classification.json",
+      "lines": 149001,
+      "nonempty_lines": 149001,
+      "active": false
+    },
+    {
+      "file": "storage/legacy_inventory/legacy_inventory.json",
+      "lines": 85618,
+      "nonempty_lines": 85618,
+      "active": false
+    },
+    {
+      "file": "data/indices/^BVSP.csv",
+      "lines": 8199,
+      "nonempty_lines": 8199,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_signal_20260604_093505/report_CON.json",
+      "lines": 7150,
+      "nonempty_lines": 7150,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_signal_20260604_093505/run_CON/report.json",
+      "lines": 7150,
+      "nonempty_lines": 7150,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_train_20260604_101812/report_CON.json",
+      "lines": 7150,
+      "nonempty_lines": 7150,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_train_20260604_101812/run_CON/report.json",
+      "lines": 7150,
+      "nonempty_lines": 7150,
+      "active": false
+    },
+    {
+      "file": "runtime/weekend_full_20260604_111946/report_CON.json",
+      "lines": 7150,
+      "nonempty_lines": 7150,
+      "active": false
+    },
+    {
+      "file": "runtime/weekend_full_20260604_111946/run_CON/report.json",
+      "lines": 7150,
+      "nonempty_lines": 7150,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_train_20260604_101812/report_BAL.json",
+      "lines": 7064,
+      "nonempty_lines": 7064,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_train_20260604_101812/run_BAL/report.json",
+      "lines": 7064,
+      "nonempty_lines": 7064,
+      "active": false
+    },
+    {
+      "file": "runtime/weekend_full_20260604_111946/report_BAL.json",
+      "lines": 7064,
+      "nonempty_lines": 7064,
+      "active": false
+    },
+    {
+      "file": "runtime/weekend_full_20260604_111946/run_BAL/report.json",
+      "lines": 7064,
+      "nonempty_lines": 7064,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_train_20260604_101812/report_AGR.json",
+      "lines": 6993,
+      "nonempty_lines": 6993,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_train_20260604_101812/run_AGR/report.json",
+      "lines": 6993,
+      "nonempty_lines": 6993,
+      "active": false
+    },
+    {
+      "file": "runtime/weekend_full_20260604_111946/report_AGR.json",
+      "lines": 6993,
+      "nonempty_lines": 6993,
+      "active": false
+    },
+    {
+      "file": "runtime/weekend_full_20260604_111946/run_AGR/report.json",
+      "lines": 6993,
+      "nonempty_lines": 6993,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_train_20260604_101812/report_RLX.json",
+      "lines": 6965,
+      "nonempty_lines": 6965,
+      "active": false
+    },
+    {
+      "file": "runtime/daily_train_20260604_101812/run_RLX/report.json",
+      "lines": 6965,
+      "nonempty_lines": 6965,
+      "active": false
+    },
+    {
+      "file": "runtime/weekend_full_20260604_111946/report_RLX.json",
+      "lines": 6965,
+      "nonempty_lines": 6965,
+      "active": false
+    },
+    {
+      "file": "runtime/weekend_full_20260604_111946/run_RLX/report.json",
+      "lines": 6965,
+      "nonempty_lines": 6965,
+      "active": false
+    },
+    {
+      "file": "data/prices/AXIA3.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/BBAS3.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/BBDC3.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/BRAP4.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/BRKM5.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/CMIG4.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/CPFE3.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/CPLE3.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/CSNA3.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/CYRE3.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/EMBJ3.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/GGBR4.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/GOAU4.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/ISAE4.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/ITSA4.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    },
+    {
+      "file": "data/prices/PETR3.SA.csv",
+      "lines": 6632,
+      "nonempty_lines": 6632,
+      "active": false
+    }
+  ],
+  "large_cli_files": [
+    {
+      "file": "src/pymercator/cli_train.py",
+      "lines": 2525,
+      "nonempty_lines": 2268,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli.py",
+      "lines": 1459,
+      "nonempty_lines": 1253,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_run.py",
+      "lines": 976,
+      "nonempty_lines": 877,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_update.py",
+      "lines": 701,
+      "nonempty_lines": 641,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_scenario.py",
+      "lines": 455,
+      "nonempty_lines": 428,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_universe.py",
+      "lines": 350,
+      "nonempty_lines": 295,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_context.py",
+      "lines": 300,
+      "nonempty_lines": 249,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_parsers.py",
+      "lines": 291,
+      "nonempty_lines": 266,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_prices.py",
+      "lines": 182,
+      "nonempty_lines": 147,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_packs.py",
+      "lines": 178,
+      "nonempty_lines": 142,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_legacy.py",
+      "lines": 149,
+      "nonempty_lines": 127,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_indices.py",
+      "lines": 144,
+      "nonempty_lines": 123,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_predict.py",
+      "lines": 109,
+      "nonempty_lines": 90,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_basket.py",
+      "lines": 88,
+      "nonempty_lines": 78,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_borrow.py",
+      "lines": 70,
+      "nonempty_lines": 62,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_daily_auto.py",
+      "lines": 58,
+      "nonempty_lines": 49,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_positions.py",
+      "lines": 55,
+      "nonempty_lines": 49,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_daily.py",
+      "lines": 53,
+      "nonempty_lines": 42,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_observe.py",
+      "lines": 49,
+      "nonempty_lines": 43,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_execution.py",
+      "lines": 47,
+      "nonempty_lines": 37,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_real_pack.py",
+      "lines": 44,
+      "nonempty_lines": 37,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_features.py",
+      "lines": 43,
+      "nonempty_lines": 33,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_confirm.py",
+      "lines": 33,
+      "nonempty_lines": 27,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_scenario_pack.py",
+      "lines": 28,
+      "nonempty_lines": 21,
+      "active": true
+    },
+    {
+      "file": "src/pymercator/cli_sentiment.py",
+      "lines": 20,
+      "nonempty_lines": 13,
+      "active": true
+    }
+  ],
+  "powershell_scripts": [
+    "scripts/legacy/run_absolute_tests.ps1",
+    "scripts/legacy/run_daily_operation.ps1",
+    "scripts/legacy/run_daily_profiles.ps1",
+    "scripts/legacy/run_initial_full_check.ps1",
+    "scripts/legacy/run_operational_tests.ps1",
+    "scripts/legacy/run_weekly_training.ps1",
+    "scripts/ops_common.ps1",
+    "scripts/run_daily_signal.ps1",
+    "scripts/run_daily_train.ps1",
+    "scripts/run_weekend_full.ps1"
+  ],
+  "main_operational_scripts": [
+    "scripts/run_daily_signal.ps1",
+    "scripts/run_daily_train.ps1",
+    "scripts/run_weekend_full.ps1"
+  ],
+  "legacy_scripts": [
+    "scripts/legacy/run_absolute_tests.ps1",
+    "scripts/legacy/run_daily_operation.ps1",
+    "scripts/legacy/run_daily_profiles.ps1",
+    "scripts/legacy/run_initial_full_check.ps1",
+    "scripts/legacy/run_operational_tests.ps1",
+    "scripts/legacy/run_weekly_training.ps1"
+  ],
+  "possible_legacy_scripts": [
+    "scripts/legacy/run_absolute_tests.ps1",
+    "scripts/legacy/run_daily_operation.ps1",
+    "scripts/legacy/run_daily_profiles.ps1",
+    "scripts/legacy/run_initial_full_check.ps1",
+    "scripts/legacy/run_operational_tests.ps1",
+    "scripts/legacy/run_weekly_training.ps1"
+  ],
+  "duplicated_function_names": [
+    {
+      "name": "_as_bool",
+      "locations": [
+        "src/pymercator/features_catalog.py:81",
+        "src/pymercator/indices_catalog.py:15"
+      ]
+    },
+    {
+      "name": "_base_ticker",
+      "locations": [
+        "src/pymercator/legacy_universe.py:60",
+        "src/pymercator/data/universe_builder.py:43"
+      ]
+    },
+    {
+      "name": "_clamp",
+      "locations": [
+        "src/pymercator/observation.py:85",
+        "src/pymercator/position_actions.py:51",
+        "src/pymercator/engines/ranking.py:21"
+      ]
+    },
+    {
+      "name": "_confusion_counts",
+      "locations": [
+        "src/pymercator/cli_train.py:1920",
+        "src/pymercator/legacy_prediction_engines.py:256"
+      ]
+    },
+    {
+      "name": "_dedupe",
+      "locations": [
+        "src/pymercator/cli_run.py:77",
+        "src/pymercator/legacy_indices.py:240"
+      ]
+    },
+    {
+      "name": "_deep_merge",
+      "locations": [
+        "src/pymercator/market_context_consolidator.py:65",
+        "src/pymercator/observation.py:68",
+        "src/pymercator/position_actions_config.py:51",
+        "src/pymercator/prediction_config.py:107",
+        "src/pymercator/short_policy.py:58"
+      ]
+    },
+    {
+      "name": "_feature_value",
+      "locations": [
+        "src/pymercator/legacy_prediction_engines.py:159",
+        "src/pymercator/prediction_lab.py:247"
+      ]
+    },
+    {
+      "name": "_feature_vector",
+      "locations": [
+        "src/pymercator/legacy_prediction_engines.py:175",
+        "src/pymercator/prediction_lab.py:255"
+      ]
+    },
+    {
+      "name": "_float",
+      "locations": [
+        "src/pymercator/market_context_consolidator.py:157",
+        "src/pymercator/data/universe_csv.py:64"
+      ]
+    },
+    {
+      "name": "_horizon_sort_key",
+      "locations": [
+        "src/pymercator/cli_run.py:90",
+        "src/pymercator/cli_train.py:1544"
+      ]
+    },
+    {
+      "name": "_load_json",
+      "locations": [
+        "src/pymercator/cli_scenario.py:238",
+        "src/pymercator/human_confirmation.py:21",
+        "src/pymercator/short_policy.py:68"
+      ]
+    },
+    {
+      "name": "_load_yaml",
+      "locations": [
+        "src/pymercator/legacy_indices.py:47",
+        "src/pymercator/legacy_universe.py:36"
+      ]
+    },
+    {
+      "name": "_normalize_ticker",
+      "locations": [
+        "src/pymercator/basket.py:75",
+        "src/pymercator/cli_train.py:105"
+      ]
+    },
+    {
+      "name": "_pack_top_from_summary",
+      "locations": [
+        "src/pymercator/cli.py:547",
+        "src/pymercator/cli_packs.py:12"
+      ]
+    },
+    {
+      "name": "_parse_csv_arg",
+      "locations": [
+        "src/pymercator/cli.py:144",
+        "src/pymercator/cli_daily_auto.py:53",
+        "src/pymercator/cli_predict.py:104"
+      ]
+    },
+    {
+      "name": "_parse_date",
+      "locations": [
+        "src/pymercator/borrow_data.py:90",
+        "src/pymercator/update_freshness.py:8",
+        "src/pymercator/data/prices_csv.py:25"
+      ]
+    },
+    {
+      "name": "_prediction_behavior",
+      "locations": [
+        "src/pymercator/cli_run.py:113",
+        "src/pymercator/position_actions.py:167"
+      ]
+    },
+    {
+      "name": "_price_file_for_ticker",
+      "locations": [
+        "src/pymercator/basket.py:153",
+        "src/pymercator/features_matrix.py:34",
+        "src/pymercator/prediction_lab.py:48"
+      ]
+    },
+    {
+      "name": "_quantile",
+      "locations": [
+        "src/pymercator/legacy_prediction_engines.py:399",
+        "src/pymercator/market_context_auto.py:141",
+        "src/pymercator/observation.py:89"
+      ]
+    },
+    {
+      "name": "_read_csv",
+      "locations": [
+        "src/pymercator/basket.py:108",
+        "src/pymercator/prediction_lab.py:41"
+      ]
+    },
+    {
+      "name": "_read_json",
+      "locations": [
+        "src/pymercator/cli.py:543",
+        "src/pymercator/cli_packs.py:8",
+        "src/pymercator/features_matrix.py:11",
+        "src/pymercator/market_context_consolidator.py:75"
+      ]
+    },
+    {
+      "name": "_read_price_rows",
+      "locations": [
+        "src/pymercator/basket.py:130",
+        "src/pymercator/prediction_lab.py:66"
+      ]
+    },
+    {
+      "name": "_return_pct",
+      "locations": [
+        "src/pymercator/features_matrix.py:71",
+        "src/pymercator/prediction_lab.py:91"
+      ]
+    },
+    {
+      "name": "_split_tags",
+      "locations": [
+        "src/pymercator/cli_context.py:26",
+        "src/pymercator/cli_prices.py:18"
+      ]
+    },
+    {
+      "name": "_ticker",
+      "locations": [
+        "src/pymercator/borrow_data.py:32",
+        "src/pymercator/position_actions.py:40"
+      ]
+    },
+    {
+      "name": "_to_float",
+      "locations": [
+        "src/pymercator/borrow_data.py:46",
+        "src/pymercator/features_matrix.py:27",
+        "src/pymercator/legacy_prediction_engines.py:152",
+        "src/pymercator/observation.py:78",
+        "src/pymercator/position_actions.py:44",
+        "src/pymercator/prediction_lab.py:34",
+        "src/pymercator/data/universe_builder.py:74",
+        "src/pymercator/ui/colors.py:313"
+      ]
+    },
+    {
+      "name": "_write_csv",
+      "locations": [
+        "src/pymercator/basket.py:518",
+        "src/pymercator/cli_scenario.py:74"
+      ]
+    },
+    {
+      "name": "_write_json",
+      "locations": [
+        "src/pymercator/basket.py:527",
+        "src/pymercator/cli_context.py:90",
+        "src/pymercator/human_confirmation.py:25"
+      ]
+    },
+    {
+      "name": "load_market_context_thresholds",
+      "locations": [
+        "src/pymercator/market_context_auto.py:23",
+        "src/pymercator/market_context_consolidator.py:95"
+      ]
+    },
+    {
+      "name": "load_universe_csv",
+      "locations": [
+        "src/pymercator/loaders.py:9",
+        "src/pymercator/data/universe_csv.py:173"
+      ]
+    },
+    {
+      "name": "render_train_detail_report",
+      "locations": [
+        "src/pymercator/cli_train.py:2185",
+        "src/pymercator/train_detail_report.py:6"
+      ]
+    },
+    {
+      "name": "write_json",
+      "locations": [
+        "src/pymercator/manifest.py:22",
+        "src/pymercator/scenario_pack.py:44"
+      ]
+    }
+  ],
+  "rendering_duplication_markers": [
+    {
+      "marker": "Write-Host \"[-=]{10,}",
+      "locations": [
+        {
+          "file": "scripts/legacy/run_absolute_tests.ps1",
+          "count": 10
+        },
+        {
+          "file": "scripts/ops_common.ps1",
+          "count": 6
+        },
+        {
+          "file": "scripts/legacy/run_daily_profiles.ps1",
+          "count": 4
+        },
+        {
+          "file": "scripts/legacy/run_daily_operation.ps1",
+          "count": 2
+        },
+        {
+          "file": "scripts/legacy/run_initial_full_check.ps1",
+          "count": 2
+        },
+        {
+          "file": "scripts/legacy/run_operational_tests.ps1",
+          "count": 2
+        },
+        {
+          "file": "scripts/legacy/run_weekly_training.ps1",
+          "count": 2
+        },
+        {
+          "file": "scripts/run_daily_signal.ps1",
+          "count": 2
+        },
+        {
+          "file": "scripts/run_daily_train.ps1",
+          "count": 2
+        },
+        {
+          "file": "scripts/run_weekend_full.ps1",
+          "count": 2
+        }
+      ]
+    },
+    {
+      "marker": "\"[-]\" \\* 80",
+      "locations": [
+        {
+          "file": "src/pymercator/borrow_data.py",
+          "count": 3
+        },
+        {
+          "file": "src/pymercator/cli_borrow.py",
+          "count": 2
+        },
+        {
+          "file": "src/pymercator/cli_observe.py",
+          "count": 2
+        },
+        {
+          "file": "src/pymercator/cli_context.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/market_context_sources.py",
+          "count": 1
+        },
+        {
+          "file": "tests/test_basket_daily.py",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "marker": "render_\\w+\\(",
+      "locations": [
+        {
+          "file": "src/pymercator/cli_universe.py",
+          "count": 14
+        },
+        {
+          "file": "src/pymercator/cli_prices.py",
+          "count": 7
+        },
+        {
+          "file": "src/pymercator/scenario_pack.py",
+          "count": 7
+        },
+        {
+          "file": "src/pymercator/cli_context.py",
+          "count": 5
+        },
+        {
+          "file": "src/pymercator/cli_run.py",
+          "count": 5
+        },
+        {
+          "file": "src/pymercator/basket.py",
+          "count": 4
+        },
+        {
+          "file": "src/pymercator/cli_train.py",
+          "count": 4
+        },
+        {
+          "file": "src/pymercator/position_actions.py",
+          "count": 4
+        },
+        {
+          "file": "src/pymercator/real_run.py",
+          "count": 4
+        },
+        {
+          "file": "src/pymercator/cli_predict.py",
+          "count": 3
+        },
+        {
+          "file": "src/pymercator/cli_update.py",
+          "count": 3
+        },
+        {
+          "file": "src/pymercator/prediction_lab.py",
+          "count": 3
+        },
+        {
+          "file": "tests/test_terminal_output.py",
+          "count": 3
+        },
+        {
+          "file": "src/pymercator/borrow_data.py",
+          "count": 2
+        },
+        {
+          "file": "src/pymercator/cli_basket.py",
+          "count": 2
+        },
+        {
+          "file": "src/pymercator/cli_borrow.py",
+          "count": 2
+        },
+        {
+          "file": "src/pymercator/cli_features.py",
+          "count": 2
+        },
+        {
+          "file": "src/pymercator/cli_packs.py",
+          "count": 2
+        },
+        {
+          "file": "src/pymercator/cli_scenario.py",
+          "count": 2
+        },
+        {
+          "file": "src/pymercator/human_confirmation.py",
+          "count": 2
+        },
+        {
+          "file": "src/pymercator/legacy_classification.py",
+          "count": 2
+        },
+        {
+          "file": "src/pymercator/legacy_inventory.py",
+          "count": 2
+        },
+        {
+          "file": "src/pymercator/observation.py",
+          "count": 2
+        },
+        {
+          "file": "src/pymercator/reports/json_report.py",
+          "count": 2
+        },
+        {
+          "file": "src/pymercator/terminal_ui.py",
+          "count": 2
+        },
+        {
+          "file": "tests/test_cli_run_simplified.py",
+          "count": 2
+        },
+        {
+          "file": "tests/test_json_report.py",
+          "count": 2
+        },
+        {
+          "file": "tests/test_position_actions.py",
+          "count": 2
+        },
+        {
+          "file": "tests/test_terminal_ui.py",
+          "count": 2
+        },
+        {
+          "file": "src/pymercator/cli.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/cli_daily.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/cli_daily_auto.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/cli_indices.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/cli_observe.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/cli_positions.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/cli_sentiment.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/daily_auto.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/features_catalog.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/features_matrix.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/indices_catalog.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/market_context_sources.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/reports/terminal.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/sentiment_store.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/train_detail_report.py",
+          "count": 1
+        },
+        {
+          "file": "tests/test_basket_daily.py",
+          "count": 1
+        },
+        {
+          "file": "tests/test_cli_update.py",
+          "count": 1
+        },
+        {
+          "file": "tests/test_position_actions_direction.py",
+          "count": 1
+        },
+        {
+          "file": "tests/test_position_actions_stop_loss.py",
+          "count": 1
+        },
+        {
+          "file": "tests/test_prediction_calibration.py",
+          "count": 1
+        },
+        {
+          "file": "tests/test_train_detail_report_module.py",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "marker": "colorize\\(",
+      "locations": [
+        {
+          "file": "src/pymercator/cli_train.py",
+          "count": 12
+        },
+        {
+          "file": "src/pymercator/cli_scenario.py",
+          "count": 3
+        },
+        {
+          "file": "src/pymercator/prediction_lab.py",
+          "count": 3
+        },
+        {
+          "file": "src/pymercator/ui/colors.py",
+          "count": 3
+        },
+        {
+          "file": "src/pymercator/cli_run.py",
+          "count": 2
+        },
+        {
+          "file": "src/pymercator/cli_universe.py",
+          "count": 2
+        },
+        {
+          "file": "tests/test_terminal_output.py",
+          "count": 2
+        },
+        {
+          "file": "src/pymercator/ui/formatters.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/ui/tables.py",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "marker": "format_kv_section\\(",
+      "locations": [
+        {
+          "file": "src/pymercator/cli_run.py",
+          "count": 8
+        },
+        {
+          "file": "src/pymercator/cli_scenario.py",
+          "count": 6
+        },
+        {
+          "file": "src/pymercator/cli_universe.py",
+          "count": 5
+        },
+        {
+          "file": "src/pymercator/cli.py",
+          "count": 4
+        },
+        {
+          "file": "src/pymercator/cli_basket.py",
+          "count": 2
+        },
+        {
+          "file": "src/pymercator/basket.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/ui/formatters.py",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "marker": "muted_line\\(\\)",
+      "locations": [
+        {
+          "file": "src/pymercator/cli_train.py",
+          "count": 9
+        },
+        {
+          "file": "src/pymercator/position_actions.py",
+          "count": 8
+        },
+        {
+          "file": "src/pymercator/cli_run.py",
+          "count": 3
+        },
+        {
+          "file": "src/pymercator/cli_universe.py",
+          "count": 3
+        },
+        {
+          "file": "src/pymercator/observation.py",
+          "count": 3
+        },
+        {
+          "file": "src/pymercator/cli.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/cli_scenario.py",
+          "count": 1
+        }
+      ]
+    },
+    {
+      "marker": "f\"\\{\\'#[^\\n]+",
+      "locations": [
+        {
+          "file": "src/pymercator/position_actions.py",
+          "count": 5
+        },
+        {
+          "file": "src/pymercator/observation.py",
+          "count": 2
+        },
+        {
+          "file": "src/pymercator/cli_run.py",
+          "count": 1
+        },
+        {
+          "file": "src/pymercator/cli_scenario.py",
+          "count": 1
+        }
+      ]
+    }
+  ],
+  "possibly_unused_configs": [
+    {
+      "file": "config/borrow_policy.json",
+      "referenced_by_count": 1,
+      "sample_references": [
+        "src/pymercator/borrow_data.py"
+      ]
+    },
+    {
+      "file": "config/execution_policy.json",
+      "referenced_by_count": 5,
+      "sample_references": [
+        "tests/test_cli_execution_policy.py",
+        "tests/test_execution_policy.py",
+        "src/pymercator/cli.py",
+        "src/pymercator/execution_policy.py",
+        "src/pymercator/human_confirmation.py"
+      ]
+    },
+    {
+      "file": "config/features_catalog.json",
+      "referenced_by_count": 13,
+      "sample_references": [
+        "config/pymercator_presets.json",
+        "tests/test_cli_features_catalog.py",
+        "tests/test_features_catalog.py",
+        "storage/scenario_runs/20260528_225028/00_manifest.json",
+        "storage/scenario_runs/20260528_230342/00_manifest.json",
+        "storage/scenario_runs/20260528_232050/00_manifest.json",
+        "src/pymercator/cli.py",
+        "src/pymercator/cli_real_pack.py",
+        "src/pymercator/cli_update.py",
+        "src/pymercator/daily_auto.py"
+      ]
+    },
+    {
+      "file": "config/indices_catalog.json",
+      "referenced_by_count": 10,
+      "sample_references": [
+        "config/pymercator_presets.json",
+        "tests/test_cli_daily_auto.py",
+        "tests/test_cli_indices.py",
+        "tests/test_daily_auto.py",
+        "tests/test_indices_catalog.py",
+        "tests/test_indices_prices.py",
+        "src/pymercator/cli.py",
+        "src/pymercator/cli_update.py",
+        "src/pymercator/daily_auto.py",
+        "src/pymercator/presets.py"
+      ]
+    },
+    {
+      "file": "config/market_context.json",
+      "referenced_by_count": 13,
+      "sample_references": [
+        "tests/test_cli_context.py",
+        "tests/test_cli_run_simplified.py",
+        "tests/test_cli_update.py",
+        "tests/test_market_context.py",
+        "tests/test_market_context_consolidator.py",
+        "src/pymercator/cli.py",
+        "src/pymercator/cli_context.py",
+        "src/pymercator/cli_parsers.py",
+        "src/pymercator/cli_run.py",
+        "src/pymercator/cli_scenario.py"
+      ]
+    },
+    {
+      "file": "config/market_context_auto.json",
+      "referenced_by_count": 27,
+      "sample_references": [
+        "config/pymercator_presets.json",
+        "tests/test_cli_context_auto.py",
+        "tests/test_cli_daily_auto.py",
+        "tests/test_context_snapshot_manifest.py",
+        "tests/test_daily_auto.py",
+        "tests/test_market_context_auto.py",
+        "storage/scenario_runs/20260528_215333/00_manifest.json",
+        "storage/scenario_runs/20260528_215333/00_real_pack_summary.json",
+        "storage/scenario_runs/20260528_215633/00_manifest.json",
+        "storage/scenario_runs/20260528_215633/00_real_pack_summary.json"
+      ]
+    },
+    {
+      "file": "config/market_context_thresholds.json",
+      "referenced_by_count": 6,
+      "sample_references": [
+        "src/pymercator/cli.py",
+        "src/pymercator/cli_context.py",
+        "src/pymercator/cli_parsers.py",
+        "src/pymercator/cli_update.py",
+        "src/pymercator/market_context_auto.py",
+        "src/pymercator/market_context_consolidator.py"
+      ]
+    },
+    {
+      "file": "config/observation.json",
+      "referenced_by_count": 4,
+      "sample_references": [
+        "tests/test_cli_observe.py",
+        "src/pymercator/cli_parsers.py",
+        "src/pymercator/cli_run.py",
+        "src/pymercator/observation.py"
+      ]
+    },
+    {
+      "file": "config/policy.json",
+      "referenced_by_count": 66,
+      "sample_references": [
+        "scripts/run_daily_train.ps1",
+        "scripts/run_weekend_full.ps1",
+        "tests/test_cli_execution_policy.py",
+        "tests/test_execution_policy.py",
+        "tests/test_policy_calibration.py",
+        "tests/test_ranking.py",
+        "tests/test_regime.py",
+        "tests/test_scenario_pack_manifest.py",
+        "tests/test_scenario_pack_module.py",
+        "tests/test_sector_sensitivity.py"
+      ]
+    },
+    {
+      "file": "config/position_actions.json",
+      "referenced_by_count": 26,
+      "sample_references": [
+        "tests/test_position_actions_config.py",
+        "tests/test_position_actions_direction.py",
+        "storage/reports/latest_daily_report.json",
+        "storage/runs/latest/report.json",
+        "src/pymercator/position_actions.py",
+        "src/pymercator/position_actions_config.py",
+        "runtime/daily_signal_20260604_093505/report_CON.json",
+        "runtime/daily_train_20260604_101812/report_AGR.json",
+        "runtime/daily_train_20260604_101812/report_BAL.json",
+        "runtime/daily_train_20260604_101812/report_CON.json"
+      ]
+    },
+    {
+      "file": "config/prediction.json",
+      "referenced_by_count": 7,
+      "sample_references": [
+        "README.md",
+        "tests/test_cli_diag.py",
+        "tests/test_prediction_config.py",
+        "src/pymercator/cli.py",
+        "src/pymercator/cli_train.py",
+        "src/pymercator/prediction_config.py",
+        "scripts/legacy/run_absolute_tests.ps1"
+      ]
+    },
+    {
+      "file": "config/pymercator_presets.json",
+      "referenced_by_count": 1,
+      "sample_references": [
+        "src/pymercator/presets.py"
+      ]
+    },
+    {
+      "file": "config/runtime.json",
+      "referenced_by_count": 2,
+      "sample_references": [
+        "scripts/ops_common.ps1",
+        "tests/test_runtime_manifest.py"
+      ]
+    },
+    {
+      "file": "config/short_policy.json",
+      "referenced_by_count": 1,
+      "sample_references": [
+        "src/pymercator/short_policy.py"
+      ]
+    },
+    {
+      "file": "config/short_thresholds.json",
+      "referenced_by_count": 1,
+      "sample_references": [
+        "src/pymercator/short_policy.py"
+      ]
+    },
+    {
+      "file": "config/ui.json",
+      "referenced_by_count": 3,
+      "sample_references": [
+        "tests/test_terminal_output.py",
+        "src/pymercator/cli.py",
+        "src/pymercator/ui/colors.py"
+      ]
+    }
+  ],
+  "possibly_unimported_modules": [
+    {
+      "module": "pymercator.__main__",
+      "file": "src/pymercator/__main__.py",
+      "note": "heuristic; may be CLI-discovered or test-only"
+    },
+    {
+      "module": "pymercator.model_governance",
+      "file": "src/pymercator/model_governance.py",
+      "note": "heuristic; may be CLI-discovered or test-only"
+    },
+    {
+      "module": "pymercator.presets",
+      "file": "src/pymercator/presets.py",
+      "note": "heuristic; may be CLI-discovered or test-only"
+    },
+    {
+      "module": "pymercator.train_detail_report",
+      "file": "src/pymercator/train_detail_report.py",
+      "note": "heuristic; may be CLI-discovered or test-only"
+    }
+  ],
+  "safe_cut_suggestions": [
+    "Congelar scripts/run_daily_signal.ps1, scripts/run_daily_train.ps1 e scripts/run_weekend_full.ps1; qualquer reducao deve ocorrer em helpers comuns.",
+    "Centralizar formatacao de secoes/tabelas/status em terminal_render.py e migrar chamadas aos poucos.",
+    "Extrair renderizacao do defensive/short book para short_render.py sem tocar em regra de decisao.",
+    "Extrair parser de subcomandos de cli.py quando a assinatura dos comandos puder ser preservada por testes.",
+    "Manter scripts/legacy como quarentena; nao apagar sem periodo de observacao."
+  ]
+}

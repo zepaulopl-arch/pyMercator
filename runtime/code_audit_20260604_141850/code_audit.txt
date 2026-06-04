@@ -1,0 +1,233 @@
+PYMERCATOR CODE AUDIT
+================================================================================
+timestamp: 20260604_141850
+root: C:\Users\zepau\ML\projetos\pyMercator
+
+BASELINE
+--------------------------------------------------------------------------------
+active_source_files     186
+active_source_lines     36591
+active_source_nonempty  31175
+project_source_files    192
+project_source_lines    37797
+project_source_nonempty 32173
+
+TOP 40 FILES BY LINES
+--------------------------------------------------------------------------------
+FILE                                                      LINES   NONEMPTY  ACTIVE
+storage/prediction/d5/latest_dataset.csv                  350831  350831    False 
+storage/prediction/d20/latest_dataset.csv                 349661  349661    False 
+storage/prediction/d60/latest_dataset.csv                 346541  346541    False 
+storage/legacy_inventory/legacy_classification.json       149001  149001    False 
+storage/legacy_inventory/legacy_inventory.json            85618   85618     False 
+data/indices/^BVSP.csv                                    8199    8199      False 
+runtime/daily_signal_20260604_093505/report_CON.json      7150    7150      False 
+runtime/daily_signal_20260604_093505/run_CON/report.json  7150    7150      False 
+runtime/daily_train_20260604_101812/report_CON.json       7150    7150      False 
+runtime/daily_train_20260604_101812/run_CON/report.json   7150    7150      False 
+runtime/weekend_full_20260604_111946/report_CON.json      7150    7150      False 
+runtime/weekend_full_20260604_111946/run_CON/report.json  7150    7150      False 
+runtime/daily_train_20260604_101812/report_BAL.json       7064    7064      False 
+runtime/daily_train_20260604_101812/run_BAL/report.json   7064    7064      False 
+runtime/weekend_full_20260604_111946/report_BAL.json      7064    7064      False 
+runtime/weekend_full_20260604_111946/run_BAL/report.json  7064    7064      False 
+runtime/daily_train_20260604_101812/report_AGR.json       6993    6993      False 
+runtime/daily_train_20260604_101812/run_AGR/report.json   6993    6993      False 
+runtime/weekend_full_20260604_111946/report_AGR.json      6993    6993      False 
+runtime/weekend_full_20260604_111946/run_AGR/report.json  6993    6993      False 
+runtime/daily_train_20260604_101812/report_RLX.json       6965    6965      False 
+runtime/daily_train_20260604_101812/run_RLX/report.json   6965    6965      False 
+runtime/weekend_full_20260604_111946/report_RLX.json      6965    6965      False 
+runtime/weekend_full_20260604_111946/run_RLX/report.json  6965    6965      False 
+data/prices/AXIA3.SA.csv                                  6632    6632      False 
+data/prices/BBAS3.SA.csv                                  6632    6632      False 
+data/prices/BBDC3.SA.csv                                  6632    6632      False 
+data/prices/BRAP4.SA.csv                                  6632    6632      False 
+data/prices/BRKM5.SA.csv                                  6632    6632      False 
+data/prices/CMIG4.SA.csv                                  6632    6632      False 
+data/prices/CPFE3.SA.csv                                  6632    6632      False 
+data/prices/CPLE3.SA.csv                                  6632    6632      False 
+data/prices/CSNA3.SA.csv                                  6632    6632      False 
+data/prices/CYRE3.SA.csv                                  6632    6632      False 
+data/prices/EMBJ3.SA.csv                                  6632    6632      False 
+data/prices/GGBR4.SA.csv                                  6632    6632      False 
+data/prices/GOAU4.SA.csv                                  6632    6632      False 
+data/prices/ISAE4.SA.csv                                  6632    6632      False 
+data/prices/ITSA4.SA.csv                                  6632    6632      False 
+data/prices/PETR3.SA.csv                                  6632    6632      False 
+
+TOP 40 FILES BY NONEMPTY LINES
+--------------------------------------------------------------------------------
+FILE                                                      NONEMPTY  LINES   ACTIVE
+storage/prediction/d5/latest_dataset.csv                  350831    350831  False 
+storage/prediction/d20/latest_dataset.csv                 349661    349661  False 
+storage/prediction/d60/latest_dataset.csv                 346541    346541  False 
+storage/legacy_inventory/legacy_classification.json       149001    149001  False 
+storage/legacy_inventory/legacy_inventory.json            85618     85618   False 
+data/indices/^BVSP.csv                                    8199      8199    False 
+runtime/daily_signal_20260604_093505/report_CON.json      7150      7150    False 
+runtime/daily_signal_20260604_093505/run_CON/report.json  7150      7150    False 
+runtime/daily_train_20260604_101812/report_CON.json       7150      7150    False 
+runtime/daily_train_20260604_101812/run_CON/report.json   7150      7150    False 
+runtime/weekend_full_20260604_111946/report_CON.json      7150      7150    False 
+runtime/weekend_full_20260604_111946/run_CON/report.json  7150      7150    False 
+runtime/daily_train_20260604_101812/report_BAL.json       7064      7064    False 
+runtime/daily_train_20260604_101812/run_BAL/report.json   7064      7064    False 
+runtime/weekend_full_20260604_111946/report_BAL.json      7064      7064    False 
+runtime/weekend_full_20260604_111946/run_BAL/report.json  7064      7064    False 
+runtime/daily_train_20260604_101812/report_AGR.json       6993      6993    False 
+runtime/daily_train_20260604_101812/run_AGR/report.json   6993      6993    False 
+runtime/weekend_full_20260604_111946/report_AGR.json      6993      6993    False 
+runtime/weekend_full_20260604_111946/run_AGR/report.json  6993      6993    False 
+runtime/daily_train_20260604_101812/report_RLX.json       6965      6965    False 
+runtime/daily_train_20260604_101812/run_RLX/report.json   6965      6965    False 
+runtime/weekend_full_20260604_111946/report_RLX.json      6965      6965    False 
+runtime/weekend_full_20260604_111946/run_RLX/report.json  6965      6965    False 
+data/prices/AXIA3.SA.csv                                  6632      6632    False 
+data/prices/BBAS3.SA.csv                                  6632      6632    False 
+data/prices/BBDC3.SA.csv                                  6632      6632    False 
+data/prices/BRAP4.SA.csv                                  6632      6632    False 
+data/prices/BRKM5.SA.csv                                  6632      6632    False 
+data/prices/CMIG4.SA.csv                                  6632      6632    False 
+data/prices/CPFE3.SA.csv                                  6632      6632    False 
+data/prices/CPLE3.SA.csv                                  6632      6632    False 
+data/prices/CSNA3.SA.csv                                  6632      6632    False 
+data/prices/CYRE3.SA.csv                                  6632      6632    False 
+data/prices/EMBJ3.SA.csv                                  6632      6632    False 
+data/prices/GGBR4.SA.csv                                  6632      6632    False 
+data/prices/GOAU4.SA.csv                                  6632      6632    False 
+data/prices/ISAE4.SA.csv                                  6632      6632    False 
+data/prices/ITSA4.SA.csv                                  6632      6632    False 
+data/prices/PETR3.SA.csv                                  6632      6632    False 
+
+LARGE CLI FILES
+--------------------------------------------------------------------------------
+FILE                                 LINES  NONEMPTY
+src/pymercator/cli_train.py          2525   2268    
+src/pymercator/cli.py                1459   1253    
+src/pymercator/cli_run.py            976    877     
+src/pymercator/cli_update.py         701    641     
+src/pymercator/cli_scenario.py       455    428     
+src/pymercator/cli_universe.py       350    295     
+src/pymercator/cli_context.py        300    249     
+src/pymercator/cli_parsers.py        291    266     
+src/pymercator/cli_prices.py         182    147     
+src/pymercator/cli_packs.py          178    142     
+src/pymercator/cli_legacy.py         149    127     
+src/pymercator/cli_indices.py        144    123     
+src/pymercator/cli_predict.py        109    90      
+src/pymercator/cli_basket.py         88     78      
+src/pymercator/cli_borrow.py         70     62      
+src/pymercator/cli_daily_auto.py     58     49      
+src/pymercator/cli_positions.py      55     49      
+src/pymercator/cli_daily.py          53     42      
+src/pymercator/cli_observe.py        49     43      
+src/pymercator/cli_execution.py      47     37      
+src/pymercator/cli_real_pack.py      44     37      
+src/pymercator/cli_features.py       43     33      
+src/pymercator/cli_confirm.py        33     27      
+src/pymercator/cli_scenario_pack.py  28     21      
+src/pymercator/cli_sentiment.py      20     13      
+
+POWERSHELL SCRIPTS
+--------------------------------------------------------------------------------
+FILE                                       LEGACY
+scripts/legacy/run_absolute_tests.ps1      True  
+scripts/legacy/run_daily_operation.ps1     True  
+scripts/legacy/run_daily_profiles.ps1      True  
+scripts/legacy/run_initial_full_check.ps1  True  
+scripts/legacy/run_operational_tests.ps1   True  
+scripts/legacy/run_weekly_training.ps1     True  
+scripts/ops_common.ps1                     False 
+scripts/run_daily_signal.ps1               False 
+scripts/run_daily_train.ps1                False 
+scripts/run_weekend_full.ps1               False 
+
+POSSIBLE LEGACY SCRIPTS
+--------------------------------------------------------------------------------
+FILE                                     
+scripts/legacy/run_absolute_tests.ps1    
+scripts/legacy/run_daily_operation.ps1   
+scripts/legacy/run_daily_profiles.ps1    
+scripts/legacy/run_initial_full_check.ps1
+scripts/legacy/run_operational_tests.ps1 
+scripts/legacy/run_weekly_training.ps1   
+
+DUPLICATED FUNCTION NAMES
+--------------------------------------------------------------------------------
+_as_bool: src/pymercator/features_catalog.py:81, src/pymercator/indices_catalog.py:15
+_base_ticker: src/pymercator/legacy_universe.py:60, src/pymercator/data/universe_builder.py:43
+_clamp: src/pymercator/observation.py:85, src/pymercator/position_actions.py:51, src/pymercator/engines/ranking.py:21
+_confusion_counts: src/pymercator/cli_train.py:1920, src/pymercator/legacy_prediction_engines.py:256
+_dedupe: src/pymercator/cli_run.py:77, src/pymercator/legacy_indices.py:240
+_deep_merge: src/pymercator/market_context_consolidator.py:65, src/pymercator/observation.py:68, src/pymercator/position_actions_config.py:51, src/pymercator/prediction_config.py:107, src/pymercator/short_policy.py:58
+_feature_value: src/pymercator/legacy_prediction_engines.py:159, src/pymercator/prediction_lab.py:247
+_feature_vector: src/pymercator/legacy_prediction_engines.py:175, src/pymercator/prediction_lab.py:255
+_float: src/pymercator/market_context_consolidator.py:157, src/pymercator/data/universe_csv.py:64
+_horizon_sort_key: src/pymercator/cli_run.py:90, src/pymercator/cli_train.py:1544
+_load_json: src/pymercator/cli_scenario.py:238, src/pymercator/human_confirmation.py:21, src/pymercator/short_policy.py:68
+_load_yaml: src/pymercator/legacy_indices.py:47, src/pymercator/legacy_universe.py:36
+_normalize_ticker: src/pymercator/basket.py:75, src/pymercator/cli_train.py:105
+_pack_top_from_summary: src/pymercator/cli.py:547, src/pymercator/cli_packs.py:12
+_parse_csv_arg: src/pymercator/cli.py:144, src/pymercator/cli_daily_auto.py:53, src/pymercator/cli_predict.py:104
+_parse_date: src/pymercator/borrow_data.py:90, src/pymercator/update_freshness.py:8, src/pymercator/data/prices_csv.py:25
+_prediction_behavior: src/pymercator/cli_run.py:113, src/pymercator/position_actions.py:167
+_price_file_for_ticker: src/pymercator/basket.py:153, src/pymercator/features_matrix.py:34, src/pymercator/prediction_lab.py:48
+_quantile: src/pymercator/legacy_prediction_engines.py:399, src/pymercator/market_context_auto.py:141, src/pymercator/observation.py:89
+_read_csv: src/pymercator/basket.py:108, src/pymercator/prediction_lab.py:41
+_read_json: src/pymercator/cli.py:543, src/pymercator/cli_packs.py:8, src/pymercator/features_matrix.py:11, src/pymercator/market_context_consolidator.py:75
+_read_price_rows: src/pymercator/basket.py:130, src/pymercator/prediction_lab.py:66
+_return_pct: src/pymercator/features_matrix.py:71, src/pymercator/prediction_lab.py:91
+_split_tags: src/pymercator/cli_context.py:26, src/pymercator/cli_prices.py:18
+_ticker: src/pymercator/borrow_data.py:32, src/pymercator/position_actions.py:40
+_to_float: src/pymercator/borrow_data.py:46, src/pymercator/features_matrix.py:27, src/pymercator/legacy_prediction_engines.py:152, src/pymercator/observation.py:78, src/pymercator/position_actions.py:44, src/pymercator/prediction_lab.py:34, src/pymercator/data/universe_builder.py:74, src/pymercator/ui/colors.py:313
+_write_csv: src/pymercator/basket.py:518, src/pymercator/cli_scenario.py:74
+_write_json: src/pymercator/basket.py:527, src/pymercator/cli_context.py:90, src/pymercator/human_confirmation.py:25
+load_market_context_thresholds: src/pymercator/market_context_auto.py:23, src/pymercator/market_context_consolidator.py:95
+load_universe_csv: src/pymercator/loaders.py:9, src/pymercator/data/universe_csv.py:173
+render_train_detail_report: src/pymercator/cli_train.py:2185, src/pymercator/train_detail_report.py:6
+write_json: src/pymercator/manifest.py:22, src/pymercator/scenario_pack.py:44
+
+RENDERING DUPLICATION MARKERS
+--------------------------------------------------------------------------------
+Write-Host "[-=]{10,}: scripts/legacy/run_absolute_tests.ps1 (10), scripts/ops_common.ps1 (6), scripts/legacy/run_daily_profiles.ps1 (4), scripts/legacy/run_daily_operation.ps1 (2), scripts/legacy/run_initial_full_check.ps1 (2), scripts/legacy/run_operational_tests.ps1 (2), scripts/legacy/run_weekly_training.ps1 (2), scripts/run_daily_signal.ps1 (2), scripts/run_daily_train.ps1 (2), scripts/run_weekend_full.ps1 (2)
+"[-]" \* 80: src/pymercator/borrow_data.py (3), src/pymercator/cli_borrow.py (2), src/pymercator/cli_observe.py (2), src/pymercator/cli_context.py (1), src/pymercator/market_context_sources.py (1), tests/test_basket_daily.py (1)
+render_\w+\(: src/pymercator/cli_universe.py (14), src/pymercator/cli_prices.py (7), src/pymercator/scenario_pack.py (7), src/pymercator/cli_context.py (5), src/pymercator/cli_run.py (5), src/pymercator/basket.py (4), src/pymercator/cli_train.py (4), src/pymercator/position_actions.py (4), src/pymercator/real_run.py (4), src/pymercator/cli_predict.py (3), src/pymercator/cli_update.py (3), src/pymercator/prediction_lab.py (3)
+colorize\(: src/pymercator/cli_train.py (12), src/pymercator/cli_scenario.py (3), src/pymercator/prediction_lab.py (3), src/pymercator/ui/colors.py (3), src/pymercator/cli_run.py (2), src/pymercator/cli_universe.py (2), tests/test_terminal_output.py (2), src/pymercator/ui/formatters.py (1), src/pymercator/ui/tables.py (1)
+format_kv_section\(: src/pymercator/cli_run.py (8), src/pymercator/cli_scenario.py (6), src/pymercator/cli_universe.py (5), src/pymercator/cli.py (4), src/pymercator/cli_basket.py (2), src/pymercator/basket.py (1), src/pymercator/ui/formatters.py (1)
+muted_line\(\): src/pymercator/cli_train.py (9), src/pymercator/position_actions.py (8), src/pymercator/cli_run.py (3), src/pymercator/cli_universe.py (3), src/pymercator/observation.py (3), src/pymercator/cli.py (1), src/pymercator/cli_scenario.py (1)
+f"\{\'#[^\n]+: src/pymercator/position_actions.py (5), src/pymercator/observation.py (2), src/pymercator/cli_run.py (1), src/pymercator/cli_scenario.py (1)
+
+CONFIGS POSSIBLY NOT USED
+--------------------------------------------------------------------------------
+config/borrow_policy.json            REFERENCED refs=1   sample=src/pymercator/borrow_data.py
+config/execution_policy.json         REFERENCED refs=5   sample=tests/test_cli_execution_policy.py, tests/test_execution_policy.py, src/pymercator/cli.py, src/pymercator/execution_policy.py, src/pymercator/human_confirmation.py
+config/features_catalog.json         REFERENCED refs=13  sample=config/pymercator_presets.json, tests/test_cli_features_catalog.py, tests/test_features_catalog.py, storage/scenario_runs/20260528_225028/00_manifest.json, storage/scenario_runs/20260528_230342/00_manifest.json
+config/indices_catalog.json          REFERENCED refs=10  sample=config/pymercator_presets.json, tests/test_cli_daily_auto.py, tests/test_cli_indices.py, tests/test_daily_auto.py, tests/test_indices_catalog.py
+config/market_context.json           REFERENCED refs=13  sample=tests/test_cli_context.py, tests/test_cli_run_simplified.py, tests/test_cli_update.py, tests/test_market_context.py, tests/test_market_context_consolidator.py
+config/market_context_auto.json      REFERENCED refs=27  sample=config/pymercator_presets.json, tests/test_cli_context_auto.py, tests/test_cli_daily_auto.py, tests/test_context_snapshot_manifest.py, tests/test_daily_auto.py
+config/market_context_thresholds.json REFERENCED refs=6   sample=src/pymercator/cli.py, src/pymercator/cli_context.py, src/pymercator/cli_parsers.py, src/pymercator/cli_update.py, src/pymercator/market_context_auto.py
+config/observation.json              REFERENCED refs=4   sample=tests/test_cli_observe.py, src/pymercator/cli_parsers.py, src/pymercator/cli_run.py, src/pymercator/observation.py
+config/policy.json                   REFERENCED refs=66  sample=scripts/run_daily_train.ps1, scripts/run_weekend_full.ps1, tests/test_cli_execution_policy.py, tests/test_execution_policy.py, tests/test_policy_calibration.py
+config/position_actions.json         REFERENCED refs=26  sample=tests/test_position_actions_config.py, tests/test_position_actions_direction.py, storage/reports/latest_daily_report.json, storage/runs/latest/report.json, src/pymercator/position_actions.py
+config/prediction.json               REFERENCED refs=7   sample=README.md, tests/test_cli_diag.py, tests/test_prediction_config.py, src/pymercator/cli.py, src/pymercator/cli_train.py
+config/pymercator_presets.json       REFERENCED refs=1   sample=src/pymercator/presets.py
+config/runtime.json                  REFERENCED refs=2   sample=scripts/ops_common.ps1, tests/test_runtime_manifest.py
+config/short_policy.json             REFERENCED refs=1   sample=src/pymercator/short_policy.py
+config/short_thresholds.json         REFERENCED refs=1   sample=src/pymercator/short_policy.py
+config/ui.json                       REFERENCED refs=3   sample=tests/test_terminal_output.py, src/pymercator/cli.py, src/pymercator/ui/colors.py
+
+MODULES IMPORTED BY NOBODY (HEURISTIC)
+--------------------------------------------------------------------------------
+src/pymercator/__main__.py                       pymercator.__main__ | heuristic; may be CLI-discovered or test-only
+src/pymercator/model_governance.py               pymercator.model_governance | heuristic; may be CLI-discovered or test-only
+src/pymercator/presets.py                        pymercator.presets | heuristic; may be CLI-discovered or test-only
+src/pymercator/train_detail_report.py            pymercator.train_detail_report | heuristic; may be CLI-discovered or test-only
+
+SAFE CUT SUGGESTIONS
+--------------------------------------------------------------------------------
+1. Congelar scripts/run_daily_signal.ps1, scripts/run_daily_train.ps1 e scripts/run_weekend_full.ps1; qualquer reducao deve ocorrer em helpers comuns.
+2. Centralizar formatacao de secoes/tabelas/status em terminal_render.py e migrar chamadas aos poucos.
+3. Extrair renderizacao do defensive/short book para short_render.py sem tocar em regra de decisao.
+4. Extrair parser de subcomandos de cli.py quando a assinatura dos comandos puder ser preservada por testes.
+5. Manter scripts/legacy como quarentena; nao apagar sem periodo de observacao.
