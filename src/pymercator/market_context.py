@@ -4,8 +4,13 @@ import json
 from pathlib import Path
 from typing import Any
 
+from pymercator.market_context_consolidator import (
+    MARKET_CONTEXT_SCHEMA,
+    upgrade_legacy_market_context,
+)
+
 VALID_MARKET_TRENDS = {"UP", "DOWN", "CHOPPY", "UNKNOWN"}
-VALID_MARKET_VOLATILITY = {"LOW", "NORMAL", "HIGH"}
+VALID_MARKET_VOLATILITY = {"LOW", "NORMAL", "HIGH", "UNKNOWN"}
 
 DEFAULT_MARKET_CONTEXT = {
     "headline_tags": [],
@@ -88,8 +93,25 @@ def load_market_context(path: str | Path) -> dict[str, Any]:
 
     payload = json.loads(context_path.read_text(encoding="utf-8-sig"))
 
-    context = dict(DEFAULT_MARKET_CONTEXT)
-    context.update(payload)
+    if isinstance(payload, dict) and payload.get("schema_version") == MARKET_CONTEXT_SCHEMA:
+        context = dict(payload)
+        regime_summary = context.get("regime_summary", {})
+        if isinstance(regime_summary, dict):
+            context.setdefault("market_trend", regime_summary.get("market_trend", "UNKNOWN"))
+            context.setdefault(
+                "market_volatility",
+                regime_summary.get("market_volatility", "UNKNOWN"),
+            )
+        events = context.get("events", {})
+        manual = context.get("manual_overrides", {})
+        if isinstance(events, dict):
+            context.setdefault("headline_tags", events.get("headline_tags", []))
+            context.setdefault("notes", events.get("manual_notes", ""))
+        elif isinstance(manual, dict):
+            context.setdefault("headline_tags", manual.get("headline_tags", []))
+            context.setdefault("notes", manual.get("notes", ""))
+    else:
+        context = upgrade_legacy_market_context(dict(payload))
 
     context["headline_tags"] = _normalize_tags(context.get("headline_tags"))
     context["market_trend"] = str(context.get("market_trend", "CHOPPY")).upper()
@@ -135,7 +157,11 @@ def write_market_context_template(path: str | Path) -> None:
     output.parent.mkdir(parents=True, exist_ok=True)
 
     output.write_text(
-        json.dumps(DEFAULT_MARKET_CONTEXT, ensure_ascii=False, indent=2),
+        json.dumps(
+            {"schema_version": "market_context.v1", **DEFAULT_MARKET_CONTEXT},
+            ensure_ascii=False,
+            indent=2,
+        ),
         encoding="utf-8",
     )
 

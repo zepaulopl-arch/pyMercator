@@ -81,6 +81,7 @@ def daily_report_to_dict(
     basket: dict[str, Any] | None = None,
     observation_candidates: list[dict[str, Any]] | None = None,
     position_actions: dict[str, Any] | None = None,
+    market_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     raw = _convert(asdict(report))
     raw["schema_version"] = "daily_report.v1"
@@ -129,6 +130,11 @@ def daily_report_to_dict(
     else:
         raw["update_status"] = {}
 
+    if market_context:
+        raw["market_context"] = _convert(market_context)
+    else:
+        raw["market_context"] = {}
+
     if basket is not None:
         raw["basket"] = dict(basket)
     else:
@@ -172,6 +178,7 @@ def render_daily_report_json(
     basket: dict[str, Any] | None = None,
     observation_candidates: list[dict[str, Any]] | None = None,
     position_actions: dict[str, Any] | None = None,
+    market_context: dict[str, Any] | None = None,
 ) -> str:
     payload = daily_report_to_dict(
         report,
@@ -182,6 +189,7 @@ def render_daily_report_json(
         basket=basket,
         observation_candidates=observation_candidates,
         position_actions=position_actions,
+        market_context=market_context,
     )
     return json.dumps(payload, ensure_ascii=False, indent=indent)
 
@@ -196,6 +204,7 @@ def write_daily_report_json(
     basket: dict[str, Any] | None = None,
     observation_candidates: list[dict[str, Any]] | None = None,
     position_actions: dict[str, Any] | None = None,
+    market_context: dict[str, Any] | None = None,
 ) -> None:
     output_path = Path(path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -209,6 +218,7 @@ def write_daily_report_json(
             basket=basket,
             observation_candidates=observation_candidates,
             position_actions=position_actions,
+            market_context=market_context,
         ),
         encoding="utf-8",
     )

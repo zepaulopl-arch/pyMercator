@@ -34,6 +34,10 @@ def test_daily_report_contract_contains_required_sections(tmp_path: Path):
         basket={"status": "BLOCKED", "assets": 0, "slots": 5},
         observation_candidates=[],
         position_actions=position_actions,
+        market_context={
+            "schema_version": "market_context.v2",
+            "regime_summary": {"market_regime": "RISK_OFF"},
+        },
     )
 
     for field in (
@@ -47,12 +51,14 @@ def test_daily_report_contract_contains_required_sections(tmp_path: Path):
         "basket",
         "observation_candidates",
         "position_actions",
+        "market_context",
     ):
         assert field in payload
     assert payload["schema_version"] == "daily_report.v1"
     assert payload["update_status"]["schema_version"] == "update_status.v1"
     assert "freshness" in payload["update_status"]
     assert payload["position_actions"]["schema_version"] == "position_actions.v1"
+    assert payload["market_context"]["schema_version"] == "market_context.v2"
 
 
 def test_basket_json_contract_for_blocked_basket(tmp_path: Path):

@@ -15,6 +15,7 @@ from pymercator.features_matrix import write_feature_matrix
 from pymercator.indices_prices import check_indices_prices_dir, fetch_indices_prices
 from pymercator.market_context import validate_market_context
 from pymercator.market_context_auto import write_auto_market_context
+from pymercator.market_context_consolidator import write_market_context
 from pymercator.update_freshness import build_data_freshness
 
 DEFAULT_UPDATE_START = "2000-01-01"
@@ -188,6 +189,8 @@ def run_update_flow(
     universe_output: str = "data/universes/ibov_live.csv",
     features_catalog: str = "config/features_catalog.json",
     matrix_output: str = "storage/features/latest_feature_matrix.csv",
+    context_config: str = "config/market_context.json",
+    context_thresholds: str = "config/market_context_thresholds.json",
     use_cache: bool = True,
 ) -> dict[str, Any]:
     list_text = list_name.upper()
@@ -203,6 +206,8 @@ def run_update_flow(
         "features_catalog": features_catalog,
         "matrix": matrix_output,
         "update_status": str(_update_status_path(context_output)),
+        "context_config": context_config,
+        "context_thresholds": context_thresholds,
     }
     steps: list[dict[str, Any]] = []
     warnings: list[str] = []
@@ -305,9 +310,26 @@ def run_update_flow(
             )
 
         current_step = "context"
-        context = write_auto_market_context(
+        previous_context: dict[str, Any] = {}
+        context_path = Path(context_output)
+        if context_path.exists():
+            try:
+                previous = json.loads(context_path.read_text(encoding="utf-8-sig"))
+                previous_context = previous if isinstance(previous, dict) else {}
+            except Exception:
+                previous_context = {}
+        auto_output = context_path.with_name("latest_market_context_auto.json")
+        auto_context = write_auto_market_context(
             indices_dir=indices_dir,
+            output=auto_output,
+        )
+        files["auto_context"] = str(auto_output)
+        context = write_market_context(
+            auto_context=auto_context,
             output=context_output,
+            thresholds_path=context_thresholds,
+            config_path=context_config,
+            previous_context=previous_context,
         )
         steps.append(_step("context", "OK", context))
 
@@ -474,6 +496,10 @@ def render_update_summary(payload: dict[str, Any]) -> str:
         f"- regime_reliability: {payload.get('regime_reliability', '-')}",
     ]
     freshness = payload.get("update_status", {}).get("freshness", {})
+    context_step = _find_step(payload.get("steps", []), "context") or {}
+    context_payload = context_step.get("payload", {})
+    if not isinstance(context_payload, dict):
+        context_payload = {}
 
     def append_freshness() -> None:
         if isinstance(freshness, dict) and freshness:
@@ -533,6 +559,43 @@ def render_update_summary(payload: dict[str, Any]) -> str:
 
     append_freshness()
 
+    regime_summary = context_payload.get("regime_summary", {})
+    context_sources = context_payload.get("context_sources", {})
+    if isinstance(regime_summary, dict) and regime_summary:
+        source_aliases = {
+            "auto": "AUTO",
+            "thresholds": "THR",
+            "manual": "MANUAL",
+            "bcb": "BCB",
+            "b3": "B3",
+            "cvm": "CVM",
+            "market_data": "MARKET",
+        }
+        sources_text = " ".join(
+            f"{label}={context_sources.get(key, '-')}"
+            for key, label in source_aliases.items()
+        )
+        lines.extend(
+            [
+                "",
+                "MARKET CONTEXT",
+                "--------------------------------------------------------------------------------",
+                f"schema             {context_payload.get('schema_version', '-')}",
+                f"status             {context_sources.get('auto', '-')}",
+                f"quality            {regime_summary.get('context_quality', '-')}",
+                f"regime             {regime_summary.get('market_regime', '-')}",
+                f"trend              {regime_summary.get('market_trend', '-')}",
+                f"volatility         {regime_summary.get('market_volatility', '-')}",
+                f"context_score      {regime_summary.get('context_score', '-')}",
+                "main_drivers       "
+                + ", ".join(regime_summary.get("main_drivers", []) or []),
+                "main_risks         "
+                + ", ".join(regime_summary.get("main_risks", []) or []),
+                f"freshness          {context_payload.get('freshness', {}).get('freshness_status', '-')}",
+                f"sources            {sources_text}",
+            ]
+        )
+
     files = payload.get("files", {})
     if payload.get("warnings"):
         lines.extend(["", "WARNINGS:"])
@@ -566,6 +629,12 @@ def run_update_command(args: Any) -> int:
         universe_output=args.universe_output,
         features_catalog=args.features_catalog,
         matrix_output=args.matrix_output,
+        context_config=getattr(args, "context_config", "config/market_context.json"),
+        context_thresholds=getattr(
+            args,
+            "context_thresholds",
+            "config/market_context_thresholds.json",
+        ),
         use_cache=not getattr(args, "no_cache", False),
     )
 

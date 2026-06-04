@@ -644,6 +644,11 @@ def build_parser() -> argparse.ArgumentParser:
             "--context-output",
             default="storage/context/latest_market_context.json",
         )
+        update_parser.add_argument("--context-config", default="config/market_context.json")
+        update_parser.add_argument(
+            "--context-thresholds",
+            default="config/market_context_thresholds.json",
+        )
         update_parser.add_argument("--universe-output", default="data/universes/ibov_live.csv")
         update_parser.add_argument("--features-catalog", default="config/features_catalog.json")
         update_parser.add_argument(

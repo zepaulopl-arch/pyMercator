@@ -47,6 +47,37 @@ def _write_context(path: Path) -> None:
     )
 
 
+def _write_consolidated_context(path: Path) -> None:
+    path.write_text(
+        json.dumps(
+            {
+                "schema_version": "market_context.v2",
+                "headline_tags": [],
+                "market_trend": "UP",
+                "market_volatility": "NORMAL",
+                "notes": "consolidated context",
+                "regime_summary": {
+                    "market_regime": "RISK_ON",
+                    "market_trend": "UP",
+                    "market_volatility": "NORMAL",
+                    "context_score": 72.5,
+                    "context_quality": "OK",
+                    "main_drivers": ["ibov", "usdbrl"],
+                    "main_risks": [],
+                },
+                "sector_context": {
+                    "energy": {
+                        "macro_driver": "oil",
+                        "context": "NEUTRAL",
+                        "reason": "baseline",
+                    }
+                },
+            }
+        ),
+        encoding="utf-8",
+    )
+
+
 def _write_multi_horizon_evaluation(path: Path) -> None:
     path.write_text(
         json.dumps(
@@ -203,6 +234,44 @@ def test_cli_run_executes_daily_with_defaults_for_outputs(tmp_path: Path, capsys
     assert payload["status"] == "OK"
     assert payload["profile"] == "CON"
     assert payload["basket"] is None
+
+
+def test_cli_run_consumes_consolidated_market_context(tmp_path: Path, capsys):
+    context = tmp_path / "context.json"
+    report = tmp_path / "report.txt"
+    json_report = tmp_path / "report.json"
+    run_dir = tmp_path / "latest"
+    evaluation = tmp_path / "evaluation.json"
+    _write_consolidated_context(context)
+    _write_multi_horizon_evaluation(evaluation)
+
+    exit_code = main(
+        [
+            "run",
+            "--profile",
+            "CON",
+            "--universe",
+            "data/universes/ibov_sample.csv",
+            "--context",
+            str(context),
+            "--report-output",
+            str(report),
+            "--json-output",
+            str(json_report),
+            "--run-dir",
+            str(run_dir),
+            "--evaluation",
+            str(evaluation),
+            "--json",
+        ]
+    )
+
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["market"]["schema_version"] == "market_context.v2"
+    assert payload["market"]["context_summary"]["context_score"] == 72.5
+    report_payload = json.loads(json_report.read_text(encoding="utf-8"))
+    assert report_payload["market_context"]["schema_version"] == "market_context.v2"
 
 
 def test_cli_run_with_basket_generates_basket(tmp_path: Path, monkeypatch, capsys):

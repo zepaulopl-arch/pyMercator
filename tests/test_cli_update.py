@@ -104,6 +104,29 @@ def test_cli_update_json_uses_custom_paths(tmp_path: Path, monkeypatch, capsys):
     assert payload["files"]["matrix"] == str(tmp_path / "matrix.csv")
 
 
+def test_update_writes_consolidated_market_context(tmp_path: Path, monkeypatch, capsys):
+    _patch_update_ok(monkeypatch)
+    context_output = tmp_path / "latest_market_context.json"
+
+    exit_code = main(
+        [
+            "update",
+            "--list",
+            "IBOV",
+            "--context-output",
+            str(context_output),
+            "--json",
+        ]
+    )
+
+    assert exit_code == 0
+    payload = json.loads(capsys.readouterr().out)
+    context = json.loads(context_output.read_text(encoding="utf-8"))
+    assert any(step["step"] == "context" for step in payload["steps"])
+    assert context["schema_version"] == "market_context.v2"
+    assert context["context_sources"]["auto"] == "OK"
+
+
 def test_cli_update_fails_clearly_on_step_failure(
     tmp_path: Path,
     monkeypatch,

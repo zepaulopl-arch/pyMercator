@@ -622,6 +622,7 @@ def run_decision_flow(
             basket=basket_summary,
             observation_candidates=observation_candidates,
             position_actions=position_actions,
+            market_context=context_payload,
         )
         write_daily_report_json(
             report,
@@ -633,6 +634,7 @@ def run_decision_flow(
             basket=basket_summary,
             observation_candidates=observation_candidates,
             position_actions=position_actions,
+            market_context=context_payload,
         )
 
     except Exception as exc:
@@ -657,6 +659,9 @@ def run_decision_flow(
         "market": {
             "regime": report.market_regime.regime.value,
             "context": context,
+            "context_summary": context_payload.get("regime_summary", {}),
+            "sector_context": context_payload.get("sector_context", {}),
+            "schema_version": context_payload.get("schema_version", ""),
             "update_status": update_status_payload,
         },
         "prediction": prediction_payload,
@@ -688,6 +693,7 @@ def run_decision_flow(
             basket=basket_summary,
             observation_candidates=observation_candidates,
             position_actions=position_actions,
+            market_context=context_payload,
         ),
     }
 
@@ -711,6 +717,12 @@ def render_run_summary(payload: dict[str, Any]) -> str:
         return "\n".join(lines)
 
     market = payload["market"]
+    context_summary = market.get("context_summary", {})
+    if not isinstance(context_summary, dict):
+        context_summary = {}
+    sector_context = market.get("sector_context", {})
+    if not isinstance(sector_context, dict):
+        sector_context = {}
     update_status = market.get("update_status", {})
     update_freshness = update_status.get("freshness", {})
     if not isinstance(update_freshness, dict):
@@ -730,7 +742,22 @@ def render_run_summary(payload: dict[str, Any]) -> str:
                 "MARKET",
                 [
                     ("regime", market["regime"], market["regime"]),
-                    ("context", market["context"]),
+                    ("trend", context_summary.get("market_trend", "-")),
+                    ("volatility", context_summary.get("market_volatility", "-")),
+                    ("context_score", context_summary.get("context_score", "-")),
+                    (
+                        "context_quality",
+                        context_summary.get("context_quality", "-"),
+                        context_summary.get("context_quality", "-"),
+                    ),
+                    (
+                        "main_drivers",
+                        ", ".join(context_summary.get("main_drivers", []) or []),
+                    ),
+                    (
+                        "main_risks",
+                        ", ".join(context_summary.get("main_risks", []) or []),
+                    ),
                     (
                         "update_status",
                         update_status.get("status", "-"),
@@ -807,6 +834,16 @@ def render_run_summary(payload: dict[str, Any]) -> str:
             "",
         ]
     )
+
+    if sector_context:
+        lines.extend(["", "SECTOR CONTEXT", muted_line()])
+        for sector, item in list(sector_context.items())[:8]:
+            if not isinstance(item, dict):
+                continue
+            lines.append(
+                f"{sector:<22} {str(item.get('context', '-')):<10} "
+                f"{str(item.get('reason', '-'))}"
+            )
 
     if blockers:
         blocker_rows = [

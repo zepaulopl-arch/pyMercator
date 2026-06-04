@@ -17,6 +17,10 @@ def _ps_quote(value: str | Path) -> str:
 def test_operational_scripts_use_ops_common_and_runtime_config():
     assert (ROOT / "config" / "runtime.json").exists()
     assert (ROOT / "scripts" / "ops_common.ps1").exists()
+    runtime_config = json.loads(
+        (ROOT / "config" / "runtime.json").read_text(encoding="utf-8-sig")
+    )
+    assert runtime_config["schema_version"] == "runtime_config.v1"
 
     for script_name in (
         "run_daily_signal.ps1",

@@ -1,6 +1,17 @@
-﻿{
-  "headline_tags": ["IRAN", "OIL", "WAR"],
-  "market_trend": "CHOPPY",
-  "market_volatility": "NORMAL",
-  "notes": "stress geopolítico em energia"
+{
+  "schema_version": "market_context_config.v1",
+  "enabled": true,
+  "sources": {
+    "bcb": true,
+    "b3": true,
+    "cvm": true,
+    "market_data": true,
+    "commodities": true,
+    "manual": true
+  },
+  "manual_context": "storage/context/manual_market_context.json",
+  "freshness": {
+    "max_ok_days": 3,
+    "max_warning_days": 7
+  }
 }

@@ -1,5 +1,34 @@
 {
   "schema_version": "market_context_thresholds.v1",
+  "weights": {
+    "market_trend": 0.25,
+    "market_volatility": 0.20,
+    "rates": 0.15,
+    "fx": 0.15,
+    "commodities": 0.15,
+    "events": 0.10
+  },
+  "regime": {
+    "risk_on_min_score": 65.0,
+    "risk_off_max_score": 45.0,
+    "choppy_min_volatility": 55.0
+  },
+  "freshness": {
+    "max_ok_days": 3,
+    "max_warning_days": 7
+  },
+  "sector_drivers": {
+    "financials": ["rates", "credit", "fiscal"],
+    "materials": ["iron_ore", "china", "usdbrl"],
+    "energy": ["oil", "geopolitics", "usdbrl"],
+    "utilities": ["rates", "regulation"],
+    "consumer_discretionary": ["rates", "credit", "income"],
+    "consumer_staples": ["inflation", "income", "usdbrl"],
+    "real_estate": ["rates", "credit"],
+    "industrials": ["activity", "usdbrl"],
+    "health_care": ["rates", "regulation"],
+    "communication": ["rates", "defensive"]
+  },
   "thresholds": {
     "trend_up_return_20d_pct": 3.0,
     "trend_up_sma_position_pct": 1.0,
