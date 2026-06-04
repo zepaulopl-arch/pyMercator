@@ -1,4 +1,5 @@
 import json
+from datetime import date
 from pathlib import Path
 
 from pymercator.cli import main
@@ -21,6 +22,7 @@ from pymercator.position_actions import (
     Position,
     build_position_actions,
     load_positions,
+    render_position_books,
 )
 
 
@@ -224,7 +226,15 @@ def test_stop_hit_generates_stop_loss(tmp_path: Path) -> None:
 
 def test_weak_asset_without_position_generates_short_blocked_not_sell() -> None:
     report = _report(
-        (_decision("WEAK3", trend=20.0, momentum=20.0, score=20.0),),
+        (
+            _decision(
+                "WEAK3",
+                trend=20.0,
+                momentum=20.0,
+                score=20.0,
+                status=ExecutionStatus.BLOCKED,
+            ),
+        ),
         regime=MarketRegime.RISK_OFF,
     )
 
@@ -235,8 +245,19 @@ def test_weak_asset_without_position_generates_short_blocked_not_sell() -> None:
 
     assert payload["short_book"]
     assert payload["short_book"][0]["action"] == "SHORT_BLOCKED"
-    assert payload["short_candidates"] == []
-    assert "SELL" not in json.dumps(payload)
+    assert payload["short_book"][0]["short_setup_status"] == "SHORT_SETUP"
+    assert payload["short_book"][0]["borrow_status"] == "BORROW_DATA_MISSING"
+    assert payload["short_book"][0]["event_status"] == "EVENT_UNKNOWN"
+    assert payload["short_candidates"][0]["ticker"] == "WEAK3"
+    assert payload["defensive_book"]["defensive_mode"] == "active"
+    assert payload["defensive_book"]["long_action"] == "blocked"
+    assert payload["defensive_book"]["short_candidates"][0]["ticker"] == "WEAK3"
+    assert payload["defensive_book"]["cash_wait_mode"]["action"] == "HOLD_CASH"
+    assert payload["hedge_candidates"]
+    assert not any(
+        row.get("action") == "SELL"
+        for row in payload["defensive_book"]["short_candidates"]
+    )
 
 
 def test_weak_asset_with_acceptable_borrow_data_generates_short_candidate(
@@ -245,13 +266,21 @@ def test_weak_asset_with_acceptable_borrow_data_generates_short_candidate(
     borrow = tmp_path / "borrow.csv"
     borrow.write_text(
         (
-            "ticker,available,borrow_cost_pct,available_qty,liquidity_ok,squeeze_risk\n"
-            "WEAK3,true,2.5,100000,true,20\n"
+            "ticker,borrow_available,borrow_fee_pct,recall_risk,short_liquidity,squeeze_risk,updated_at\n"
+            f"WEAK3,true,2.5,LOW,OK,LOW,{date.today().isoformat()}\n"
         ),
         encoding="utf-8",
     )
     report = _report(
-        (_decision("WEAK3", trend=20.0, momentum=20.0, score=20.0),),
+        (
+            _decision(
+                "WEAK3",
+                trend=20.0,
+                momentum=20.0,
+                score=20.0,
+                status=ExecutionStatus.BLOCKED,
+            ),
+        ),
         regime=MarketRegime.RISK_OFF,
     )
 
@@ -262,7 +291,9 @@ def test_weak_asset_with_acceptable_borrow_data_generates_short_candidate(
     )
 
     assert payload["borrow_data"]["status"] == "OK"
-    assert payload["short_book"][0]["action"] == "SHORT_CANDIDATE"
+    assert payload["short_book"][0]["action"] == "SHORT_MANUAL_ONLY"
+    assert payload["short_book"][0]["borrow_status"] == "BORROW_OK"
+    assert payload["short_book"][0]["short_permission"] == "SHORT_MANUAL_ONLY"
     assert payload["short_book"][0]["execution"] == "OBSERVATIONAL_ONLY"
     assert payload["short_candidates"][0]["ticker"] == "WEAK3"
 
@@ -271,13 +302,21 @@ def test_weak_asset_with_high_borrow_cost_stays_short_blocked(tmp_path: Path) ->
     borrow = tmp_path / "borrow.csv"
     borrow.write_text(
         (
-            "ticker,available,borrow_cost_pct,available_qty,liquidity_ok,squeeze_risk\n"
-            "WEAK3,true,12.0,100000,true,20\n"
+            "ticker,borrow_available,borrow_fee_pct,recall_risk,short_liquidity,squeeze_risk,updated_at\n"
+            f"WEAK3,true,12.0,LOW,OK,LOW,{date.today().isoformat()}\n"
         ),
         encoding="utf-8",
     )
     report = _report(
-        (_decision("WEAK3", trend=20.0, momentum=20.0, score=20.0),),
+        (
+            _decision(
+                "WEAK3",
+                trend=20.0,
+                momentum=20.0,
+                score=20.0,
+                status=ExecutionStatus.BLOCKED,
+            ),
+        ),
         regime=MarketRegime.RISK_OFF,
     )
 
@@ -288,8 +327,40 @@ def test_weak_asset_with_high_borrow_cost_stays_short_blocked(tmp_path: Path) ->
     )
 
     assert payload["short_book"][0]["action"] == "SHORT_BLOCKED"
-    assert payload["short_candidates"] == []
+    assert payload["short_book"][0]["borrow_status"] == "BORROW_COST_HIGH"
+    assert payload["short_candidates"][0]["ticker"] == "WEAK3"
     assert payload["short_book"][0]["reason"] == "borrow cost above limit"
+
+
+def test_defensive_book_renders_short_hedge_and_cash_sections() -> None:
+    report = _report(
+        (
+            _decision(
+                "WEAK3",
+                trend=20.0,
+                momentum=20.0,
+                score=20.0,
+                status=ExecutionStatus.BLOCKED,
+            ),
+        ),
+        regime=MarketRegime.RISK_OFF,
+    )
+
+    payload = build_position_actions(
+        report,
+        {"combined_score": 42.0, "model_quality": {"status": "WEAK"}},
+    )
+    summary = "\n".join(render_position_books(payload))
+
+    assert "DEFENSIVE BOOK" in summary
+    assert "market_read        risk-off / downtrend / weak model" in summary
+    assert "long_action        blocked" in summary
+    assert "defensive_mode     active" in summary
+    assert "SELL-SHORT CANDIDATES" in summary
+    assert "HEDGE CANDIDATES" in summary
+    assert "CASH / WAIT MODE" in summary
+    assert "MANUAL_BLOCK" in summary
+    assert "check borrow" in summary
 
 
 def test_position_import_and_show_round_trip(tmp_path: Path) -> None:
@@ -354,23 +425,35 @@ def test_run_json_contains_position_action_books_and_keeps_long_basket_blocked(
     result = json.loads(capsys.readouterr().out)
     assert result["decision"]["actionable"] == 0
     assert result["basket"]["status"] == "BLOCKED"
-    assert result["short_candidates"] == []
+    assert result["short_candidates"][0]["ticker"] == "WEAK3"
+    assert result["defensive_book"]["defensive_mode"] == "active"
+    assert result["defensive_book"]["cash_wait_mode"]["action"] == "HOLD_CASH"
     assert result["position_actions"]["short_book"][0]["action"] == "SHORT_BLOCKED"
     assert result["position_actions"]["exit_book"]["message"] == (
         "no open positions loaded."
     )
     assert result["top"][0]["decision"] == "BLOCKED"
     assert result["top"][0]["decision"] != "SELL"
-    assert "SELL" not in json.dumps(result["position_actions"])
+    assert not any(
+        row.get("action") == "SELL"
+        for row in result["position_actions"]["short_book"]
+    )
 
     payload = json.loads(report_json.read_text(encoding="utf-8"))
     assert payload["exit_book"]["message"] == "no open positions loaded."
-    assert payload["short_candidates"] == []
+    assert payload["short_candidates"][0]["ticker"] == "WEAK3"
+    assert payload["defensive_book"]["defensive_mode"] == "active"
     assert payload["position_actions"]["short_book"][0]["action"] == "SHORT_BLOCKED"
-    assert payload["hedge_candidates"] == []
+    assert payload["hedge_candidates"]
 
     summary = run_mod.render_run_summary(result)
     assert "OBSERVATION CANDIDATES" in summary
     assert "EXIT BOOK" in summary
+    assert "status             EMPTY" in summary
+    assert "reason             no open positions loaded" in summary
+    assert "PNL%" not in summary
     assert "BUY / LONG BOOK" in summary
+    assert "DEFENSIVE BOOK" in summary
+    assert "SELL-SHORT CANDIDATES" in summary
+    assert "CASH / WAIT MODE" in summary
     assert "SELL-SHORT / HEDGE BOOK" in summary

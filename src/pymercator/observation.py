@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from pymercator.config_loader import deep_merge
 from pymercator.domain import AssetDecision, AssetSnapshot
 from pymercator.loaders import load_universe_csv
 from pymercator.ui import muted_line, short_sector, truncate
@@ -46,10 +47,10 @@ DEFAULT_OBSERVATION_CONFIG: dict[str, Any] = {
 }
 
 OBS_CLASS_PRIORITY = {
-    "OBS_READY": 0,
+    "OBS_FAVORABLE": 0,
     "MOM_HIGH_RISK": 1,
     "WATCH": 2,
-    "STABLE_WEAK": 3,
+    "LOW_RISK_WEAK": 3,
     "WEAK": 4,
     "DANGER": 5,
 }
@@ -62,17 +63,7 @@ def load_observation_config(path: str | Path = "config/observation.json") -> dic
         return json.loads(json.dumps(DEFAULT_OBSERVATION_CONFIG))
     if not isinstance(payload, dict):
         return json.loads(json.dumps(DEFAULT_OBSERVATION_CONFIG))
-    return _deep_merge(DEFAULT_OBSERVATION_CONFIG, payload)
-
-
-def _deep_merge(default: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
-    result = json.loads(json.dumps(default))
-    for key, value in override.items():
-        if isinstance(value, dict) and isinstance(result.get(key), dict):
-            result[key] = _deep_merge(result[key], value)
-        else:
-            result[key] = value
-    return result
+    return deep_merge(DEFAULT_OBSERVATION_CONFIG, payload)
 
 
 def _to_float(value: Any, default: float = 0.0) -> float:
@@ -181,13 +172,13 @@ def _asset_class(
     if strong_opportunity and (vol_high or atr_high):
         return "MOM_HIGH_RISK"
     if obs_index >= thresholds["obs_ready"] and strong_opportunity and not vol_high and not atr_high:
-        return "OBS_READY"
+        return "OBS_FAVORABLE"
     if obs_index >= thresholds["watch"] and (
         trend >= thresholds["trend_watch"] or momentum >= thresholds["momentum_watch"]
     ):
         return "WATCH"
     if vol_low and atr_low and weak_opportunity:
-        return "STABLE_WEAK"
+        return "LOW_RISK_WEAK"
     if obs_index < thresholds["weak"]:
         return "WEAK"
     return "WATCH"
@@ -206,7 +197,7 @@ def _asset_read(
         if trend >= thresholds["trend_strong"] and momentum >= thresholds["momentum_strong"]:
             return "strong trend/mom, risk high"
         return "momentum with risk"
-    if klass == "OBS_READY":
+    if klass == "OBS_FAVORABLE":
         return "relative observation only"
     if klass == "WATCH":
         if momentum >= thresholds["momentum_strong"]:
@@ -214,8 +205,8 @@ def _asset_read(
         if trend >= thresholds["trend_strong"]:
             return "trend watch"
         return "selective watch"
-    if klass == "STABLE_WEAK":
-        return "stable but weak"
+    if klass == "LOW_RISK_WEAK":
+        return "low risk but weak"
     if klass == "DANGER":
         return "weak with extreme risk"
     if vol_high or atr_high:
@@ -330,8 +321,8 @@ def _sector_class(rows: list[dict[str, Any]], avg_obs: float) -> tuple[str, str]
     classes = {str(row["class"]) for row in rows}
     if "MOM_HIGH_RISK" in classes or "DANGER" in classes:
         return "VOLATILE", "best relative, high risk" if avg_obs >= 55 else "high risk"
-    if "OBS_READY" in classes:
-        return "OBS_READY", "relative strength"
+    if "OBS_FAVORABLE" in classes:
+        return "OBS_FAVORABLE", "relative strength"
     if avg_obs >= 55:
         return "MIXED", "selective"
     if avg_obs < 45:

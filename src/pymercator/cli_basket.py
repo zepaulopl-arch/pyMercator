@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from pymercator import basket as basket_mod
-from pymercator.ui import format_kv_section
+from pymercator.terminal_render import render_files, render_key_values
 
 
 def run_basket_cli(args: object) -> int:
@@ -27,8 +27,7 @@ def run_basket_cli(args: object) -> int:
         )
         print("")
         print(
-            format_kv_section(
-                "FILES",
+            render_files(
                 [
                     ("basket_csv", csv_path),
                     ("basket_json", json_path),
@@ -67,7 +66,7 @@ def run_basket_cli(args: object) -> int:
     csv_path, json_path, txt_path = basket_mod.resolve_basket_paths(args.output)
     output = [basket_mod.render_basket_summary(payload, color=None, details=False), ""]
     output.append(
-        format_kv_section(
+        render_key_values(
             "FILES",
             [
                 ("basket_csv", csv_path),

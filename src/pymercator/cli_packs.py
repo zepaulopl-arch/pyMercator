@@ -4,9 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
-
-def _read_json(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
+from pymercator.manifest import load_json
 
 
 def _pack_top_from_summary(summary: dict[str, Any]) -> dict[str, Any]:
@@ -54,8 +52,8 @@ def _load_pack_index(run_dir: str, limit: int) -> list[dict[str, Any]]:
         if not manifest_path.exists() or not summary_path.exists():
             continue
 
-        manifest = _read_json(manifest_path)
-        summary = _read_json(summary_path)
+        manifest = load_json(manifest_path, {})
+        summary = load_json(summary_path, {})
         top = _pack_top_from_summary(summary)
 
         scenarios = summary.get("scenarios", [])

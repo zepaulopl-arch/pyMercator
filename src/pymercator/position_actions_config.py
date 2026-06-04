@@ -5,6 +5,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from pymercator.config_loader import deep_merge
+
 CONFIG_SCHEMA_VERSION = "position_actions_config.v1"
 
 DEFAULT_POSITION_ACTIONS_CONFIG: dict[str, Any] = {
@@ -48,16 +50,6 @@ def default_position_actions_config() -> dict[str, Any]:
     return copy.deepcopy(DEFAULT_POSITION_ACTIONS_CONFIG)
 
 
-def _deep_merge(default: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
-    merged = copy.deepcopy(default)
-    for key, value in override.items():
-        if isinstance(value, dict) and isinstance(merged.get(key), dict):
-            merged[key] = _deep_merge(merged[key], value)
-        else:
-            merged[key] = value
-    return merged
-
-
 def load_position_actions_config(
     path: str | Path = "config/position_actions.json",
 ) -> dict[str, Any]:
@@ -91,7 +83,7 @@ def load_position_actions_config(
         )
         return default
 
-    merged = _deep_merge(default, payload)
+    merged = deep_merge(default, payload)
     merged["config_source"] = str(source)
     merged["config_status"] = "OK"
     return merged

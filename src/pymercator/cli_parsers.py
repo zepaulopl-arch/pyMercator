@@ -172,6 +172,33 @@ def add_basket_parser(
     return basket_parser
 
 
+def add_borrow_parser(
+    subparsers: argparse._SubParsersAction[Any],
+) -> argparse.ArgumentParser:
+    borrow_parser = subparsers.add_parser("borrow", help="Borrow data utilities")
+    borrow_parser.set_defaults(command="borrow")
+    borrow_parser.add_argument("--json", action="store_true")
+    borrow_subparsers = borrow_parser.add_subparsers(dest="borrow_command")
+
+    show_parser = borrow_subparsers.add_parser("show", help="Show borrow data")
+    show_parser.set_defaults(borrow_command="show")
+    show_parser.add_argument("--file", default="")
+    show_parser.add_argument("--json", action="store_true")
+
+    import_parser = borrow_subparsers.add_parser("import", help="Import borrow CSV")
+    import_parser.set_defaults(borrow_command="import")
+    import_parser.add_argument("--file", required=True)
+    import_parser.add_argument("--output", default="")
+    import_parser.add_argument("--json", action="store_true")
+
+    diagnose_parser = borrow_subparsers.add_parser("diagnose", help="Diagnose borrow data")
+    diagnose_parser.set_defaults(borrow_command="diagnose")
+    diagnose_parser.add_argument("--file", default="")
+    diagnose_parser.add_argument("--tickers-file", default="data/universes/ibov_live.csv")
+    diagnose_parser.add_argument("--json", action="store_true")
+    return borrow_parser
+
+
 def add_context_parser(
     subparsers: argparse._SubParsersAction[Any],
 ) -> argparse.ArgumentParser:
@@ -224,4 +251,41 @@ def add_context_parser(
     )
     check_context_parser.set_defaults(context_command="check")
     check_context_parser.add_argument("--file", required=True)
+
+    sources_parser = context_subparsers.add_parser(
+        "sources",
+        help="Show market context source diagnostics",
+    )
+    sources_parser.set_defaults(context_command="sources")
+    sources_parser.add_argument(
+        "--file",
+        default="storage/context/latest_market_context.json",
+    )
+    sources_parser.add_argument("--json", action="store_true")
+
+    show_parser = context_subparsers.add_parser(
+        "show",
+        help="Show consolidated market context",
+    )
+    show_parser.set_defaults(context_command="show")
+    show_parser.add_argument(
+        "--file",
+        default="storage/context/latest_market_context.json",
+    )
+    show_parser.add_argument("--json", action="store_true")
+
+    refresh_parser = context_subparsers.add_parser(
+        "refresh",
+        help="Refresh market context source diagnostics",
+    )
+    refresh_parser.set_defaults(context_command="refresh")
+    refresh_parser.add_argument(
+        "--file",
+        default="storage/context/latest_market_context.json",
+    )
+    refresh_parser.add_argument("--source", default="")
+    refresh_parser.add_argument("--all", action="store_true")
+    refresh_parser.add_argument("--config", default="config/market_context.json")
+    refresh_parser.add_argument("--timeout", type=int, default=10)
+    refresh_parser.add_argument("--json", action="store_true")
     return context_parser

@@ -8,6 +8,7 @@ from pymercator.observation import (
     render_observation_report,
     run_observation,
 )
+from pymercator.terminal_render import render_key_values, render_section
 
 
 def run_observe_command(args: Any) -> int:
@@ -21,17 +22,24 @@ def run_observe_command(args: Any) -> int:
         if getattr(args, "json", False):
             print(json.dumps(payload, ensure_ascii=False, indent=2))
         else:
-            print("OBSERVATION CALIBRATION")
-            print("-" * 80)
-            print(f"{'LIST':<18} {payload['list']}")
-            print(f"{'UNIVERSE':<18} {payload['universe']}")
-            print(f"{'ASSETS':<18} {payload['asset_count']}")
-            print(f"{'OUTPUT':<18} {payload.get('output', '-')}")
-            print("")
-            print("THRESHOLDS")
-            print("-" * 80)
-            for key, value in payload["thresholds"].items():
-                print(f"{key:<24} {float(value):>7.2f}")
+            lines = [
+                render_key_values(
+                    "OBSERVATION CALIBRATION",
+                    [
+                        ("LIST", payload["list"]),
+                        ("UNIVERSE", payload["universe"]),
+                        ("ASSETS", payload["asset_count"]),
+                        ("OUTPUT", payload.get("output", "-")),
+                    ],
+                ),
+                "",
+                render_section("THRESHOLDS"),
+            ]
+            lines.extend(
+                f"{key:<24} {float(value):>7.2f}"
+                for key, value in payload["thresholds"].items()
+            )
+            print("\n".join(lines))
         return 0
 
     payload = run_observation(

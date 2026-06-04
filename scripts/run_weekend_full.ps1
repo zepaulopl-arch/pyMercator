@@ -1,14 +1,15 @@
-param([string]$PY = "")
+param(
+    [string]$PY = "",
+    [switch]$Color
+)
 
 $ErrorActionPreference = "Stop"
-$env:NO_COLOR = "1"
-$env:PY_COLORS = "0"
-$env:CLICOLOR = "0"
 
 . (Join-Path $PSScriptRoot "ops_common.ps1")
 
 $scriptName = Split-Path -Leaf $PSCommandPath
 $PY = Initialize-PyMercatorScript -RequestedPython $PY -ScriptName $scriptName
+Set-PyMercatorColorMode -Enabled ([bool]$Color)
 $logDir = New-PyMercatorLogDir -Prefix "weekend_full" -ScriptName $scriptName
 $listName = $script:PYMERCATOR_DEFAULT_LIST
 $profiles = @("CON", "BAL", "AGR", "RLX")
@@ -17,35 +18,29 @@ $updateStatus = "storage\context\latest_update_status.json"
 function New-ProfilePaths {
     param([string]$Profile)
 
-    return @{
-        Report = Join-Path $logDir "report_${Profile}.txt"
-        Json = Join-Path $logDir "report_${Profile}.json"
-        RunDir = Join-Path $logDir "run_${Profile}"
-        Basket = Join-Path $logDir "basket_${Profile}.csv"
-        Log = Join-Path $logDir "run_${Profile}.log"
-    }
+    return Get-PyMercatorProfilePaths -LogDir $logDir -Profile $Profile
 }
 
 Write-PyMercatorRuntimeHeader -Title "PYMERCATOR WEEKEND FULL"
 
-Invoke-NativeStep `
+$null = Invoke-NativeStep `
     -Name "Install editable package" `
     -Command @($PY, "-m", "pip", "install", "-e", ".") `
     -LogFile (Join-Path $logDir "00_pip_install_editable.log")
 
-Invoke-PyMercatorStep `
+$null = Invoke-PyMercatorStep `
     -Python $PY `
     -Name "Diag" `
     -PyArgs @("diag") `
     -LogFile (Join-Path $logDir "01_diag.log")
 
-Invoke-PyMercatorStep `
+$null = Invoke-PyMercatorStep `
     -Python $PY `
     -Name "Update $listName" `
     -PyArgs @("update", "--list", $listName) `
     -LogFile (Join-Path $logDir "02_update_ibov.log")
 
-Invoke-PyMercatorStep `
+$null = Invoke-PyMercatorStep `
     -Python $PY `
     -Name "Universe diagnose" `
     -PyArgs @(
@@ -58,7 +53,7 @@ Invoke-PyMercatorStep `
     ) `
     -LogFile (Join-Path $logDir "03_universe_diagnose.log")
 
-Invoke-PyMercatorStep `
+$null = Invoke-PyMercatorStep `
     -Python $PY `
     -Name "Train multi-horizon autotune details" `
     -PyArgs @(
@@ -82,7 +77,7 @@ Invoke-PyMercatorStep `
 
 foreach ($profile in $profiles) {
     $paths = New-ProfilePaths -Profile $profile
-    Invoke-PyMercatorStep `
+    $null = Invoke-PyMercatorStep `
         -Python $PY `
         -Name "Run $profile basket" `
         -PyArgs @(
@@ -102,7 +97,7 @@ foreach ($profile in $profiles) {
         -LogFile $paths.Log
 }
 
-Invoke-PyMercatorStep `
+$null = Invoke-PyMercatorStep `
     -Python $PY `
     -Name "Scenario positive AGR basket" `
     -PyArgs @(
@@ -124,12 +119,12 @@ Invoke-PyMercatorStep `
     ) `
     -LogFile (Join-Path $logDir "09_scenario_positive.log")
 
-Invoke-NativeStep `
+$null = Invoke-NativeStep `
     -Name "Pytest" `
     -Command @($PY, "-m", "pytest", "tests", "-q") `
     -LogFile (Join-Path $logDir "10_pytest.log")
 
-Write-RunManifest -Status "OK" -Outputs @{
+$null = Write-RunManifest -Status "OK" -Outputs @{
     train_detail_report = "storage\prediction\latest_train_detail_report.txt"
     update_status = $updateStatus
     scenario_report_json = (Join-Path $logDir "scenario_positive_report.json")
@@ -137,6 +132,8 @@ Write-RunManifest -Status "OK" -Outputs @{
     pytest_log = (Join-Path $logDir "10_pytest.log")
     runtime_dir = $logDir
 }
+
+Show-PyMercatorProfileSummary -LogDir $logDir -Profiles $profiles
 
 Write-Host ""
 Write-Host "============================================================"

@@ -21,6 +21,7 @@ def load_json(path: str | Path, default: Any = None) -> Any:
 
 def write_json(path: str | Path, payload: Any) -> None:
     target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
     target.write_text(
         json.dumps(payload, ensure_ascii=False, indent=2),
         encoding="utf-8",

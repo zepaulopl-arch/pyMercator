@@ -3,6 +3,7 @@ from __future__ import annotations
 import json
 from typing import Any
 
+from pymercator.cli_args import parse_csv_arg
 from pymercator.daily_auto import render_daily_auto_summary, run_daily_auto
 from pymercator.execution_policy import load_execution_policy
 
@@ -22,7 +23,7 @@ def run_daily_auto_command(args: Any) -> int:
         prediction_horizon=args.prediction_horizon,
         prediction_min_history=args.prediction_min_history,
         prediction_min_train_rows=args.prediction_min_train_rows,
-        prediction_engines=_parse_csv_arg(args.prediction_engines),
+        prediction_engines=parse_csv_arg(args.prediction_engines),
         prediction_n_jobs=args.prediction_n_jobs,
         prediction_autotune=args.prediction_autotune,
         prediction_autotune_iter=args.prediction_autotune_iter,
@@ -48,11 +49,3 @@ def run_daily_auto_command(args: Any) -> int:
         print(render_daily_auto_summary(payload))
 
     return 0 if payload["status"] == "OK" else 1
-
-
-def _parse_csv_arg(value: str) -> list[str]:
-    return [
-        item.strip()
-        for item in str(value or "").split(",")
-        if item.strip()
-    ]

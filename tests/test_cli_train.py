@@ -384,6 +384,48 @@ def test_cli_train_details_prob_dist_prints_probability_buckets(
     assert "BASE ENGINE METRICS" not in output
 
 
+def test_cli_train_details_with_engine_values_stays_summary_only(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+):
+    import pymercator.cli_train as train_mod
+
+    matrix, prices_dir, dataset, evaluation = _write_train_inputs(tmp_path)
+    calls: list[dict] = []
+    monkeypatch.setattr(train_mod, "run_prediction_lab", _fake_lab_factory(calls))
+
+    exit_code = main(
+        [
+            "train",
+            "--matrix",
+            str(matrix),
+            "--prices-dir",
+            str(prices_dir),
+            "--dataset-output",
+            str(dataset),
+            "--evaluation-output",
+            str(evaluation),
+            "--min-train-rows",
+            "2",
+            "--details",
+            "--engines",
+            "extratrees,randomforest,gradientboosting",
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert exit_code == 0
+    assert "GLOBAL SUMMARY" in output
+    assert "HORIZON SCOREBOARD" in output
+    assert "BASE ENGINE METRICS" not in output
+    assert calls[0]["base_engines"] == [
+        "extratrees",
+        "randomforest",
+        "gradientboosting",
+    ]
+
+
 def test_cli_train_details_engines_prints_complete_base_engine_metrics(
     tmp_path: Path,
     monkeypatch,

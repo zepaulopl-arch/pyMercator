@@ -1,20 +1,11 @@
 ﻿from __future__ import annotations
 
 import csv
-import json
 from pathlib import Path
 from typing import Any
 
 from pymercator.features_catalog import validate_features_catalog
-
-
-def _read_json(path: str | Path) -> dict[str, Any]:
-    file_path = Path(path)
-
-    if not file_path.exists():
-        return {}
-
-    return json.loads(file_path.read_text(encoding="utf-8"))
+from pymercator.manifest import load_json
 
 
 def _read_universe(path: str | Path) -> list[dict[str, Any]]:
@@ -102,7 +93,7 @@ def build_feature_matrix(
     features: str | Path = "config/features_catalog.json",
 ) -> dict[str, Any]:
     universe_rows = _read_universe(universe)
-    context_payload = _read_json(context)
+    context_payload = load_json(context, {})
     feature_names = _enabled_feature_names(features)
 
     matrix_rows: list[dict[str, Any]] = []

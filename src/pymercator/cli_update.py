@@ -16,6 +16,7 @@ from pymercator.indices_prices import check_indices_prices_dir, fetch_indices_pr
 from pymercator.market_context import validate_market_context
 from pymercator.market_context_auto import write_auto_market_context
 from pymercator.market_context_consolidator import write_market_context
+from pymercator.market_context_sources import render_source_diagnostics
 from pymercator.update_freshness import build_data_freshness
 
 DEFAULT_UPDATE_START = "2000-01-01"
@@ -330,6 +331,8 @@ def run_update_flow(
             thresholds_path=context_thresholds,
             config_path=context_config,
             previous_context=previous_context,
+            refresh_sources=True,
+            source_timeout=5,
         )
         steps.append(_step("context", "OK", context))
 
@@ -487,7 +490,21 @@ def run_update_flow(
 def render_update_summary(payload: dict[str, Any]) -> str:
     list_name = payload.get("list", "-")
     status = payload.get("status", "-")
-    lines = [f"UPDATE | LIST {list_name} | STATUS {status}"]
+    freshness = payload.get("update_status", {}).get("freshness", {})
+    freshness_status = (
+        str(freshness.get("freshness_status", "")).upper()
+        if isinstance(freshness, dict)
+        else ""
+    )
+    reason = ""
+    if status == "PARTIAL" and freshness_status == "WARNING":
+        reason = "FRESHNESS_WARNING"
+    elif status == "FAIL" and freshness_status == "FAIL":
+        reason = "FRESHNESS_FAIL"
+    header = f"UPDATE | LIST {list_name} | STATUS {status}"
+    if reason:
+        header += f" | REASON {reason}"
+    lines = [header]
     impact_lines = [
         "",
         "OPERATIONAL IMPACT:",
@@ -495,7 +512,6 @@ def render_update_summary(payload: dict[str, Any]) -> str:
         f"- context_valid: {payload.get('context_valid', '-')}",
         f"- regime_reliability: {payload.get('regime_reliability', '-')}",
     ]
-    freshness = payload.get("update_status", {}).get("freshness", {})
     context_step = _find_step(payload.get("steps", []), "context") or {}
     context_payload = context_step.get("payload", {})
     if not isinstance(context_payload, dict):
@@ -517,6 +533,33 @@ def render_update_summary(payload: dict[str, Any]) -> str:
                     f"data_quality_score    {freshness.get('data_quality_score', '-')}",
                 ]
             )
+            stale_rows: list[tuple[str, str, dict[str, Any]]] = []
+            for kind, key in (("ASSET", "assets"), ("INDEX", "indices")):
+                items = freshness.get(key, {})
+                if not isinstance(items, dict):
+                    continue
+                for symbol, item in sorted(items.items()):
+                    if not isinstance(item, dict):
+                        continue
+                    if str(item.get("status", "")).upper() not in {"WARNING", "FAIL"}:
+                        continue
+                    stale_rows.append((kind, str(symbol), item))
+            if stale_rows:
+                lines.extend(
+                    [
+                        "",
+                        "STALE ITEMS",
+                        "--------------------------------------------------------------------------------",
+                        f"{'TYPE':<8} {'SYMBOL':<8} {'LAST_DATE':<12} STALENESS",
+                    ]
+                )
+                for kind, symbol, item in stale_rows:
+                    days = item.get("staleness_days")
+                    staleness = "-" if days is None else f"{int(days)}d"
+                    lines.append(
+                        f"{kind:<8} {symbol:<8} "
+                        f"{str(item.get('last_date') or '-'):<12} {staleness}"
+                    )
 
     if status == "FAIL":
         lines.extend(
@@ -595,6 +638,18 @@ def render_update_summary(payload: dict[str, Any]) -> str:
                 f"sources            {sources_text}",
             ]
         )
+        diagnostics = context_payload.get("source_diagnostics", {})
+        if isinstance(diagnostics, dict) and diagnostics:
+            lines.extend(
+                [
+                    "",
+                    render_source_diagnostics(
+                        diagnostics,
+                        title="SOURCE DIAGNOSTICS",
+                        include_thresholds=True,
+                    ),
+                ]
+            )
 
     files = payload.get("files", {})
     if payload.get("warnings"):

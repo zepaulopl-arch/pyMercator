@@ -1,0 +1,12 @@
+{
+  "schema_version": "borrow_policy.v1",
+  "data_file": "storage/borrow/latest_borrow_data.csv",
+  "freshness": {
+    "max_age_days": 1,
+    "stale_action": "BLOCK"
+  },
+  "defaults": {
+    "missing_data_action": "DATA_MISSING",
+    "execution_without_borrow_data": "BLOCK"
+  }
+}

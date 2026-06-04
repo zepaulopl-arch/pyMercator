@@ -6,6 +6,7 @@ from pymercator.cli import main
 
 def _patch_update_ok(monkeypatch):
     import pymercator.cli_update as update_mod
+    import pymercator.market_context_consolidator as context_mod
 
     monkeypatch.setattr(
         update_mod,
@@ -36,6 +37,36 @@ def _patch_update_ok(monkeypatch):
             "market_trend": "CHOPPY",
             "market_volatility": "NORMAL",
         },
+    )
+    monkeypatch.setattr(
+        context_mod,
+        "collect_market_context_sources",
+        lambda **kwargs: (
+            {
+                "bcb": {
+                    "source": "BCB",
+                    "status": "OK",
+                    "last_update": "2026-06-04",
+                    "items": 3,
+                    "error": "",
+                },
+                "b3": {
+                    "source": "B3",
+                    "status": "OK",
+                    "last_update": "2026-06-04",
+                    "items": 79,
+                    "error": "",
+                },
+                "cvm": {
+                    "source": "CVM",
+                    "status": "OK",
+                    "last_update": "2026-06-04",
+                    "items": 1,
+                    "error": "",
+                },
+            },
+            {},
+        ),
     )
     monkeypatch.setattr(
         update_mod,
@@ -125,6 +156,8 @@ def test_update_writes_consolidated_market_context(tmp_path: Path, monkeypatch, 
     assert any(step["step"] == "context" for step in payload["steps"])
     assert context["schema_version"] == "market_context.v2"
     assert context["context_sources"]["auto"] == "OK"
+    assert context["source_diagnostics"]["bcb"]["status"] == "OK"
+    assert context["context_sources"]["bcb"] == "OK"
 
 
 def test_cli_update_fails_clearly_on_step_failure(
@@ -299,6 +332,48 @@ def test_cli_update_marks_optional_index_failure_as_partial(
     assert "- regime_reliability: DEGRADED" in captured.out
     assert "WARNINGS:" in captured.out
     assert "optional index IFNC.SA failed" in captured.out
+
+
+def test_update_summary_explains_freshness_partial_and_stale_items():
+    from pymercator.cli_update import render_update_summary
+
+    output = render_update_summary(
+        {
+            "list": "IBOV",
+            "status": "PARTIAL",
+            "impact": "LOW",
+            "context_valid": "YES",
+            "regime_reliability": "OK",
+            "steps": [],
+            "files": {},
+            "warnings": [],
+            "update_status": {
+                "freshness": {
+                    "freshness_status": "WARNING",
+                    "prices_last_date": "2026-06-04",
+                    "indices_last_date": "2026-06-04",
+                    "max_staleness_days": 5,
+                    "stale_assets": 1,
+                    "stale_indices": 0,
+                    "data_quality_score": 85.0,
+                    "assets": {
+                        "VALE3": {
+                            "last_date": "2026-05-30",
+                            "staleness_days": 5,
+                            "status": "WARNING",
+                        }
+                    },
+                    "indices": {},
+                }
+            },
+        }
+    )
+
+    assert "UPDATE | LIST IBOV | STATUS PARTIAL | REASON FRESHNESS_WARNING" in output
+    assert "STALE ITEMS" in output
+    assert "ASSET" in output
+    assert "VALE3" in output
+    assert "5d" in output
 
 
 def test_cli_update_partial_index_cache_fallback_includes_operational_impact(

@@ -110,7 +110,8 @@ def test_short_candidate_rows_include_short_direction(tmp_path: Path):
     )
 
     row = payload["short_candidates"][0]
-    assert row["action"] == "SHORT_CANDIDATE"
+    assert row["action"] == "SHORT_MANUAL_ONLY"
     assert row["direction"] == "SHORT"
     assert row["trade_mode"] == "SWING"
     assert row["trade_mode"] != row["direction"]
+    assert payload["defensive_book"]["defensive_mode"] == "active"

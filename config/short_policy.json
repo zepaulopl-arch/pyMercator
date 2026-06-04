@@ -1,0 +1,14 @@
+{
+  "schema_version": "short_policy.v1",
+  "enabled": true,
+  "mode": "MANUAL_ONLY",
+  "allow_execution": false,
+  "requires_borrow_data": true,
+  "requires_cost_data": true,
+  "requires_liquidity_check": true,
+  "requires_squeeze_check": true,
+  "requires_event_check": true,
+  "allowed_trade_modes": ["SWING"],
+  "default_direction": "SHORT",
+  "never_enter_long_basket": true
+}

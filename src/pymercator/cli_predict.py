@@ -4,6 +4,7 @@ import json
 from pathlib import Path
 from typing import Any
 
+from pymercator.cli_args import parse_csv_arg
 from pymercator.prediction_lab import (
     render_evaluation_summary,
     render_prediction_dataset_summary,
@@ -53,7 +54,7 @@ def run_predict_command(args: Any) -> int:
             output=output,
             horizon=args.horizon,
             min_train_rows=args.min_train_rows,
-            engines=_parse_csv_arg(args.engines),
+            engines=parse_csv_arg(args.engines),
             n_jobs=args.n_jobs,
             autotune=args.autotune,
             autotune_iter=args.autotune_iter,
@@ -84,7 +85,7 @@ def run_predict_command(args: Any) -> int:
             horizon=args.horizon,
             min_history=args.min_history,
             min_train_rows=args.min_train_rows,
-            engines=_parse_csv_arg(args.engines),
+            engines=parse_csv_arg(args.engines),
             n_jobs=args.n_jobs,
             autotune=args.autotune,
             autotune_iter=args.autotune_iter,
@@ -99,11 +100,3 @@ def run_predict_command(args: Any) -> int:
         return 0
 
     raise ValueError(f"Unknown predict command: {args.predict_command}")
-
-
-def _parse_csv_arg(value: str) -> list[str]:
-    return [
-        item.strip()
-        for item in str(value or "").split(",")
-        if item.strip()
-    ]

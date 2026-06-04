@@ -830,6 +830,9 @@ def test_cli_run_blocks_actionable_when_model_quality_is_weak(
     assert "MODEL QUALITY" in summary
     assert "status             WEAK" in summary
     assert "edge               -0.02" in summary
+    assert "SECTOR CONTEXT" in summary
+    assert "SECTOR                 CONTEXT" in summary
+    assert "\nBLOCKERS" in summary
     assert "BLOCKERS" in summary
     assert "MODEL_WEAK           1" in summary
     assert "NO ACTIONABLE ASSETS" in summary

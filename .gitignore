@@ -50,8 +50,10 @@ storage/scenario_runs/
 storage/scenarios/
 storage/cache/
 storage/baskets/
+storage/legacy_inventory/
 storage/prediction/*.csv
 storage/prediction/*.json
+storage/prediction/*.txt
 storage/prediction/**/
 storage/context/
 storage/features/*.csv

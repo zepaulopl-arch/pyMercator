@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from pathlib import Path
 from typing import Any
 
 from pymercator.market_context import (
@@ -12,6 +13,15 @@ from pymercator.market_context import (
 )
 from pymercator.market_context_auto import write_auto_market_context
 from pymercator.market_context_auto import calibrate_market_context_thresholds
+from pymercator.market_context_consolidator import load_market_context_config
+from pymercator.manifest import write_json
+from pymercator.market_context_sources import (
+    collect_market_context_sources,
+    diagnostics_from_context,
+    ordered_diagnostics,
+    read_json_file,
+    render_source_diagnostics,
+)
 
 
 def _split_tags(value: str) -> list[str]:
@@ -75,6 +85,79 @@ def resolve_market_context_args(args: Any) -> dict[str, Any]:
         "context_preset": context_preset,
         "context_notes": context.get("notes", ""),
         "context_snapshot": context_snapshot,
+    }
+
+
+def _context_file_payload(path: str | Path) -> dict[str, Any]:
+    payload = read_json_file(path)
+    if not payload:
+        raise FileNotFoundError(f"market context not found or invalid: {path}")
+    return payload
+
+
+def _render_context_show(payload: dict[str, Any], *, path: str | Path) -> str:
+    regime = payload.get("regime_summary", {})
+    if not isinstance(regime, dict):
+        regime = {}
+    diagnostics = diagnostics_from_context(payload)
+    lines = [
+        "CONTEXT SHOW",
+        "-" * 80,
+        f"{'file':<18} {path}",
+        f"{'schema':<18} {payload.get('schema_version', '-')}",
+        f"{'generated_at':<18} {payload.get('generated_at', '-')}",
+        f"{'regime':<18} {regime.get('market_regime', '-')}",
+        f"{'trend':<18} {regime.get('market_trend', payload.get('market_trend', '-'))}",
+        f"{'volatility':<18} {regime.get('market_volatility', payload.get('market_volatility', '-'))}",
+        f"{'context_score':<18} {regime.get('context_score', '-')}",
+        "",
+        render_source_diagnostics(diagnostics),
+    ]
+    return "\n".join(lines)
+
+
+def _refresh_context_sources(args: Any) -> dict[str, Any]:
+    path = Path(args.file)
+    payload = read_json_file(path)
+    existing = diagnostics_from_context(payload) if payload else {}
+    config = load_market_context_config(getattr(args, "config", "config/market_context.json"))
+    source = str(getattr(args, "source", "") or "").strip().lower()
+    if source and source not in {"bcb", "b3", "cvm"}:
+        raise ValueError("--source must be one of BCB, B3 or CVM")
+    sources = ["bcb", "b3", "cvm"] if getattr(args, "all", False) or not source else [source]
+    refreshed, source_data = collect_market_context_sources(
+        config=config,
+        sources=sources,
+        timeout=int(getattr(args, "timeout", 10) or 10),
+    )
+    diagnostics = {**existing, **refreshed}
+    if not payload:
+        payload = {
+            "schema_version": "market_context.v2",
+            "generated_at": "",
+            "regime_summary": {},
+            "context_sources": {},
+        }
+    payload["source_diagnostics"] = diagnostics
+    context_sources = payload.get("context_sources", {})
+    if not isinstance(context_sources, dict):
+        context_sources = {}
+    for key, diagnostic in diagnostics.items():
+        if key == "market":
+            context_sources["market_data"] = diagnostic.get("status", "FAIL")
+        else:
+            context_sources[key] = diagnostic.get("status", "FAIL")
+    payload["context_sources"] = context_sources
+    if source_data:
+        from pymercator.market_context_sources import merge_source_data
+
+        merge_source_data(payload, source_data)
+    write_json(path, payload)
+    return {
+        "command": "context_refresh",
+        "file": str(path),
+        "sources": sources,
+        "source_diagnostics": diagnostics,
     }
 
 
@@ -177,5 +260,36 @@ def run_context_command(args: Any) -> int:
                     print(f"- {error}")
 
         return 0 if payload["valid"] else 1
+
+    if args.context_command == "sources":
+        payload = _context_file_payload(args.file)
+        diagnostics = diagnostics_from_context(payload)
+
+        if getattr(args, "json", False):
+            print(json.dumps(ordered_diagnostics(diagnostics), ensure_ascii=False, indent=2))
+        else:
+            print(render_source_diagnostics(diagnostics))
+
+        return 0
+
+    if args.context_command == "show":
+        payload = _context_file_payload(args.file)
+
+        if getattr(args, "json", False):
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+        else:
+            print(_render_context_show(payload, path=args.file))
+
+        return 0
+
+    if args.context_command == "refresh":
+        payload = _refresh_context_sources(args)
+
+        if getattr(args, "json", False):
+            print(json.dumps(payload, ensure_ascii=False, indent=2))
+        else:
+            print(render_source_diagnostics(payload["source_diagnostics"]))
+
+        return 0
 
     raise ValueError(f"Unknown context command: {args.context_command}")

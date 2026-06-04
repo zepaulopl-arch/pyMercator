@@ -6,6 +6,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from pymercator.config_loader import deep_merge
+from pymercator.market_context_sources import (
+    base_source_diagnostics,
+    collect_market_context_sources,
+    merge_source_data,
+)
+
 MARKET_CONTEXT_SCHEMA = "market_context.v2"
 THRESHOLDS_SCHEMA = "market_context_thresholds.v1"
 CONFIG_SCHEMA = "market_context_config.v1"
@@ -56,16 +63,6 @@ DEFAULT_THRESHOLDS: dict[str, Any] = {
 }
 
 
-def _deep_merge(default: dict[str, Any], override: dict[str, Any]) -> dict[str, Any]:
-    merged = copy.deepcopy(default)
-    for key, value in override.items():
-        if isinstance(value, dict) and isinstance(merged.get(key), dict):
-            merged[key] = _deep_merge(merged[key], value)
-        else:
-            merged[key] = value
-    return merged
-
-
 def _read_json(path: str | Path) -> dict[str, Any]:
     source = Path(path)
     if not source.exists():
@@ -83,7 +80,7 @@ def load_market_context_config(
     payload = _read_json(path)
     if payload.get("schema_version") != CONFIG_SCHEMA:
         return copy.deepcopy(DEFAULT_CONTEXT_CONFIG)
-    return _deep_merge(DEFAULT_CONTEXT_CONFIG, payload)
+    return deep_merge(DEFAULT_CONTEXT_CONFIG, payload)
 
 
 def load_market_context_thresholds(
@@ -92,7 +89,7 @@ def load_market_context_thresholds(
     payload = _read_json(path)
     if payload.get("schema_version") != THRESHOLDS_SCHEMA:
         return copy.deepcopy(DEFAULT_THRESHOLDS)
-    return _deep_merge(DEFAULT_THRESHOLDS, payload)
+    return deep_merge(DEFAULT_THRESHOLDS, payload)
 
 
 def _tags(value: Any) -> list[str]:
@@ -271,6 +268,8 @@ def build_market_context(
     config: dict[str, Any] | None = None,
     manual_context_path: str | Path | None = None,
     previous_context: dict[str, Any] | None = None,
+    source_diagnostics: dict[str, dict[str, Any]] | None = None,
+    source_data: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     thresholds = thresholds or load_market_context_thresholds()
     config = config or load_market_context_config()
@@ -312,21 +311,26 @@ def build_market_context(
     if manual_status == "PARTIAL":
         quality = "OK" if quality == "OK" else quality
 
+    thresholds_status = "OK" if thresholds.get("schema_version") == THRESHOLDS_SCHEMA else "PARTIAL"
+    diagnostics = base_source_diagnostics(
+        auto_context=auto_context,
+        metrics=metrics,
+        manual_status=manual_status,
+        manual=manual,
+        thresholds_status=thresholds_status,
+        config=config,
+        external_diagnostics=source_diagnostics,
+    )
     context_sources = {
-        "auto": "OK" if auto_context else "FAIL",
-        "thresholds": "OK" if thresholds.get("schema_version") == THRESHOLDS_SCHEMA else "PARTIAL",
-        "manual": manual_status,
-        "bcb": "UNKNOWN",
-        "b3": "UNKNOWN",
-        "cvm": "UNKNOWN",
-        "market_data": "OK" if auto_context else "FAIL",
-        "commodities": "OK" if metrics.get("brent_return_20d_pct") is not None else "UNKNOWN",
+        "auto": diagnostics["auto"]["status"],
+        "thresholds": diagnostics["thresholds"]["status"],
+        "manual": diagnostics["manual"]["status"],
+        "bcb": diagnostics["bcb"]["status"],
+        "b3": diagnostics["b3"]["status"],
+        "cvm": diagnostics["cvm"]["status"],
+        "market_data": diagnostics["market"]["status"],
+        "commodities": "OK" if metrics.get("brent_return_20d_pct") is not None else "FAIL",
     }
-
-    source_config = config.get("sources", {}) if isinstance(config, dict) else {}
-    for source in ("bcb", "b3", "cvm"):
-        if not bool(source_config.get(source, True)):
-            context_sources[source] = "UNKNOWN"
 
     drivers = ["ibov", "usdbrl", "oil"]
     risks: list[str] = []
@@ -339,11 +343,12 @@ def build_market_context(
     if manual["geopolitical_risk"] in {"HIGH", "EXTREME"}:
         risks.append("geopolitics")
 
-    return {
+    payload = {
         "schema_version": MARKET_CONTEXT_SCHEMA,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "data_date": None,
         "context_sources": context_sources,
+        "source_diagnostics": diagnostics,
         "thresholds_version": str(thresholds.get("schema_version", THRESHOLDS_SCHEMA)),
         "manual_overrides": manual,
         "freshness": {
@@ -427,6 +432,8 @@ def build_market_context(
         "source": str(auto_context.get("source", "context_consolidator")),
         "metrics": metrics,
     }
+    merge_source_data(payload, source_data or {})
+    return payload
 
 
 def write_market_context(
@@ -437,17 +444,28 @@ def write_market_context(
     config_path: str | Path = "config/market_context.json",
     manual_context_path: str | Path | None = None,
     previous_context: dict[str, Any] | None = None,
+    refresh_sources: bool = False,
+    source_timeout: int = 10,
 ) -> dict[str, Any]:
     config = load_market_context_config(config_path)
     manual_path = manual_context_path
     if manual_path is None:
         manual_path = config.get("manual_context", "")
+    source_diagnostics: dict[str, dict[str, Any]] = {}
+    source_data: dict[str, Any] = {}
+    if refresh_sources:
+        source_diagnostics, source_data = collect_market_context_sources(
+            config=config,
+            timeout=source_timeout,
+        )
     payload = build_market_context(
         auto_context=auto_context,
         thresholds=load_market_context_thresholds(thresholds_path),
         config=config,
         manual_context_path=manual_path,
         previous_context=previous_context,
+        source_diagnostics=source_diagnostics,
+        source_data=source_data,
     )
     destination = Path(output)
     destination.parent.mkdir(parents=True, exist_ok=True)

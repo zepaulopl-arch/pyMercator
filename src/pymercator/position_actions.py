@@ -6,11 +6,16 @@ from dataclasses import asdict, dataclass
 from pathlib import Path
 from typing import Any
 
-from pymercator.borrow_data import evaluate_borrow_record, load_borrow_data
+from pymercator.borrow_data import borrow_status_for_record, load_borrow_data, load_borrow_policy
 from pymercator.domain import AssetDecision, DailyReport, ExecutionStatus, MarketRegime
 from pymercator.explain import decision_codes
 from pymercator.position_actions_config import load_position_actions_config
-from pymercator.ui import muted_line, truncate
+from pymercator.short_policy import (
+    apply_legacy_short_overrides,
+    load_short_policy,
+    load_short_thresholds,
+)
+from pymercator.terminal_render import muted_line
 
 DEFAULT_POSITIONS_PATH = "storage/positions/current_positions.csv"
 POSITION_COLUMNS = ("ticker", "side", "qty", "avg_price", "entry_date")
@@ -420,12 +425,24 @@ def _sector_weakness(report: DailyReport) -> dict[str, float]:
     }
 
 
+def _short_runtime_config(
+    config: dict[str, Any],
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    policy = load_short_policy()
+    thresholds = load_short_thresholds()
+    return apply_legacy_short_overrides(
+        policy=policy,
+        thresholds=thresholds,
+        position_actions_config=config,
+    )
+
+
 def _short_score(
     decision: AssetDecision,
     report: DailyReport,
     prediction: dict[str, Any] | None,
     sector_weakness: dict[str, float],
-    config: dict[str, Any],
+    thresholds: dict[str, Any],
 ) -> float:
     asset = decision.asset
     weak_trend = 100.0 - _clamp(asset.trend_score)
@@ -444,9 +461,9 @@ def _short_score(
         + 0.10 * regime_pressure
         + 0.10 * sector_weakness.get(asset.sector, 0.0)
     )
-    short_config = config.get("short", {}) if isinstance(config, dict) else {}
-    max_volatility = _to_float(short_config.get("max_volatility"), 60.0)
-    max_atr = _to_float(short_config.get("max_atr"), 7.0)
+    risk = thresholds.get("risk", {}) if isinstance(thresholds, dict) else {}
+    max_volatility = _to_float(risk.get("max_volatility"), 55.0)
+    max_atr = _to_float(risk.get("max_atr"), 6.0)
     if asset.volatility_pct >= max_volatility:
         score -= 15.0
     if asset.atr_pct >= max_atr:
@@ -456,55 +473,320 @@ def _short_score(
     return _clamp(score)
 
 
-def _short_action(
+def _short_setup_status(
     decision: AssetDecision,
     score: float,
     report: DailyReport,
     prediction: dict[str, Any] | None,
-    config: dict[str, Any],
-    borrow_record: dict[str, Any] | None,
+    thresholds: dict[str, Any],
 ) -> tuple[str, str]:
     asset = decision.asset
-    short_config = config.get("short", {}) if isinstance(config, dict) else {}
-    hedge_config = config.get("hedge", {}) if isinstance(config, dict) else {}
-    if not bool(short_config.get("enabled", True)) and not bool(hedge_config.get("enabled", True)):
-        return "", ""
-    min_short_score = _to_float(short_config.get("min_short_score"), 65.0)
-    max_volatility = _to_float(short_config.get("max_volatility"), 60.0)
-    max_atr = _to_float(short_config.get("max_atr"), 7.0)
-    weak_asset = asset.trend_score < 45.0 and asset.momentum_score < 45.0
-    extreme_risk = asset.volatility_pct >= max_volatility or asset.atr_pct >= max_atr
-    low_liquidity = asset.liquidity_score < 40.0
+    setup = thresholds.get("setup", {}) if isinstance(thresholds, dict) else {}
+    min_score = _to_float(setup.get("min_short_score"), 70.0)
+    max_trend = _to_float(setup.get("max_trend"), 40.0)
+    max_momentum = _to_float(setup.get("max_momentum"), 40.0)
+    weak_asset = asset.trend_score <= max_trend and asset.momentum_score <= max_momentum
     defensive_market = (
         _is_risk_off(report)
         or _prediction_quality(prediction) in {"WEAK", "DEGENERATE"}
         or _prediction_behavior(prediction) == "AVOID"
     )
+    if weak_asset and score >= min_score:
+        return "SHORT_SETUP", "weak trend and momentum"
+    if defensive_market and score >= max(0.0, min_score - 10.0):
+        return "WEAK_SHORT_SETUP", "defensive hedge candidate"
+    return "NO_SHORT_SETUP", "short setup not present"
 
-    short_enabled = bool(short_config.get("enabled", True))
-    if short_enabled and weak_asset and (extreme_risk or low_liquidity):
-        return "SHORT_BLOCKED", "weak asset but short risk unavailable"
-    if short_enabled and weak_asset and score >= min_short_score:
-        if (
-            bool(short_config.get("requires_borrow_data", True))
-            and bool(short_config.get("block_without_borrow_data", True))
-        ):
-            borrow_ok, borrow_reason = evaluate_borrow_record(
-                borrow_record,
-                short_config,
-            )
-            if not borrow_ok:
-                return "SHORT_BLOCKED", borrow_reason
-            return "SHORT_CANDIDATE", f"weak trend + weak mom + {borrow_reason}"
-        return "SHORT_CANDIDATE", "weak trend + weak mom + risk off"
-    if (
-        bool(hedge_config.get("enabled", True))
-        and bool(hedge_config.get("risk_off_hedge_candidate", True))
-        and defensive_market
-        and score >= max(0.0, min_short_score - 10.0)
-    ):
-        return "HEDGE_CANDIDATE", "defensive hedge candidate"
-    return "", ""
+
+def _short_risk_status(
+    decision: AssetDecision,
+    thresholds: dict[str, Any],
+) -> tuple[str, str]:
+    asset = decision.asset
+    risk = thresholds.get("risk", {}) if isinstance(thresholds, dict) else {}
+    max_volatility = _to_float(risk.get("max_volatility"), 55.0)
+    max_atr = _to_float(risk.get("max_atr"), 6.0)
+    vol_high = asset.volatility_pct >= max_volatility
+    atr_high = asset.atr_pct >= max_atr
+    low_liquidity = asset.liquidity_score < 40.0
+    if low_liquidity or (vol_high and atr_high):
+        return "RISK_BLOCK", "short technical risk blocked"
+    if vol_high or atr_high:
+        return "RISK_CAUTION", "short technical risk caution"
+    return "RISK_OK", "technical risk ok"
+
+
+def _event_status() -> tuple[str, str]:
+    return "EVENT_UNKNOWN", "event calendar unavailable"
+
+
+def _ready_long_count(report: DailyReport) -> int:
+    return sum(
+        1
+        for decision in report.decisions
+        if decision.permission.status == ExecutionStatus.READY
+    )
+
+
+def _market_read(
+    report: DailyReport,
+    prediction: dict[str, Any] | None,
+    sector_scores: dict[str, float] | None = None,
+) -> str:
+    parts: list[str] = []
+    if _is_risk_off(report):
+        parts.append("risk-off")
+
+    if report.decisions:
+        avg_trend = sum(
+            float(decision.asset.trend_score) for decision in report.decisions
+        ) / len(report.decisions)
+        if avg_trend < 45.0 or _is_risk_off(report):
+            parts.append("downtrend")
+
+    if _prediction_quality(prediction) in {"WEAK", "DEGENERATE"}:
+        parts.append("weak model")
+    if _prediction_behavior(prediction) == "AVOID":
+        parts.append("behavior avoid")
+
+    scores = sector_scores or _sector_weakness(report)
+    if scores and (sum(scores.values()) / len(scores)) >= 55.0:
+        parts.append("broad weakness")
+
+    if not parts:
+        parts.append("no actionable long assets")
+    return " / ".join(dict.fromkeys(parts))
+
+
+def _hedge_reason(
+    report: DailyReport,
+    prediction: dict[str, Any] | None,
+    sector_scores: dict[str, float],
+) -> str:
+    reasons: list[str] = []
+    if _is_risk_off(report):
+        reasons.append("risk-off")
+    if sector_scores and (sum(sector_scores.values()) / len(sector_scores)) >= 50.0:
+        reasons.append("broad weakness")
+    if _prediction_quality(prediction) in {"WEAK", "DEGENERATE"}:
+        reasons.append("weak model")
+    if _prediction_behavior(prediction) == "AVOID":
+        reasons.append("behavior avoid")
+    return " + ".join(reasons) if reasons else "long basket blocked"
+
+
+def _build_hedge_candidates(
+    report: DailyReport,
+    prediction: dict[str, Any] | None,
+    *,
+    active: bool,
+    long_actionable: int,
+    sector_scores: dict[str, float],
+) -> list[dict[str, Any]]:
+    if not active:
+        return []
+
+    rows: list[dict[str, Any]] = []
+    pressure = (
+        _is_risk_off(report)
+        or _prediction_quality(prediction) in {"WEAK", "DEGENERATE"}
+        or _prediction_behavior(prediction) == "AVOID"
+    )
+    if pressure:
+        rows.append(
+            {
+                "target": "INDEX",
+                "action": "HEDGE_WATCH",
+                "reason": _hedge_reason(report, prediction, sector_scores),
+            }
+        )
+
+    weak_sectors = sorted(
+        sector_scores.items(),
+        key=lambda item: (-float(item[1]), str(item[0])),
+    )
+    for sector, weakness in weak_sectors[:2]:
+        if weakness < 50.0:
+            continue
+        rows.append(
+            {
+                "target": "SECTOR",
+                "action": "HEDGE_WATCH",
+                "reason": f"{sector} weak",
+            }
+        )
+
+    if long_actionable == 0:
+        rows.append(
+            {
+                "target": "CASH",
+                "action": "HOLD_CASH",
+                "reason": "no long basket allowed",
+            }
+        )
+
+    return rows
+
+
+def build_defensive_book(
+    report: DailyReport,
+    prediction: dict[str, Any] | None,
+    *,
+    short_candidates: list[dict[str, Any]],
+    sector_scores: dict[str, float] | None = None,
+) -> dict[str, Any]:
+    long_actionable = _ready_long_count(report)
+    sector_scores = sector_scores or _sector_weakness(report)
+    pressure = (
+        _is_risk_off(report)
+        or _prediction_quality(prediction) in {"WEAK", "DEGENERATE"}
+        or _prediction_behavior(prediction) == "AVOID"
+    )
+    active = long_actionable == 0 or pressure
+    hedge_candidates = _build_hedge_candidates(
+        report,
+        prediction,
+        active=active,
+        long_actionable=long_actionable,
+        sector_scores=sector_scores,
+    )
+    cash_reason = (
+        "no executable defensive trade"
+        if active
+        else "defensive mode inactive"
+    )
+    if active and not hedge_candidates and not short_candidates:
+        cash_reason = "no short or hedge setup available"
+
+    return {
+        "status": "ACTIVE" if active else "INACTIVE",
+        "market_read": _market_read(report, prediction, sector_scores),
+        "long_action": "blocked" if long_actionable == 0 else "allowed",
+        "long_actionable": long_actionable,
+        "defensive_mode": "active" if active else "inactive",
+        "short_candidates": list(short_candidates),
+        "hedge_candidates": hedge_candidates,
+        "cash_wait_mode": {
+            "action": "HOLD_CASH" if active else "NO_SHIFT",
+            "reason": cash_reason,
+        },
+    }
+
+
+def _short_permission(
+    *,
+    setup_status: str,
+    risk_status: str,
+    borrow_status: str,
+    event_status: str,
+    policy: dict[str, Any],
+    thresholds: dict[str, Any],
+) -> tuple[str, str]:
+    if setup_status == "NO_SHORT_SETUP":
+        return "DATA_MISSING", "short setup not present"
+    if risk_status == "RISK_BLOCK":
+        return "SHORT_BLOCKED", "short risk blocked"
+
+    borrow_thresholds = thresholds.get("borrow", {}) if isinstance(thresholds, dict) else {}
+    if bool(policy.get("requires_borrow_data", True)):
+        if borrow_status in {
+            "BORROW_DATA_MISSING",
+            "BORROW_STALE",
+            "BORROW_UNAVAILABLE",
+            "BORROW_COST_HIGH",
+            "BORROW_RECALL_RISK",
+            "BORROW_LIQUIDITY_WEAK",
+        }:
+            return "SHORT_BLOCKED", borrow_status.lower()
+        if borrow_status == "BORROW_SQUEEZE_HIGH":
+            if bool(borrow_thresholds.get("manual_if_squeeze_risk_high", True)):
+                return "SHORT_MANUAL_ONLY", "squeeze risk high"
+            return "SHORT_BLOCKED", "squeeze risk high"
+
+    if event_status == "EVENT_BLOCK":
+        return "SHORT_BLOCKED", "event blocked"
+    if str(policy.get("mode", "MANUAL_ONLY")).upper() == "MANUAL_ONLY":
+        return "SHORT_MANUAL_ONLY", "policy manual only"
+    if not bool(policy.get("allow_execution", False)):
+        return "SHORT_MANUAL_ONLY", "short execution disabled"
+    if borrow_status == "BORROW_OK" and risk_status in {"RISK_OK", "RISK_CAUTION"}:
+        return "SHORT_READY", "short checks passed"
+    return "SHORT_BLOCKED", "short checks incomplete"
+
+
+def _short_row(
+    decision: AssetDecision,
+    report: DailyReport,
+    prediction: dict[str, Any] | None,
+    sector_scores: dict[str, float],
+    policy: dict[str, Any],
+    thresholds: dict[str, Any],
+    borrow_policy: dict[str, Any],
+    borrow_record: dict[str, Any] | None,
+) -> dict[str, Any] | None:
+    if not bool(policy.get("enabled", True)):
+        return None
+    score = _short_score(decision, report, prediction, sector_scores, thresholds)
+    setup_status, setup_reason = _short_setup_status(
+        decision,
+        score,
+        report,
+        prediction,
+        thresholds,
+    )
+    if setup_status == "NO_SHORT_SETUP":
+        return None
+    risk_status, risk_reason = _short_risk_status(decision, thresholds)
+    borrow_status, borrow_reason = borrow_status_for_record(
+        borrow_record,
+        thresholds=thresholds,
+        policy=borrow_policy,
+    )
+    event_status, event_reason = _event_status()
+    permission, permission_reason = _short_permission(
+        setup_status=setup_status,
+        risk_status=risk_status,
+        borrow_status=borrow_status,
+        event_status=event_status,
+        policy=policy,
+        thresholds=thresholds,
+    )
+    reason = permission_reason
+    if permission == "SHORT_BLOCKED" and borrow_status != "BORROW_OK":
+        reason = borrow_reason
+    elif permission == "SHORT_MANUAL_ONLY" and borrow_status == "BORROW_OK":
+        reason = permission_reason
+
+    row = {
+        "ticker": decision.asset.ticker,
+        "direction": "SHORT",
+        "trade_mode": str(policy.get("allowed_trade_modes", ["SWING"])[0] or "SWING"),
+        "short_score": round(score, 2),
+        "score": round(score, 2),
+        "short_setup_status": setup_status,
+        "short_risk_status": risk_status,
+        "borrow_status": borrow_status,
+        "event_status": event_status,
+        "short_permission": permission,
+        "permission": permission,
+        "action": permission,
+        "borrow_available": None if not borrow_record else borrow_record.get("borrow_available"),
+        "borrow_fee_pct": None if not borrow_record else borrow_record.get("borrow_fee_pct"),
+        "recall_risk": "UNKNOWN" if not borrow_record else borrow_record.get("recall_risk", "UNKNOWN"),
+        "short_liquidity": "UNKNOWN" if not borrow_record else borrow_record.get("short_liquidity", "UNKNOWN"),
+        "squeeze_risk": "UNKNOWN" if not borrow_record else borrow_record.get("squeeze_risk", "UNKNOWN"),
+        "manual_only": permission == "SHORT_MANUAL_ONLY",
+        "observational_only": True,
+        "execution": "OBSERVATIONAL_ONLY",
+        "reason": reason,
+        "setup_reason": setup_reason,
+        "risk_reason": risk_reason,
+        "borrow_reason": borrow_reason,
+        "event_reason": event_reason,
+    }
+    if borrow_record:
+        row["borrow"] = dict(borrow_record)
+    return row
 
 
 def build_short_book(
@@ -518,36 +800,27 @@ def build_short_book(
 ) -> dict[str, list[dict[str, Any]]]:
     resolved_config = config or load_position_actions_config()
     borrow_records = borrow_records or {}
+    policy, thresholds = _short_runtime_config(resolved_config)
+    borrow_policy = load_borrow_policy()
     positioned = {_ticker(position.ticker) for position in positions if position.side == "LONG"}
     sector_scores = _sector_weakness(report)
     rows: list[dict[str, Any]] = []
     for decision in report.decisions:
         if _ticker(decision.asset.ticker) in positioned:
             continue
-        score = _short_score(decision, report, prediction, sector_scores, resolved_config)
         ticker = _ticker(decision.asset.ticker)
-        borrow_record = borrow_records.get(ticker)
-        action, reason = _short_action(
+        row = _short_row(
             decision,
-            score,
             report,
             prediction,
-            resolved_config,
-            borrow_record,
+            sector_scores,
+            policy,
+            thresholds,
+            borrow_policy,
+            borrow_records.get(ticker),
         )
-        if not action:
+        if not row:
             continue
-        row = {
-            "ticker": decision.asset.ticker,
-            "direction": "SHORT",
-            "trade_mode": DEFAULT_SHORT_TRADE_MODE,
-            "action": action,
-            "score": round(score, 2),
-            "reason": reason,
-            "execution": "OBSERVATIONAL_ONLY",
-        }
-        if borrow_record:
-            row["borrow"] = dict(borrow_record)
         rows.append(row)
 
     rows = sorted(rows, key=lambda item: (-float(item["score"]), str(item["ticker"])))
@@ -555,10 +828,10 @@ def build_short_book(
     return {
         "rows": rows,
         "short_candidates": [
-            row for row in rows if row["action"] == "SHORT_CANDIDATE"
+            row for row in rows if row.get("short_setup_status") == "SHORT_SETUP"
         ],
         "hedge_candidates": [
-            row for row in rows if row["action"] == "HEDGE_CANDIDATE"
+            row for row in rows if row.get("short_setup_status") == "WEAK_SHORT_SETUP"
         ],
     }
 
@@ -575,6 +848,7 @@ def build_position_actions(
 ) -> dict[str, Any]:
     config = load_position_actions_config(config_path)
     short_config = config.get("short", {}) if isinstance(config, dict) else {}
+    short_policy, short_thresholds = _short_runtime_config(config)
     resolved_borrow_path = (
         borrow_data_path
         if borrow_data_path is not None
@@ -600,6 +874,13 @@ def build_position_actions(
         config=config,
         borrow_records=borrow_records,
     )
+    sector_scores = _sector_weakness(report)
+    defensive_book = build_defensive_book(
+        report,
+        prediction,
+        short_candidates=short_book["short_candidates"],
+        sector_scores=sector_scores,
+    )
     return {
         "schema_version": "position_actions.v1",
         "config": {
@@ -612,11 +893,26 @@ def build_position_actions(
         "positions_loaded": loaded,
         "positions": positions_to_dicts(positions),
         "borrow_data": borrow_status,
+        "short_policy": {
+            "schema_version": short_policy.get("schema_version"),
+            "mode": short_policy.get("mode", "MANUAL_ONLY"),
+            "allow_execution": bool(short_policy.get("allow_execution", False)),
+            "never_enter_long_basket": bool(short_policy.get("never_enter_long_basket", True)),
+        },
+        "short_thresholds": {
+            "schema_version": short_thresholds.get("schema_version"),
+            "setup": short_thresholds.get("setup", {}),
+            "risk": short_thresholds.get("risk", {}),
+            "borrow": short_thresholds.get("borrow", {}),
+            "events": short_thresholds.get("events", {}),
+        },
         "long_book": build_long_book(report, limit=long_limit),
         "exit_book": exit_book,
+        "defensive_book": defensive_book,
         "short_book": short_book["rows"],
         "short_candidates": short_book["short_candidates"],
-        "hedge_candidates": short_book["hedge_candidates"],
+        "hedge_candidates": defensive_book["hedge_candidates"],
+        "equity_hedge_candidates": short_book["hedge_candidates"],
         "short_execution": "OBSERVATIONAL_ONLY",
     }
 
@@ -642,94 +938,9 @@ def render_positions(positions: list[Position], *, source: str | Path) -> str:
 
 
 def render_position_books(position_actions: dict[str, Any]) -> list[str]:
-    if not position_actions:
-        return []
+    from pymercator.short_render import render_position_books as renderer
 
-    lines = [
-        "BUY / LONG BOOK",
-        muted_line(),
-        "direction         LONG",
-        "meaning           bought/long position; benefits from price rising",
-        f"mode              {DEFAULT_BUY_TRADE_MODE}",
-        "",
-        (
-            f"{'#':>2} {'TICKER':<8} {'DIR':<5} {'MODE':<10} "
-            f"{'ACTION':<10} {'SCORE':>7} REASON"
-        ),
-    ]
-    long_rows = position_actions.get("long_book", [])
-    if not isinstance(long_rows, list) or not long_rows:
-        lines.append("no long book rows.")
-    else:
-        for index, row in enumerate(long_rows, start=1):
-            lines.append(
-                f"{index:>2} {row['ticker']:<8} "
-                f"{str(row.get('direction', 'LONG')):<5} "
-                f"{str(row.get('trade_mode', DEFAULT_BUY_TRADE_MODE)):<10} "
-                f"{row['action']:<10} "
-                f"{float(row['score']):>7.2f} {truncate(row['reason'], 48)}"
-            )
-
-    exit_book = position_actions.get("exit_book", {})
-    exit_rows = exit_book.get("rows", []) if isinstance(exit_book, dict) else []
-    lines.extend(
-        [
-            "",
-            "EXIT BOOK",
-            muted_line(),
-            (
-                f"{'#':>2} {'TICKER':<8} {'DIR':<5} {'MODE':<10} {'ACTION':<12} {'PNL%':>7} "
-                f"{'RISK':<7} {'REVIEW':<6} REASON"
-            ),
-        ]
-    )
-    if not exit_rows:
-        message = "no open positions loaded."
-        if isinstance(exit_book, dict):
-            message = str(exit_book.get("message") or message)
-        lines.append(message)
-    else:
-        for index, row in enumerate(exit_rows, start=1):
-            pnl_value = row.get("pnl_pct")
-            pnl = "n/a" if pnl_value is None else f"{float(pnl_value):+7.1f}"
-            review = "YES" if row.get("manual_review_required") else "NO"
-            lines.append(
-                f"{index:>2} {row['ticker']:<8} "
-                f"{str(row.get('direction', 'LONG')):<5} "
-                f"{str(row.get('trade_mode', DEFAULT_EXIT_TRADE_MODE)):<10} "
-                f"{row['action']:<12} "
-                f"{pnl:>7} {row['risk']:<7} {review:<6} {truncate(row['reason'], 44)}"
-            )
-
-    short_rows = position_actions.get("short_book", [])
-    lines.extend(
-        [
-            "",
-            "SELL-SHORT / HEDGE BOOK",
-            muted_line(),
-            "direction         SHORT",
-            "meaning           sold/borrowed position; benefits from price falling",
-            f"mode              {DEFAULT_SHORT_TRADE_MODE}",
-            "requires          borrow availability, borrow cost and short risk checks",
-            "",
-            (
-                f"{'#':>2} {'TICKER':<8} {'DIR':<5} {'MODE':<10} "
-                f"{'ACTION':<16} {'SCORE':>7} REASON"
-            ),
-        ]
-    )
-    if not isinstance(short_rows, list) or not short_rows:
-        lines.append("no short or hedge candidates.")
-    else:
-        for index, row in enumerate(short_rows, start=1):
-            lines.append(
-                f"{index:>2} {row['ticker']:<8} "
-                f"{str(row.get('direction', 'SHORT')):<5} "
-                f"{str(row.get('trade_mode', DEFAULT_SHORT_TRADE_MODE)):<10} "
-                f"{row['action']:<16} "
-                f"{float(row['score']):>7.1f} {truncate(row['reason'], 44)}"
-            )
-    return lines
+    return renderer(position_actions)
 
 
 def position_actions_to_json(payload: dict[str, Any]) -> str:

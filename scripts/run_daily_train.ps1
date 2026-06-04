@@ -1,14 +1,15 @@
-param([string]$PY = "")
+param(
+    [string]$PY = "",
+    [switch]$Color
+)
 
 $ErrorActionPreference = "Stop"
-$env:NO_COLOR = "1"
-$env:PY_COLORS = "0"
-$env:CLICOLOR = "0"
 
 . (Join-Path $PSScriptRoot "ops_common.ps1")
 
 $scriptName = Split-Path -Leaf $PSCommandPath
 $PY = Initialize-PyMercatorScript -RequestedPython $PY -ScriptName $scriptName
+Set-PyMercatorColorMode -Enabled ([bool]$Color)
 $logDir = New-PyMercatorLogDir -Prefix "daily_train" -ScriptName $scriptName
 $listName = $script:PYMERCATOR_DEFAULT_LIST
 $profiles = @("CON", "BAL", "AGR", "RLX")
@@ -17,30 +18,24 @@ $updateStatus = "storage\context\latest_update_status.json"
 function New-ProfilePaths {
     param([string]$Profile)
 
-    return @{
-        Report = Join-Path $logDir "report_${Profile}.txt"
-        Json = Join-Path $logDir "report_${Profile}.json"
-        RunDir = Join-Path $logDir "run_${Profile}"
-        Basket = Join-Path $logDir "basket_${Profile}.csv"
-        Log = Join-Path $logDir "run_${Profile}.log"
-    }
+    return Get-PyMercatorProfilePaths -LogDir $logDir -Profile $Profile
 }
 
 Write-PyMercatorRuntimeHeader -Title "PYMERCATOR DAILY TRAIN"
 
-Invoke-PyMercatorStep `
+$null = Invoke-PyMercatorStep `
     -Python $PY `
     -Name "Update $listName" `
     -PyArgs @("update", "--list", $listName) `
     -LogFile (Join-Path $logDir "00_update_ibov.log")
 
-Invoke-PyMercatorStep `
+$null = Invoke-PyMercatorStep `
     -Python $PY `
     -Name "Diag" `
     -PyArgs @("diag") `
     -LogFile (Join-Path $logDir "00_diag.log")
 
-Invoke-PyMercatorStep `
+$null = Invoke-PyMercatorStep `
     -Python $PY `
     -Name "Universe diagnose" `
     -PyArgs @(
@@ -53,7 +48,7 @@ Invoke-PyMercatorStep `
     ) `
     -LogFile (Join-Path $logDir "01_universe_diagnose.log")
 
-Invoke-PyMercatorStep `
+$null = Invoke-PyMercatorStep `
     -Python $PY `
     -Name "Train multi-horizon details" `
     -PyArgs @(
@@ -80,7 +75,7 @@ foreach ($profile in $profiles) {
     if ($profile -eq "CON") {
         $conBasket = $paths.Basket
     }
-    Invoke-PyMercatorStep `
+    $null = Invoke-PyMercatorStep `
         -Python $PY `
         -Name "Run $profile basket" `
         -PyArgs @(
@@ -100,20 +95,22 @@ foreach ($profile in $profiles) {
         -LogFile $paths.Log
 }
 
-Invoke-PyMercatorStep `
+$null = Invoke-PyMercatorStep `
     -Python $PY `
     -Name "Basket show CON" `
     -PyArgs @("basket", "--profile", "CON", "show", "--output", $conBasket) `
     -LogFile (Join-Path $logDir "07_basket_show_CON.log") `
     -Critical $false
 
-Write-RunManifest -Status "OK" -Outputs @{
+$null = Write-RunManifest -Status "OK" -Outputs @{
     train_detail_report = "storage\prediction\latest_train_detail_report.txt"
     update_status = $updateStatus
     con_basket_csv = $conBasket
     con_basket_json = [System.IO.Path]::ChangeExtension($conBasket, ".json")
     runtime_dir = $logDir
 }
+
+Show-PyMercatorProfileSummary -LogDir $logDir -Profiles $profiles
 
 Write-Host ""
 Write-Host "============================================================"

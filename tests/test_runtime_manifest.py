@@ -31,7 +31,22 @@ def test_operational_scripts_use_ops_common_and_runtime_config():
         assert "ops_common.ps1" in text
         assert "Initialize-PyMercatorScript" in text
         assert "Write-RunManifest" in text
+        assert "[switch]$Color" in text
+        assert "$null = Invoke-" in text
         assert "C:\\Users\\zepau\\anaconda3\\python.exe" not in text
+        assert "--no-color" not in text
+        if script_name == "run_daily_train.ps1":
+            assert "Show-PyMercatorProfileSummary" in text
+
+    ops_common = (ROOT / "scripts" / "ops_common.ps1").read_text(encoding="utf-8")
+    assert "PROFILE SUMMARY" in ops_common
+    assert "ConvertFrom-Json" in ops_common
+
+    common = (ROOT / "scripts" / "ops_common.ps1").read_text(encoding="utf-8")
+    assert "Get-PyMercatorColorArgs" in common
+    assert 'return @("--no-color")' in common
+    assert 'return @("--color", $script:PYMERCATOR_COLOR)' in common
+    assert "Remove-AnsiFromFile" in common
 
 
 def test_ops_common_creates_runtime_manifest():

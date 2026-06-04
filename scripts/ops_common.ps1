@@ -11,6 +11,170 @@ $script:PYMERCATOR_MANIFEST_PATH = ""
 $script:PYMERCATOR_MANIFEST = $null
 $script:PYMERCATOR_SCRIPT_NAME = ""
 
+function Set-PyMercatorColorMode {
+    param([bool]$Enabled = $false)
+
+    if ($Enabled) {
+        $script:PYMERCATOR_COLOR = "auto"
+        Remove-Item Env:\NO_COLOR -ErrorAction SilentlyContinue
+        Remove-Item Env:\PY_COLORS -ErrorAction SilentlyContinue
+        $env:CLICOLOR = "1"
+    } else {
+        $script:PYMERCATOR_COLOR = "never"
+        $env:NO_COLOR = "1"
+        $env:PY_COLORS = "0"
+        $env:CLICOLOR = "0"
+    }
+}
+
+function Get-PyMercatorColorArgs {
+    if ($script:PYMERCATOR_COLOR -and $script:PYMERCATOR_COLOR -ne "never") {
+        return @("--color", $script:PYMERCATOR_COLOR)
+    }
+    return @("--no-color")
+}
+
+function Remove-AnsiFromFile {
+    param([string]$Path)
+
+    if (-not (Test-Path -LiteralPath $Path)) {
+        return
+    }
+
+    $ansiPattern = "`e\[[0-?]*[ -/]*[@-~]"
+    $content = Get-Content -LiteralPath $Path -Raw
+    $clean = $content -replace $ansiPattern, ""
+    if ($clean -ne $content) {
+        Set-Content -LiteralPath $Path -Value $clean -Encoding UTF8
+    }
+}
+
+function Get-PyMercatorJsonValue {
+    param(
+        [object]$Object,
+        [string]$Name,
+        [object]$Default = 0
+    )
+
+    if ($null -eq $Object) {
+        return $Default
+    }
+    if ($Object.PSObject.Properties.Name -contains $Name) {
+        return $Object.$Name
+    }
+    return $Default
+}
+
+function Get-PyMercatorProfilePaths {
+    param(
+        [string]$LogDir,
+        [string]$Profile
+    )
+
+    return @{
+        Report = Join-Path $LogDir "report_${Profile}.txt"
+        Json = Join-Path $LogDir "report_${Profile}.json"
+        RunDir = Join-Path $LogDir "run_${Profile}"
+        Basket = Join-Path $LogDir "basket_${Profile}.csv"
+        Log = Join-Path $LogDir "run_${Profile}.log"
+    }
+}
+
+function Show-PyMercatorProfileSummary {
+    param(
+        [string]$LogDir,
+        [string[]]$Profiles
+    )
+
+    $rows = @()
+    $blockers = @{}
+    foreach ($profile in $Profiles) {
+        $paths = Get-PyMercatorProfilePaths -LogDir $LogDir -Profile $profile
+        $payload = $null
+        if (Test-Path -LiteralPath $paths.Json) {
+            try {
+                $payload = Get-Content -LiteralPath $paths.Json -Raw | ConvertFrom-Json
+            } catch {
+                Write-Host "WARNING: unable to parse profile JSON for ${profile}: $($paths.Json)" -ForegroundColor Yellow
+                $payload = $null
+            }
+        } else {
+            Write-Host "WARNING: missing profile JSON for ${profile}: $($paths.Json)" -ForegroundColor Yellow
+        }
+
+        $decision = Get-PyMercatorJsonValue -Object $payload -Name "decision" -Default $null
+        $decisions = @(Get-PyMercatorJsonValue -Object $payload -Name "decisions" -Default @())
+        $basketPayload = Get-PyMercatorJsonValue -Object $payload -Name "basket" -Default $null
+        $blockerPayload = Get-PyMercatorJsonValue -Object $payload -Name "blockers_count" -Default $null
+        if ($null -eq $blockerPayload) {
+            $blockerPayload = Get-PyMercatorJsonValue -Object $payload -Name "blockers" -Default $null
+        }
+
+        $volHigh = 0
+        $atrHigh = 0
+        foreach ($item in $decisions) {
+            $codes = @(Get-PyMercatorJsonValue -Object $item -Name "decision_codes" -Default @())
+            if ($codes -contains "VOL_HIGH") {
+                $volHigh += 1
+            }
+            if ($codes -contains "ATR_HIGH") {
+                $atrHigh += 1
+            }
+        }
+
+        if ($null -ne $blockerPayload) {
+            foreach ($prop in $blockerPayload.PSObject.Properties) {
+                $current = 0
+                if ($blockers.ContainsKey($prop.Name)) {
+                    $current = [int]$blockers[$prop.Name]
+                }
+                $blockers[$prop.Name] = $current + [int]$prop.Value
+            }
+        }
+
+        $rows += [pscustomobject]@{
+            Profile = $profile
+            Actionable = [int](Get-PyMercatorJsonValue -Object $decision -Name "actionable" -Default 0)
+            Watch = [int](Get-PyMercatorJsonValue -Object $decision -Name "watch" -Default 0)
+            Blocked = [int](Get-PyMercatorJsonValue -Object $decision -Name "blocked" -Default 0)
+            VolHigh = $volHigh
+            AtrHigh = $atrHigh
+            Basket = [string](Get-PyMercatorJsonValue -Object $basketPayload -Name "status" -Default "-")
+        }
+    }
+
+    Write-Host ""
+    Write-Host "PROFILE SUMMARY"
+    Write-Host "--------------------------------------------------------------------------------"
+    Write-Host ("{0,-7} {1,10} {2,6} {3,8} {4,9} {5,9} {6,9}" -f "PROFILE", "ACTIONABLE", "WATCH", "BLOCKED", "VOL_HIGH", "ATR_HIGH", "BASKET")
+    foreach ($row in $rows) {
+        Write-Host ("{0,-7} {1,10} {2,6} {3,8} {4,9} {5,9} {6,9}" -f $row.Profile, $row.Actionable, $row.Watch, $row.Blocked, $row.VolHigh, $row.AtrHigh, $row.Basket)
+    }
+
+    $totalActionable = ($rows | Measure-Object -Property Actionable -Sum).Sum
+    $topBlockers = @()
+    if ($blockers.Count -gt 0) {
+        $topBlockers = $blockers.GetEnumerator() |
+            Sort-Object -Property @{ Expression = { [int]$_.Value }; Descending = $true }, Name |
+            Select-Object -First 5 |
+            ForEach-Object { $_.Name }
+    }
+
+    Write-Host ""
+    Write-Host "VERDICT"
+    Write-Host "--------------------------------------------------------------------------------"
+    if ([int]$totalActionable -eq 0) {
+        Write-Host "No profile allowed trades."
+    } else {
+        Write-Host ("Profiles allowed {0} actionable trade(s)." -f [int]$totalActionable)
+    }
+    if ($topBlockers.Count -gt 0) {
+        Write-Host ("Global blockers dominate: {0}." -f ($topBlockers -join ", "))
+    } else {
+        Write-Host "Global blockers dominate: none."
+    }
+}
+
 function Read-RuntimeConfig {
     $repoRoot = Resolve-Path -LiteralPath (Join-Path $PSScriptRoot "..")
     $configPath = Join-Path $repoRoot "config\runtime.json"
@@ -293,6 +457,7 @@ function Run-Step {
     } finally {
         $ErrorActionPreference = $previousPreference
     }
+    Remove-AnsiFromFile -Path $LogFile
 
     $entry.exit_code = [int]$code
     $entry.finished_at = (Get-Date).ToUniversalTime().ToString("o")
@@ -334,7 +499,7 @@ function Invoke-PyMercatorStep {
 
     return Run-Step `
         -Name $Name `
-        -Command (@($Python, "-m", "pymercator", "--no-color") + $PyArgs) `
+        -Command (@($Python, "-m", "pymercator") + (Get-PyMercatorColorArgs) + $PyArgs) `
         -LogFile $LogFile `
         -Critical $Critical
 }

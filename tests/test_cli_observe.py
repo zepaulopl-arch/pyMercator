@@ -61,8 +61,33 @@ def test_observe_classifies_momentum_high_risk_and_weak_assets(
     payload = json.loads(capsys.readouterr().out)
     rows = {row["ticker"]: row for row in payload["rows"]}
     assert rows["MOMR3"]["class"] == "MOM_HIGH_RISK"
-    assert rows["STBL3"]["class"] in {"WEAK", "STABLE_WEAK"}
+    assert rows["STBL3"]["class"] in {"WEAK", "LOW_RISK_WEAK"}
     assert rows["DANG3"]["class"] == "DANGER"
+    assert "STABLE" + "_WEAK" not in json.dumps(payload)
+
+
+def test_observe_uses_renamed_favorable_class(tmp_path: Path, capsys) -> None:
+    universe = tmp_path / "universe.csv"
+    universe.write_text(
+        "\n".join(
+            [
+                (
+                    "ticker,sector,last_close,avg_volume_brl,trend_score,"
+                    "momentum_score,volatility_pct,atr_pct,liquidity_score,"
+                    "quality_score,news_score,entry,stop,target"
+                ),
+                "FAVR3,utilities,10,100000000,90,90,10,1,90,70,60,10,9,12",
+            ]
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+
+    main(["observe", "--universe", str(universe), "--json"])
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["rows"][0]["class"] == "OBS_FAVORABLE"
+    assert "OBS" + "_READY" not in json.dumps(payload)
 
 
 def test_observe_renders_sector_summary(tmp_path: Path, capsys) -> None:

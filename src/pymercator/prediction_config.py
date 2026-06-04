@@ -4,6 +4,8 @@ import json
 from pathlib import Path
 from typing import Any
 
+from pymercator.config_loader import deep_merge
+
 DEFAULT_OPERATIONAL_CONFIG: dict[str, Any] = {
     "default_engine": "multi_horizon_ridge",
     "per_horizon_engine": "ridge_ensemble",
@@ -104,16 +106,6 @@ def _weight_key(value: str) -> str:
     return f"D{key}" if key.isdigit() else key
 
 
-def _deep_merge(base: dict[str, Any], overlay: dict[str, Any]) -> dict[str, Any]:
-    merged = json.loads(json.dumps(base))
-    for key, value in overlay.items():
-        if isinstance(value, dict) and isinstance(merged.get(key), dict):
-            merged[key] = _deep_merge(merged[key], value)
-        else:
-            merged[key] = value
-    return merged
-
-
 def _legacy_to_structured(payload: dict[str, Any]) -> dict[str, Any]:
     if "operational" in payload:
         return payload
@@ -171,7 +163,7 @@ def load_prediction_config(path: str | Path = "config/prediction.json") -> dict[
     if not isinstance(payload, dict):
         raise ValueError("prediction config must be a JSON object")
 
-    return _deep_merge(DEFAULT_PREDICTION_CONFIG, _legacy_to_structured(payload))
+    return deep_merge(DEFAULT_PREDICTION_CONFIG, _legacy_to_structured(payload))
 
 
 def effective_prediction_config(

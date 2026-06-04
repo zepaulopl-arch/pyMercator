@@ -1,0 +1,30 @@
+{
+  "schema_version": "short_thresholds.v1",
+  "setup": {
+    "min_short_score": 70.0,
+    "strong_short_score": 85.0,
+    "max_trend": 40.0,
+    "max_momentum": 40.0,
+    "sector_weakness_required": false,
+    "risk_off_bonus": true
+  },
+  "risk": {
+    "max_volatility": 55.0,
+    "max_atr": 6.0,
+    "max_gap_risk": 5.0,
+    "max_single_name_exposure_pct": 5.0,
+    "max_total_short_exposure_pct": 15.0
+  },
+  "borrow": {
+    "max_borrow_fee_pct": 5.0,
+    "block_if_cost_unknown": true,
+    "block_if_unavailable": true,
+    "block_if_recall_risk_high": true,
+    "manual_if_squeeze_risk_high": true
+  },
+  "events": {
+    "block_near_earnings_days": 3,
+    "block_near_dividend_days": 3,
+    "block_if_corporate_action": true
+  }
+}

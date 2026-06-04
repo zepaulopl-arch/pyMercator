@@ -1522,25 +1522,6 @@ def _ridge_response_lines(model: dict[str, Any]) -> list[str]:
     ]
 
 
-def _observer_lines(observer: dict[str, Any]) -> list[str]:
-    scores = observer.get("scores", {})
-    weights = observer.get("weights", {})
-    if not isinstance(scores, dict):
-        scores = {}
-    if not isinstance(weights, dict):
-        weights = {}
-    behavior = observer.get("behavior", "-")
-    return [
-        _detail_kv("D5 score", scores.get("D5"), "combined_score"),
-        _detail_kv("D20 score", scores.get("D20"), "combined_score"),
-        _detail_kv("D60 score", scores.get("D60"), "combined_score"),
-        _detail_kv("weights", _format_weights(weights)),
-        _detail_kv("combined_score", observer.get("combined_score"), "combined_score"),
-        _detail_kv("dominant_horizon", observer.get("dominant_horizon", "-")),
-        _detail_kv("behavior", colorize(behavior, behavior)),
-    ]
-
-
 def _horizon_sort_key(key: str) -> int:
     try:
         return int(str(key).upper().removeprefix("D"))

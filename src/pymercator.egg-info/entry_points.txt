@@ -1,2 +1,0 @@
-[console_scripts]
-mercator = pymercator.cli:main

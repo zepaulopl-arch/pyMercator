@@ -150,6 +150,7 @@ def daily_report_to_dict(
         converted_actions.setdefault("schema_version", "position_actions.v1")
         raw["position_actions"] = converted_actions
         raw["exit_book"] = converted_actions.get("exit_book", {})
+        raw["defensive_book"] = converted_actions.get("defensive_book", {})
         raw["short_candidates"] = converted_actions.get("short_candidates", [])
         raw["hedge_candidates"] = converted_actions.get("hedge_candidates", [])
     else:

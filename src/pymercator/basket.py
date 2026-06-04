@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from pymercator.artifact_metadata import artifact_metadata
+from pymercator.manifest import write_json
 from pymercator.terminal_ui import render_table, render_warning_list
 from pymercator.ui import format_kv_section
 
@@ -524,12 +525,6 @@ def _write_csv(output_csv: str | Path, rows: list[dict[str, Any]]) -> None:
         writer.writerows(rows)
 
 
-def _write_json(output_json: str | Path, payload: dict[str, Any]) -> None:
-    output_path = Path(output_json)
-    output_path.parent.mkdir(parents=True, exist_ok=True)
-    output_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-
-
 def _write_txt(output_txt: str | Path, payload: dict[str, Any]) -> None:
     output_path = Path(output_txt)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -647,7 +642,7 @@ def run_daily_basket(
             "runtime": artifact_metadata(),
         }
         _write_csv(output_csv, rows)
-        _write_json(output_json, payload)
+        write_json(output_json, payload)
         _write_txt(output_txt, payload)
         return payload
 
@@ -736,7 +731,7 @@ def run_daily_basket(
     }
 
     _write_csv(output_csv, rows_payload)
-    _write_json(output_json, payload)
+    write_json(output_json, payload)
     _write_txt(output_txt, payload)
 
     return payload

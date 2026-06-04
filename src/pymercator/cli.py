@@ -1,7 +1,6 @@
 ﻿from __future__ import annotations
 
 import argparse
-import json
 import sys
 from pathlib import Path
 from typing import Any
@@ -11,6 +10,7 @@ from pymercator import terminal_ui as ui
 from pymercator.cli_context import resolve_market_context_args
 from pymercator.cli_parsers import (
     add_basket_parser,
+    add_borrow_parser,
     add_context_parser,
     add_observe_parser,
     add_positions_parser,
@@ -47,7 +47,7 @@ class _TrainEnginesAction(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
         setattr(namespace, self.dest, values or "")
-        setattr(namespace, "detail_engines", True)
+        setattr(namespace, "detail_engines", values is None)
 
 
 def _run_sentiment_command(args: argparse.Namespace) -> int:
@@ -92,6 +92,12 @@ def _run_context_command(args: argparse.Namespace) -> int:
     return run_context_command(args)
 
 
+def _run_borrow_command(args: argparse.Namespace) -> int:
+    from pymercator.cli_borrow import run_borrow_command
+
+    return run_borrow_command(args)
+
+
 def _run_legacy_command(args: argparse.Namespace) -> int:
     from pymercator.cli_legacy import run_legacy_command
 
@@ -132,14 +138,6 @@ def _run_scenario_command(args: argparse.Namespace) -> int:
     from pymercator.cli_scenario import run_scenario_command
 
     return run_scenario_command(args)
-
-
-def _parse_csv_arg(value: str) -> list[str]:
-    return [
-        item.strip()
-        for item in str(value or "").split(",")
-        if item.strip()
-    ]
 
 
 def _extract_ui_args(argv: list[str] | None) -> tuple[list[str] | None, str, str, str]:
@@ -533,36 +531,6 @@ def _run_scenario_pack_command(args: argparse.Namespace) -> int:
     return run_scenario_pack_command(args)
 
 
-def _read_json(path: Path) -> dict[str, Any]:
-    return json.loads(path.read_text(encoding="utf-8"))
-
-
-def _pack_top_from_summary(summary: dict[str, Any]) -> dict[str, Any]:
-    scenarios = summary.get("scenarios", [])
-
-    if not scenarios:
-        return {}
-
-    active = next(
-        (
-            scenario
-            for scenario in scenarios
-            if scenario.get("key") == "03_active_agr"
-        ),
-        None,
-    )
-
-    selected = active or scenarios[0]
-    top = selected.get("top", {})
-
-    return {
-        "scenario": selected.get("key", "-"),
-        "ticker": top.get("ticker", "-"),
-        "permission": top.get("permission", "-"),
-        "label": top.get("decision_label", "-"),
-    }
-
-
 def build_parser() -> argparse.ArgumentParser:
         engines_help = _prediction_engines_help()
         train_horizons_help = (
@@ -803,6 +771,7 @@ def build_parser() -> argparse.ArgumentParser:
         add_run_parser(subparsers)
         add_observe_parser(subparsers)
         add_positions_parser(subparsers)
+        add_borrow_parser(subparsers)
 
         lab_short = subparsers.add_parser("lab", help="Run prediction lab (shortcut)")
         lab_short.set_defaults(command="lab")
@@ -1348,6 +1317,9 @@ def main(argv: list[str] | None = None) -> int:
 
         if args.command == "pos":
             return _run_positions_command(args)
+
+        if args.command == "borrow":
+            return _run_borrow_command(args)
 
         if args.command == "lab":
             return _run_short_lab_command(args)

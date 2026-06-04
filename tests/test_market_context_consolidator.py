@@ -30,6 +30,8 @@ def test_market_context_auto_is_used_in_consolidation() -> None:
     assert payload["regime_summary"]["market_trend"] == "DOWN"
     assert payload["equity_indices"]["ibov"]["volatility"] == "HIGH"
     assert payload["context_sources"]["auto"] == "OK"
+    assert "source_diagnostics" in payload
+    assert payload["context_sources"]["bcb"] != "UNKNOWN"
 
 
 def test_market_context_thresholds_are_loaded(tmp_path: Path) -> None:
@@ -111,6 +113,7 @@ def test_write_market_context_consolidates_layers(tmp_path: Path) -> None:
     assert payload["schema_version"] == "market_context.v2"
     assert loaded["schema_version"] == "market_context.v2"
     assert "COPOM" in loaded["headline_tags"]
+    assert "source_diagnostics" in loaded
 
 
 def test_legacy_market_context_is_upgraded_when_loaded(tmp_path: Path) -> None:
