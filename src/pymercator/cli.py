@@ -99,6 +99,12 @@ def _run_db_command(args: argparse.Namespace) -> int:
     return run_db_command(args)
 
 
+def _run_mtm_command(args: argparse.Namespace) -> int:
+    from pymercator.cli_mtm import run_mtm_command
+
+    return run_mtm_command(args)
+
+
 def _run_update_command(args: argparse.Namespace) -> int:
     from pymercator.cli_update import run_update_command
 
@@ -771,6 +777,49 @@ def build_parser() -> argparse.ArgumentParser:
         default_paths = presets_mod.resolve_profile(None).get("paths", {})
         add_basket_parser(subparsers, default_paths=default_paths)
 
+        def add_mtm_parser(name: str, *, alias_of: str = "") -> None:
+            help_text = "Review daily observations against latest local prices"
+            if alias_of:
+                help_text = f"Alias for {alias_of}"
+            mtm_parser = subparsers.add_parser(
+                name,
+                help=help_text,
+                description=(
+                    "Compare daily report observations, executable signals, and blocked setups "
+                    "against the latest local close available in data/prices."
+                ),
+            )
+            mtm_parser.set_defaults(command=name)
+            mtm_parser.add_argument(
+                "--run-dir",
+                required=True,
+                help="Runtime directory containing report_CON.json.",
+            )
+            mtm_parser.add_argument(
+                "--capital",
+                type=float,
+                default=100000.0,
+                help="Capital used for equal-weight hypothetical review. Default: 100000.",
+            )
+            mtm_parser.add_argument(
+                "--mode",
+                default="observation",
+                choices=["observation", "all"],
+                help="Review mode. Default: observation.",
+            )
+            mtm_parser.add_argument("--prices-dir", default="data/prices")
+            mtm_parser.add_argument("--profile", default="CON")
+            mtm_parser.add_argument(
+                "--relevance-pct",
+                type=float,
+                default=0.5,
+                help="Per-position P&L threshold for GOOD_BLOCK/MISSED_OPPORTUNITY. Default: 0.5.",
+            )
+            mtm_parser.add_argument("--json", action="store_true")
+
+        add_mtm_parser("mtm")
+        add_mtm_parser("review", alias_of="mtm")
+
         daily_parser = subparsers.add_parser("daily", help="Run daily report")
         daily_parser.set_defaults(command="daily")
         daily_parser.add_argument("--universe", required=True)
@@ -1134,6 +1183,9 @@ def main(argv: list[str] | None = None) -> int:
 
         if args.command == "basket":
             return _run_basket_command(args)
+
+        if args.command in {"mtm", "review"}:
+            return _run_mtm_command(args)
 
         if args.command == "context":
             return _run_context_command(args)

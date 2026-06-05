@@ -30,6 +30,8 @@ $commands = @(
     @{ Label = "python -m pymercator db sim-last --help"; Args = @("db", "sim-last", "--help") },
     @{ Label = "python -m pymercator observe --help"; Args = @("observe", "--help") },
     @{ Label = "python -m pymercator basket --help"; Args = @("basket", "--help") },
+    @{ Label = "python -m pymercator mtm --help"; Args = @("mtm", "--help") },
+    @{ Label = "python -m pymercator review --help"; Args = @("review", "--help") },
     @{ Label = "python -m pymercator universe --help"; Args = @("universe", "--help") },
     @{ Label = "python -m pymercator scenario --help"; Args = @("scenario", "--help") },
     @{ Label = "python -m pymercator context --help"; Args = @("context", "--help") },

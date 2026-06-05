@@ -9,16 +9,17 @@ Python diretos sao para diagnostico, desenvolvimento ou execucao pontual.
 ## Comandos que o operador precisa decorar
 
 1. `.\scripts\run_daily_signal.ps1`
-2. `.\scripts\run_daily_train.ps1`
-3. `.\scripts\run_weekend_full.ps1`
-4. `python -m pymercator diag`
-5. `python -m pymercator context sources`
+2. `.\scripts\run_daily_review.ps1`
+3. `.\scripts\run_daily_train.ps1`
+4. `.\scripts\run_weekend_full.ps1`
+5. `python -m pymercator diag`
 
 ## Operacao simplificada recomendada
 
 | Rotina | Comando | Classe |
 |---|---|---|
 | Dia normal | `.\scripts\run_daily_signal.ps1` | ESSENCIAL |
+| Fim da tarde | `.\scripts\run_daily_review.ps1` | UTIL |
 | Treino eventual | `.\scripts\run_daily_train.ps1` | ESSENCIAL |
 | Fim de semana | `.\scripts\run_weekend_full.ps1` | ESSENCIAL |
 | Diagnostico rapido | `python -m pymercator diag` | DIAGNOSTICO |
@@ -59,6 +60,47 @@ Exemplos:
 ```powershell
 .\scripts\run_daily_signal.ps1
 .\scripts\run_daily_signal.ps1 -Color
+```
+
+### `scripts/run_daily_review.ps1`
+
+Classe: UTIL.
+
+Finalidade: no fim da tarde, compara observacoes, setups bloqueados e sinais
+executaveis do `report_CON.json` contra os precos locais mais recentes. A
+revisao e mark-to-market hipotetico; nao muda decisao, modelo, basket ou
+execucao.
+
+Quando usar: depois do pregao, para auditar se as observacoes long/short e os
+bloqueios teriam gerado ganho ou perda.
+
+Parametros principais:
+
+| Parametro | Default | Uso |
+|---|---:|---|
+| `-RunDir` | ultimo `runtime/daily_signal_*` | Runtime do sinal diario a revisar. |
+| `-Capital` | `100000` | Capital hipotetico para alocacao equal-weight por bloco. |
+| `-Mode` | `observation` | Modo de revisao. |
+| `-Profile` | `CON` | Perfil do report JSON. |
+| `-PricesDir` | `data/prices` | Diretorio de precos locais. |
+| `-SkipUpdate` | off | Nao tenta atualizar precos antes da revisao. |
+| `-Color` | off | Mantem compatibilidade com a rotina de terminal. |
+
+Outputs principais:
+
+| Arquivo | Descricao |
+|---|---|
+| `runtime/daily_signal_<timestamp>/observation_review.txt` | Tela de revisao financeira |
+| `runtime/daily_signal_<timestamp>/observation_review.csv` | Linhas avaliadas |
+| `runtime/daily_signal_<timestamp>/observation_review.json` | Resultado estruturado |
+| `runtime/daily_signal_<timestamp>/06_observation_review.log` | Log do comando `mtm` |
+
+Exemplos:
+
+```powershell
+.\scripts\run_daily_review.ps1
+.\scripts\run_daily_review.ps1 -RunDir runtime\daily_signal_20260605_160559 -Capital 100000
+.\scripts\run_daily_review.ps1 -SkipUpdate
 ```
 
 ### `scripts/run_daily_train.ps1`
@@ -141,6 +183,8 @@ logs e manifests nao devem conter ANSI.
 | `run` | ESSENCIAL | Rodar decisao operacional por perfil. |
 | `observe` | UTIL | Gerar ranking de observacao, sem compra automatica. |
 | `basket` | UTIL | Criar ou mostrar basket analysis-only. |
+| `mtm` | UTIL | Revisar observacoes e setups contra precos posteriores. |
+| `review` | UTIL | Alias de `mtm`. |
 | `context` | DIAGNOSTICO | Ver, auditar e atualizar contexto de mercado. |
 | `db` | UTIL | Consultar historico SQLite local. |
 | `diag` | DIAGNOSTICO | Verificar ambiente e configuracoes principais. |
@@ -275,6 +319,37 @@ Exemplo:
 ```powershell
 python -m pymercator basket show
 ```
+
+### `python -m pymercator mtm`
+
+Alias: `python -m pymercator review`.
+
+Sintaxe:
+
+```powershell
+python -m pymercator mtm --run-dir runtime\daily_signal_<timestamp> [--capital 100000] [--mode observation]
+```
+
+Uso: revisao financeira pos-sinal. Le `report_CON.json`, compara observacoes,
+sinais executaveis e setups bloqueados contra os precos locais mais recentes e
+salva `observation_review.txt`, `observation_review.csv` e
+`observation_review.json` dentro do proprio runtime.
+
+Defaults importantes:
+
+| Opcao | Default |
+|---|---|
+| `--capital` | `100000` |
+| `--mode` | `observation` |
+| `--prices-dir` | `data/prices` |
+| `--profile` | `CON` |
+| `--relevance-pct` | `0.5` |
+
+Quando usar: no fim da tarde, de preferencia via
+`.\scripts\run_daily_review.ps1`.
+
+Quando nao usar: como entrada de execucao automatica. P&L de observacao e
+hipotetico; bloqueio operacional mantem `real_pnl = 0`.
 
 ## Contexto e banco
 
