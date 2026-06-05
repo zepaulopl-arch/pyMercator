@@ -27,6 +27,7 @@ REVIEW_COLUMNS = [
     "pnl_long",
     "pnl_short",
     "pnl",
+    "sim_pnl",
     "real_pnl",
     "review_status",
     "review_class",
@@ -199,6 +200,14 @@ def _classify_block(direction: str, pnl: float, *, relevance_brl: float) -> str:
     return "NEUTRAL_BLOCK"
 
 
+def _classify_directional(prefix: str, pnl: float, *, relevance_brl: float) -> str:
+    if pnl > relevance_brl:
+        return f"{prefix}_GAIN"
+    if pnl < -relevance_brl:
+        return f"{prefix}_LOSS"
+    return f"{prefix}_FLAT"
+
+
 def _review_row(
     *,
     section: str,
@@ -234,6 +243,7 @@ def _review_row(
         "pnl_long": 0.0,
         "pnl_short": 0.0,
         "pnl": 0.0,
+        "sim_pnl": 0.0,
         "real_pnl": 0.0,
         "review_status": "OK",
         "review_class": "-",
@@ -276,10 +286,29 @@ def _review_row(
             "pnl_long": round(pnl_long, 2),
             "pnl_short": round(pnl_short, 2),
             "pnl": round(pnl, 2),
+            "sim_pnl": round(pnl, 2),
             "real_pnl": round(real_pnl, 2),
         }
     )
-    if section == "blocked_setups":
+    if section in {"long_observation", "short_observation"}:
+        row["review_class"] = _classify_directional(
+            "HYPOTHETICAL",
+            pnl,
+            relevance_brl=relevance_brl,
+        )
+    elif execution == "READY":
+        row["review_class"] = _classify_directional(
+            "EXECUTABLE",
+            pnl,
+            relevance_brl=relevance_brl,
+        )
+    elif execution == "WATCH":
+        row["review_class"] = _classify_directional(
+            "WATCH",
+            pnl,
+            relevance_brl=relevance_brl,
+        )
+    elif execution in {"BLOCKED", "DATA_BLOCKED"}:
         row["review_class"] = _classify_block(
             direction,
             pnl,
@@ -292,9 +321,51 @@ def _allocate(capital: float, count: int) -> float:
     return capital / count if count > 0 else 0.0
 
 
+def _short_candidate_source(payload: dict[str, Any]) -> list[dict[str, Any]]:
+    short_candidates = payload.get("short_candidates", []) or []
+    if short_candidates:
+        return [item for item in short_candidates if isinstance(item, dict)]
+    defensive = payload.get("defensive_book", {}) if isinstance(payload.get("defensive_book"), dict) else {}
+    return [item for item in defensive.get("short_candidates", []) or [] if isinstance(item, dict)]
+
+
 def _build_raw_rows(payload: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
     decisions = payload.get("decisions", []) or []
     decision_by_ticker = _decision_index(payload)
+
+    long_signals: list[dict[str, Any]] = []
+    for item in decisions:
+        if not isinstance(item, dict):
+            continue
+        long_signals.append(
+            {
+                "ticker": _decision_ticker(item),
+                "direction": "LONG",
+                "obs_class": "SIGNAL",
+                "signal": _long_signal(item),
+                "execution": _decision_execution(item),
+                "score": _decision_score(item),
+                "main_reason": _decision_reason(item),
+                "reference_price": _decision_reference_price(item),
+            }
+        )
+
+    short_signals: list[dict[str, Any]] = []
+    for item in _short_candidate_source(payload):
+        execution = _short_execution(item)
+        ticker = _normalize_ticker(item.get("ticker"))
+        short_signals.append(
+            {
+                "ticker": ticker,
+                "direction": "SHORT",
+                "obs_class": _as_text(item.get("class"), "SHORT_SETUP"),
+                "signal": "SELL_SETUP",
+                "execution": execution,
+                "score": _as_float(item.get("score") or item.get("short_score")),
+                "main_reason": _short_reason(item, execution),
+                "reference_price": _decision_reference_price(decision_by_ticker.get(ticker, {})),
+            }
+        )
 
     long_observations: list[dict[str, Any]] = []
     for item in payload.get("observation_candidates", []) or []:
@@ -315,10 +386,7 @@ def _build_raw_rows(payload: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
 
     short_observation_source = payload.get("short_observation_candidates", []) or []
     if not short_observation_source:
-        short_observation_source = payload.get("short_candidates", []) or []
-    if not short_observation_source:
-        defensive = payload.get("defensive_book", {}) if isinstance(payload.get("defensive_book"), dict) else {}
-        short_observation_source = defensive.get("short_candidates", []) or []
+        short_observation_source = _short_candidate_source(payload)
 
     short_observations: list[dict[str, Any]] = []
     for item in short_observation_source:
@@ -340,57 +408,11 @@ def _build_raw_rows(payload: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
             }
         )
 
-    real_trades: list[dict[str, Any]] = []
-    blocked_setups: list[dict[str, Any]] = []
-    for item in decisions:
-        if not isinstance(item, dict):
-            continue
-        execution = _decision_execution(item)
-        ticker = _decision_ticker(item)
-        row = {
-            "ticker": ticker,
-            "direction": "LONG",
-            "obs_class": "SIGNAL",
-            "signal": _long_signal(item),
-            "execution": execution,
-            "score": _decision_score(item),
-            "main_reason": _decision_reason(item),
-            "reference_price": _decision_reference_price(item),
-        }
-        if execution == "READY":
-            real_trades.append(row)
-        elif execution in {"BLOCKED", "DATA_BLOCKED"}:
-            blocked_setups.append(row)
-
-    short_candidates = payload.get("short_candidates", []) or []
-    defensive = payload.get("defensive_book", {}) if isinstance(payload.get("defensive_book"), dict) else {}
-    if not short_candidates:
-        short_candidates = defensive.get("short_candidates", []) or []
-    for item in short_candidates:
-        if not isinstance(item, dict):
-            continue
-        execution = _short_execution(item)
-        ticker = _normalize_ticker(item.get("ticker"))
-        row = {
-            "ticker": ticker,
-            "direction": "SHORT",
-            "obs_class": _as_text(item.get("class"), "SHORT_SETUP"),
-            "signal": "SELL_SETUP",
-            "execution": execution,
-            "score": _as_float(item.get("score") or item.get("short_score")),
-            "main_reason": _short_reason(item, execution),
-            "reference_price": _decision_reference_price(decision_by_ticker.get(ticker, {})),
-        }
-        if execution == "READY" and bool(item.get("executable")):
-            real_trades.append(row)
-        elif execution in {"BLOCKED", "DATA_BLOCKED"}:
-            blocked_setups.append(row)
-
     return {
+        "long_signals": long_signals,
+        "short_signals": short_signals,
         "long_observation": long_observations,
         "short_observation": short_observations,
-        "real_trades": real_trades,
-        "blocked_setups": blocked_setups,
     }
 
 
@@ -400,6 +422,11 @@ def _section_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
     total_pnl = sum(_as_float(row.get("pnl")) for row in valid)
     real_pnl = sum(_as_float(row.get("real_pnl")) for row in valid)
     returns = [_as_float(row.get("return_pct")) for row in valid if row.get("return_pct") is not None]
+    long_items = sum(1 for row in rows if row.get("direction") == "LONG")
+    short_items = sum(1 for row in rows if row.get("direction") == "SHORT")
+    ready_items = sum(1 for row in rows if row.get("execution") == "READY")
+    watch_items = sum(1 for row in rows if row.get("execution") == "WATCH")
+    blocked_items = sum(1 for row in rows if row.get("execution") in {"BLOCKED", "DATA_BLOCKED"})
     classes: dict[str, int] = {}
     for row in rows:
         klass = _as_text(row.get("review_class"))
@@ -408,9 +435,15 @@ def _section_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "items": len(rows),
         "valid_items": len(valid),
         "data_missing": len(rows) - len(valid),
+        "long_items": long_items,
+        "short_items": short_items,
+        "ready_items": ready_items,
+        "watch_items": watch_items,
+        "blocked_items": blocked_items,
         "hit_rate": round((len(wins) / len(valid)) * 100.0, 2) if valid else 0.0,
         "avg_return_pct": round(sum(returns) / len(returns), 4) if returns else 0.0,
         "pnl_total": round(total_pnl, 2),
+        "sim_pnl": round(total_pnl, 2),
         "real_pnl": round(real_pnl, 2),
         "classes": classes,
     }
@@ -429,17 +462,19 @@ def _render_pct(value: Any) -> str:
 def _render_rows(title: str, rows: list[dict[str, Any]], limit: int = 12) -> list[str]:
     lines = [title, "-" * 80]
     summary = _section_summary(rows)
+    sim_pnl = _render_money(summary["sim_pnl"])
+    real_pnl = _render_money(summary["real_pnl"])
     lines.append(
-        "items {items} | valid {valid_items} | hit_rate {hit_rate:.2f}% | "
-        "avg_return {avg_return_pct:.2f}% | pnl R$ {pnl}".format(
-            pnl=_render_money(summary["pnl_total"]),
-            **summary,
-        )
+        f"items {summary['items']} | long {summary['long_items']} | "
+        f"short {summary['short_items']} | ready {summary['ready_items']} | "
+        f"watch {summary['watch_items']} | hit_rate {summary['hit_rate']:.2f}% | "
+        f"avg_return {summary['avg_return_pct']:.2f}% | "
+        f"sim_pnl R$ {sim_pnl} | real_pnl R$ {real_pnl}"
     )
     lines.append("")
     lines.append(
-        f"{'#':>2}  {'TICKER':<8} {'DIR':<5} {'EXECUTION':<12} "
-        f"{'RET':>8} {'PNL':>12} {'CLASS':<18} MAIN_REASON"
+        f"{'#':>2}  {'TICKER':<8} {'DIR':<5} {'SIGNAL':<10} {'EXEC':<10} "
+        f"{'SCORE':>6} {'RET':>8} {'SIM_PNL':>11} {'REAL_PNL':>11} {'STATUS':<12} MAIN_REASON"
     )
     if not rows:
         lines.append("status             EMPTY")
@@ -448,8 +483,10 @@ def _render_rows(title: str, rows: list[dict[str, Any]], limit: int = 12) -> lis
     for index, row in enumerate(rows[:limit], start=1):
         lines.append(
             f"{index:>2}  {row['ticker']:<8} {row['direction']:<5} "
-            f"{row['execution']:<12} {_render_pct(row.get('return_pct')):>8} "
-            f"{_render_money(row.get('pnl')):>12} {row['review_class']:<18} "
+            f"{row['signal']:<10} {row['execution']:<10} "
+            f"{_as_float(row.get('score')):>6.1f} {_render_pct(row.get('return_pct')):>8} "
+            f"{_render_money(row.get('sim_pnl')):>11} "
+            f"{_render_money(row.get('real_pnl')):>11} {row['review_status']:<12} "
             f"{row['main_reason']}"
         )
     if len(rows) > limit:
@@ -460,36 +497,41 @@ def _render_rows(title: str, rows: list[dict[str, Any]], limit: int = 12) -> lis
 def render_observation_review(payload: dict[str, Any]) -> str:
     summaries = payload["summary"]
     lines = [
-        "AURUM OBSERVATION REVIEW",
+        "AURUM MTM REVIEW",
         "-" * 80,
         f"run_dir            {payload['run_dir']}",
         f"capital            R$ {_render_money(payload['capital'])}",
         f"mode               {payload['mode']}",
+        "note               SIM_PNL simulates every listed row; REAL_PNL is only executable READY/OK",
         "note               observation P&L is hypothetical; it is not a real trade record",
         "",
-        *_render_rows(
-            "LONG OBSERVATION RESULT",
-            payload["sections"]["long_observation"]["rows"],
-        ),
+        "REAL SIGNALS - WATCH OR BETTER",
+        "-" * 80,
+        "scope              long and short setups with execution WATCH or READY",
         "",
         *_render_rows(
-            "SHORT OBSERVATION RESULT",
-            payload["sections"]["short_observation"]["rows"],
+            "REAL SIGNAL RESULT (LONG + SHORT)",
+            payload["sections"]["real_watch_or_better"]["rows"],
         ),
         "",
+        "OBSERVATION TOP 10",
+        "-" * 80,
+        "scope              top 10 long plus top 10 short observations; radar only, not execution",
+        "",
         *_render_rows(
-            "BLOCKED SIGNAL REVIEW",
-            payload["sections"]["blocked_setups"]["rows"],
+            "OBSERVATION RESULT (TOP 10 LONG + TOP 10 SHORT)",
+            payload["sections"]["observation_top10"]["rows"],
+            limit=20,
         ),
         "",
         "FINAL REVIEW",
         "-" * 80,
-        f"real_pnl           R$ {_render_money(summaries['real_trades']['real_pnl'])}",
-        f"long_observation   R$ {_render_money(summaries['long_observation']['pnl_total'])}",
-        f"short_observation  R$ {_render_money(summaries['short_observation']['pnl_total'])}",
-        f"blocked_setups     R$ {_render_money(summaries['blocked_setups']['pnl_total'])}",
-        f"good_blocks        {summaries['blocked_setups']['classes'].get('GOOD_BLOCK', 0)}",
-        f"missed_opportunity {summaries['blocked_setups']['classes'].get('MISSED_OPPORTUNITY', 0)}",
+        f"real_signals       {summaries['real_watch_or_better']['items']} watch_or_better",
+        f"real_signals_sim   R$ {_render_money(summaries['real_watch_or_better']['sim_pnl'])}",
+        f"real_signals_pnl   R$ {_render_money(summaries['real_watch_or_better']['real_pnl'])}",
+        f"observation_top10  {summaries['observation_top10']['items']} candidates",
+        f"observation_hyp    R$ {_render_money(summaries['observation_top10']['sim_pnl'])}",
+        f"all_obs_hyp        R$ {_render_money(summaries['hypothetical_observation']['sim_pnl'])}",
         f"data_missing       {payload['data_missing']}",
         "",
         "FILES",
@@ -513,7 +555,7 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
 def run_observation_review(
     *,
     run_dir: str | Path,
-    capital: float = 100000.0,
+    capital: float = 10000.0,
     mode: str = "observation",
     prices_dir: str | Path = "data/prices",
     profile: str = "CON",
@@ -548,7 +590,7 @@ def run_observation_review(
                 signal_date=signal_date,
                 prices_dir=prices_dir,
                 notional=notional,
-                hypothetical=section != "real_trades",
+                hypothetical=section in {"long_observation", "short_observation"},
                 relevance_brl=relevance_brl,
             )
             section_rows.append(row)
@@ -559,6 +601,26 @@ def run_observation_review(
         rows_by_section.get("long_observation", [])
         + rows_by_section.get("short_observation", [])
     )
+    signal_rows = rows_by_section.get("long_signals", []) + rows_by_section.get("short_signals", [])
+    real_watch_rows = [
+        row for row in signal_rows
+        if row.get("execution") in {"READY", "WATCH"}
+    ]
+    blocked_rows = [
+        row for row in signal_rows
+        if row.get("execution") in {"BLOCKED", "DATA_BLOCKED"}
+    ]
+    top_long_observations = sorted(
+        rows_by_section.get("long_observation", []),
+        key=lambda row: _as_float(row.get("score")),
+        reverse=True,
+    )[:10]
+    top_short_observations = sorted(
+        rows_by_section.get("short_observation", []),
+        key=lambda row: _as_float(row.get("score")),
+        reverse=True,
+    )[:10]
+    observation_top10 = top_long_observations + top_short_observations
 
     txt_path = run_path / "observation_review.txt"
     csv_path = run_path / "observation_review.csv"
@@ -597,7 +659,27 @@ def run_observation_review(
         "summary": _section_summary(hypothetical_rows),
         "rows": hypothetical_rows,
     }
+    review["sections"]["signal_review"] = {
+        "summary": _section_summary(signal_rows),
+        "rows": signal_rows,
+    }
+    review["sections"]["real_watch_or_better"] = {
+        "summary": _section_summary(real_watch_rows),
+        "rows": real_watch_rows,
+    }
+    review["sections"]["blocked_setups"] = {
+        "summary": _section_summary(blocked_rows),
+        "rows": blocked_rows,
+    }
+    review["sections"]["observation_top10"] = {
+        "summary": _section_summary(observation_top10),
+        "rows": observation_top10,
+    }
     review["summary"]["hypothetical_observation"] = _section_summary(hypothetical_rows)
+    review["summary"]["signal_review"] = _section_summary(signal_rows)
+    review["summary"]["real_watch_or_better"] = _section_summary(real_watch_rows)
+    review["summary"]["blocked_setups"] = _section_summary(blocked_rows)
+    review["summary"]["observation_top10"] = _section_summary(observation_top10)
 
     _write_csv(csv_path, all_rows)
     json_path.write_text(

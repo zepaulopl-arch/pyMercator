@@ -9,7 +9,7 @@ Python diretos sao para diagnostico, desenvolvimento ou execucao pontual.
 ## Comandos que o operador precisa decorar
 
 1. `.\scripts\run_daily_signal.ps1`
-2. `.\scripts\run_daily_review.ps1`
+2. `.\scripts\review.ps1 --capital 10000`
 3. `.\scripts\run_daily_train.ps1`
 4. `.\scripts\run_weekend_full.ps1`
 5. `python -m pymercator diag`
@@ -19,7 +19,7 @@ Python diretos sao para diagnostico, desenvolvimento ou execucao pontual.
 | Rotina | Comando | Classe |
 |---|---|---|
 | Dia normal | `.\scripts\run_daily_signal.ps1` | ESSENCIAL |
-| Fim da tarde | `.\scripts\run_daily_review.ps1` | UTIL |
+| Fim da tarde | `.\scripts\review.ps1 --capital 10000` | UTIL |
 | Treino eventual | `.\scripts\run_daily_train.ps1` | ESSENCIAL |
 | Fim de semana | `.\scripts\run_weekend_full.ps1` | ESSENCIAL |
 | Diagnostico rapido | `python -m pymercator diag` | DIAGNOSTICO |
@@ -62,14 +62,14 @@ Exemplos:
 .\scripts\run_daily_signal.ps1 -Color
 ```
 
-### `scripts/run_daily_review.ps1`
+### `scripts/review.ps1`
 
 Classe: UTIL.
 
-Finalidade: no fim da tarde, compara observacoes, setups bloqueados e sinais
-executaveis do `report_CON.json` contra os precos locais mais recentes. A
-revisao e mark-to-market hipotetico; nao muda decisao, modelo, basket ou
-execucao.
+Finalidade: atalho simples de fim da tarde. Usa automaticamente o ultimo
+`runtime/daily_signal_*`, roda a revisao MTM e mostra dois blocos:
+`REAL SIGNALS - WATCH OR BETTER` e `OBSERVATION TOP 10` com top 10 long mais
+top 10 short.
 
 Quando usar: depois do pregao, para auditar se as observacoes long/short e os
 bloqueios teriam gerado ganho ou perda.
@@ -79,7 +79,7 @@ Parametros principais:
 | Parametro | Default | Uso |
 |---|---:|---|
 | `-RunDir` | ultimo `runtime/daily_signal_*` | Runtime do sinal diario a revisar. |
-| `-Capital` | `100000` | Capital hipotetico para alocacao equal-weight por bloco. |
+| `-Capital` | `10000` | Capital hipotetico para alocacao equal-weight por bloco. |
 | `-Mode` | `observation` | Modo de revisao. |
 | `-Profile` | `CON` | Perfil do report JSON. |
 | `-PricesDir` | `data/prices` | Diretorio de precos locais. |
@@ -98,10 +98,17 @@ Outputs principais:
 Exemplos:
 
 ```powershell
-.\scripts\run_daily_review.ps1
-.\scripts\run_daily_review.ps1 -RunDir runtime\daily_signal_20260605_160559 -Capital 100000
-.\scripts\run_daily_review.ps1 -SkipUpdate
+.\scripts\review.ps1 --capital 10000
+.\scripts\review.ps1 -RunDir runtime\daily_signal_20260605_160559 -Capital 10000
+.\scripts\review.ps1 -SkipUpdate
 ```
+
+### `scripts/run_daily_review.ps1`
+
+Classe: UTIL.
+
+Finalidade: implementacao completa usada por `scripts/review.ps1`. Pode ser
+chamada diretamente, mas a rotina simples recomendada e `review.ps1`.
 
 ### `scripts/run_daily_train.ps1`
 
@@ -327,7 +334,7 @@ Alias: `python -m pymercator review`.
 Sintaxe:
 
 ```powershell
-python -m pymercator mtm --run-dir runtime\daily_signal_<timestamp> [--capital 100000] [--mode observation]
+python -m pymercator mtm --run-dir runtime\daily_signal_<timestamp> [--capital 10000] [--mode observation]
 ```
 
 Uso: revisao financeira pos-sinal. Le `report_CON.json`, compara observacoes,
@@ -339,14 +346,14 @@ Defaults importantes:
 
 | Opcao | Default |
 |---|---|
-| `--capital` | `100000` |
+| `--capital` | `10000` |
 | `--mode` | `observation` |
 | `--prices-dir` | `data/prices` |
 | `--profile` | `CON` |
 | `--relevance-pct` | `0.5` |
 
 Quando usar: no fim da tarde, de preferencia via
-`.\scripts\run_daily_review.ps1`.
+`.\scripts\review.ps1 --capital 10000`.
 
 Quando nao usar: como entrada de execucao automatica. P&L de observacao e
 hipotetico; bloqueio operacional mantem `real_pnl = 0`.

@@ -53,6 +53,7 @@ def _write_report(run_dir: Path) -> None:
         "decisions": [
             _decision("LONG1", 100.0, "BLOCKED", ["MODEL_WEAK", "VOL_HIGH"]),
             _decision("LONG2", 50.0, "READY", []),
+            _decision("LONG3", 40.0, "WATCH", ["MANUAL_REVIEW"]),
         ],
         "observation_candidates": [
             {
@@ -87,6 +88,16 @@ def _write_report(run_dir: Path) -> None:
                 "permission": "SHORT_BLOCKED",
                 "short_permission": "SHORT_BLOCKED",
                 "executable": False,
+            },
+            {
+                "ticker": "SHORT2",
+                "score": 80.0,
+                "class": "SHORT_SETUP",
+                "reason": "weak trend",
+                "borrow_status": "OK",
+                "permission": "READY",
+                "short_permission": "SHORT_READY",
+                "executable": True,
             }
         ],
     }
@@ -104,7 +115,9 @@ def test_observation_review_writes_outputs_and_separates_real_from_hypothetical(
     _write_report(run_dir)
     _write_price(prices_dir / "LONG1.SA.csv", 100.0, 110.0)
     _write_price(prices_dir / "LONG2.SA.csv", 50.0, 55.0)
+    _write_price(prices_dir / "LONG3.SA.csv", 40.0, 44.0)
     _write_price(prices_dir / "SHORT1.SA.csv", 20.0, 18.0)
+    _write_price(prices_dir / "SHORT2.SA.csv", 30.0, 27.0)
 
     review = run_observation_review(
         run_dir=run_dir,
@@ -115,9 +128,14 @@ def test_observation_review_writes_outputs_and_separates_real_from_hypothetical(
     assert (run_dir / "observation_review.txt").exists()
     assert (run_dir / "observation_review.csv").exists()
     assert (run_dir / "observation_review.json").exists()
-    assert review["summary"]["real_trades"]["real_pnl"] == 10000.0
+    assert review["summary"]["real_watch_or_better"]["items"] == 3
+    assert review["summary"]["real_watch_or_better"]["ready_items"] == 2
+    assert review["summary"]["real_watch_or_better"]["watch_items"] == 1
+    assert review["summary"]["real_watch_or_better"]["real_pnl"] > 0
+    assert review["summary"]["real_watch_or_better"]["sim_pnl"] > review["summary"]["real_watch_or_better"]["real_pnl"]
     assert review["summary"]["long_observation"]["pnl_total"] == 10000.0
     assert review["summary"]["short_observation"]["pnl_total"] == 10000.0
+    assert review["summary"]["observation_top10"]["items"] == 2
     assert review["summary"]["hypothetical_observation"]["pnl_total"] == 20000.0
     assert review["summary"]["blocked_setups"]["real_pnl"] == 0.0
     assert review["summary"]["blocked_setups"]["classes"]["MISSED_OPPORTUNITY"] == 2
@@ -129,7 +147,9 @@ def test_mtm_cli_renders_required_sections(tmp_path: Path, capsys) -> None:
     _write_report(run_dir)
     _write_price(prices_dir / "LONG1.SA.csv", 100.0, 90.0)
     _write_price(prices_dir / "LONG2.SA.csv", 50.0, 55.0)
+    _write_price(prices_dir / "LONG3.SA.csv", 40.0, 44.0)
     _write_price(prices_dir / "SHORT1.SA.csv", 20.0, 25.0)
+    _write_price(prices_dir / "SHORT2.SA.csv", 30.0, 27.0)
 
     exit_code = main(
         [
@@ -145,13 +165,15 @@ def test_mtm_cli_renders_required_sections(tmp_path: Path, capsys) -> None:
 
     output = capsys.readouterr().out
     assert exit_code == 0
-    assert "LONG OBSERVATION RESULT" in output
-    assert "SHORT OBSERVATION RESULT" in output
-    assert "BLOCKED SIGNAL REVIEW" in output
+    assert "REAL SIGNALS - WATCH OR BETTER" in output
+    assert "REAL SIGNAL RESULT (LONG + SHORT)" in output
+    assert "OBSERVATION TOP 10" in output
+    assert "OBSERVATION RESULT (TOP 10 LONG + TOP 10 SHORT)" in output
+    assert "LONG SIGNAL RESULT" not in output
+    assert "SHORT SIGNAL RESULT" not in output
     assert "FINAL REVIEW" in output
     assert "observation P&L is hypothetical" in output
-    assert "real_pnl" in output
-    assert "GOOD_BLOCK" in output
+    assert "REAL_PNL" in output
 
 
 def test_review_marks_missing_price_data(tmp_path: Path) -> None:

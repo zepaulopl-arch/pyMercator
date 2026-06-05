@@ -798,8 +798,8 @@ def build_parser() -> argparse.ArgumentParser:
             mtm_parser.add_argument(
                 "--capital",
                 type=float,
-                default=100000.0,
-                help="Capital used for equal-weight hypothetical review. Default: 100000.",
+                default=10000.0,
+                help="Capital used for equal-weight hypothetical review. Default: 10000.",
             )
             mtm_parser.add_argument(
                 "--mode",

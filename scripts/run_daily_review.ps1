@@ -1,7 +1,7 @@
 param(
     [string]$PY = "",
     [string]$RunDir = "",
-    [double]$Capital = 100000.0,
+    [double]$Capital = 10000.0,
     [ValidateSet("observation", "all")]
     [string]$Mode = "observation",
     [string]$Profile = "CON",

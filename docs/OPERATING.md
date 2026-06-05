@@ -11,7 +11,7 @@ Dia normal:
 Fim da tarde:
 
 ```powershell
-.\scripts\run_daily_review.ps1
+.\scripts\review.ps1 --capital 10000
 ```
 
 Treino eventual:
@@ -31,7 +31,7 @@ Fim de semana:
 ```powershell
 python -m pymercator diag
 python -m pymercator context sources
-python -m pymercator mtm --run-dir runtime\daily_signal_<timestamp> --capital 100000
+python -m pymercator mtm --run-dir runtime\daily_signal_<timestamp> --capital 10000
 python -m pymercator db status
 python -m pymercator db last-run
 python -m pytest tests -q
