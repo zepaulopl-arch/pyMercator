@@ -249,6 +249,16 @@ def test_weak_asset_without_position_generates_short_blocked_not_sell() -> None:
     assert payload["short_book"][0]["borrow_status"] == "BORROW_DATA_MISSING"
     assert payload["short_book"][0]["event_status"] == "EVENT_UNKNOWN"
     assert payload["short_candidates"][0]["ticker"] == "WEAK3"
+    assert payload["short_candidates"][0]["bias"] == "SHORT"
+    assert payload["short_candidates"][0]["class"] == "SHORT_SETUP"
+    assert payload["short_candidates"][0]["executable"] is False
+    assert payload["short_observation_candidates"]
+    assert payload["short_observation_candidates"][0]["ticker"] == "WEAK3"
+    assert payload["short_observation_candidates"][0]["bias"] == "SHORT"
+    assert payload["short_observation_candidates"][0]["class"] == "SHORT_SETUP"
+    assert payload["short_observation_candidates"][0]["executable"] is False
+    assert payload["short_observation_candidates"][0]["borrow_status"] == "BORROW_DATA_MISSING"
+    assert payload["short_observation_candidates"][0]["permission"] == "SHORT_BLOCKED"
     assert payload["defensive_book"]["defensive_mode"] == "active"
     assert payload["defensive_book"]["long_action"] == "blocked"
     assert payload["defensive_book"]["short_candidates"][0]["ticker"] == "WEAK3"
@@ -442,12 +452,15 @@ def test_run_json_contains_position_action_books_and_keeps_long_basket_blocked(
     payload = json.loads(report_json.read_text(encoding="utf-8"))
     assert payload["exit_book"]["message"] == "no open positions loaded."
     assert payload["short_candidates"][0]["ticker"] == "WEAK3"
+    assert payload["short_observation_candidates"][0]["ticker"] == "WEAK3"
+    assert payload["short_observation_candidates"][0]["bias"] == "SHORT"
+    assert payload["short_observation_candidates"][0]["executable"] is False
     assert payload["defensive_book"]["defensive_mode"] == "active"
     assert payload["position_actions"]["short_book"][0]["action"] == "SHORT_BLOCKED"
     assert payload["hedge_candidates"]
 
     summary = run_mod.render_run_summary(result)
-    assert "OBSERVATION CANDIDATES" in summary
+    assert "LONG OBSERVATION CANDIDATES" in summary
     assert "EXIT BOOK" in summary
     assert "status             EMPTY" in summary
     assert "reason             no open positions loaded" in summary

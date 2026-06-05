@@ -166,10 +166,26 @@ def test_ops_common_renders_daily_signal_screen(tmp_path: Path):
                 "short_candidates": [
                     {
                         "ticker": "BBB3",
+                        "bias": "SHORT",
                         "score": 92.9,
+                        "class": "SHORT_SETUP",
                         "short_setup_status": "SHORT_SETUP",
                         "borrow_status": "BORROW_DATA_MISSING",
                         "short_permission": "SHORT_BLOCKED",
+                        "executable": False,
+                        "reason": "weak trend/mom + risk-off",
+                    }
+                ],
+                "short_observation_candidates": [
+                    {
+                        "ticker": "BBB3",
+                        "bias": "SHORT",
+                        "score": 92.9,
+                        "class": "SHORT_SETUP",
+                        "reason": "weak trend/mom + risk-off",
+                        "executable": False,
+                        "borrow_status": "BORROW_DATA_MISSING",
+                        "permission": "SHORT_BLOCKED",
                     }
                 ],
                 "hedge_candidates": [
@@ -182,9 +198,12 @@ def test_ops_common_renders_daily_signal_screen(tmp_path: Path):
                 "observation_candidates": [
                     {
                         "ticker": "CCC3",
+                        "bias": "LONG",
+                        "score": 75.0,
                         "obs_index": 75.0,
                         "class": "OBS_READY",
                         "reason": "strong trend/mom",
+                        "executable": False,
                     }
                 ],
             }
@@ -237,7 +256,10 @@ def test_ops_common_renders_daily_signal_screen(tmp_path: Path):
     assert "risk-off + downtrend" in output
     assert "CASH" in output
     assert "PREFERRED" in output
-    assert "OBSERVATION" in output
+    assert "LONG OBSERVATION" in output
+    assert "SHORT OBSERVATION" in output
+    assert "\nOBSERVATION\n" not in output
+    assert "weak trend/mom + risk-off" in output
     assert "BASKET" in output
     assert "FINAL DECISION" in output
     assert "NO LONG TRADE." in output

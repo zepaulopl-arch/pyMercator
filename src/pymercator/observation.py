@@ -279,9 +279,12 @@ def _observation_rows(
         )
         row = {
             "ticker": asset.ticker,
+            "bias": "LONG",
             "sector": asset.sector,
             "obs_index": round(obs_index, 2),
+            "score": round(obs_index, 2),
             "class": klass,
+            "executable": False,
             "trend": round(trend, 2),
             "momentum": round(momentum, 2),
             "volatility": round(asset.volatility_pct, 2),
@@ -535,7 +538,7 @@ def render_observation_candidates(candidates: list[dict[str, Any]]) -> list[str]
     lines = [
         "NO ACTIONABLE ASSETS",
         "",
-        "OBSERVATION CANDIDATES",
+        "LONG OBSERVATION CANDIDATES",
         muted_line(),
         f"{'#':>2} {'TICKER':<8} {'OBS':>6} {'CLASS':<14} REASON",
     ]

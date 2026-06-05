@@ -152,9 +152,14 @@ def daily_report_to_dict(
         raw["exit_book"] = converted_actions.get("exit_book", {})
         raw["defensive_book"] = converted_actions.get("defensive_book", {})
         raw["short_candidates"] = converted_actions.get("short_candidates", [])
+        raw["short_observation_candidates"] = converted_actions.get(
+            "short_observation_candidates",
+            [],
+        )
         raw["hedge_candidates"] = converted_actions.get("hedge_candidates", [])
     else:
         raw["position_actions"] = {"schema_version": "position_actions.v1"}
+        raw["short_observation_candidates"] = []
 
     for index, decision in enumerate(report.decisions):
         ticker = decision.asset.ticker

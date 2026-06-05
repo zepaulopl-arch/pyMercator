@@ -50,6 +50,7 @@ def test_daily_report_contract_contains_required_sections(tmp_path: Path):
         "blockers",
         "basket",
         "observation_candidates",
+        "short_observation_candidates",
         "position_actions",
         "market_context",
     ):

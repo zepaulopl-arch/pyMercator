@@ -493,6 +493,10 @@ def run_decision_flow(
         "exit_book": position_actions.get("exit_book", {}),
         "defensive_book": position_actions.get("defensive_book", {}),
         "short_candidates": position_actions.get("short_candidates", []),
+        "short_observation_candidates": position_actions.get(
+            "short_observation_candidates",
+            [],
+        ),
         "hedge_candidates": position_actions.get("hedge_candidates", []),
         "report": daily_report_to_dict(
             report,

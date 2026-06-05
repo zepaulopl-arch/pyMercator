@@ -808,6 +808,11 @@ def test_cli_run_blocks_actionable_when_model_quality_is_weak(
     assert result["basket"]["assets"] == 0
     assert result["observation_candidates"]
     assert result["observation_candidates"][0]["ticker"] == "PRIO3"
+    assert result["observation_candidates"][0]["bias"] == "LONG"
+    assert result["observation_candidates"][0]["score"] == result["observation_candidates"][0]["obs_index"]
+    assert result["observation_candidates"][0]["executable"] is False
+    assert result["observation_candidates"][0]["class"] != "READY"
+    assert "short_observation_candidates" in result
     assert result["blockers"] == {"MODEL_WEAK": 1}
     assert result["top"][0]["guard"] == "MODEL_WEAK"
     assert result["top"][0]["guard"] != "BLOCKED"
@@ -823,6 +828,9 @@ def test_cli_run_blocks_actionable_when_model_quality_is_weak(
     report_payload = json.loads((tmp_path / "report.json").read_text(encoding="utf-8"))
     assert report_payload["observation_candidates"]
     assert report_payload["observation_candidates"][0]["ticker"] == "PRIO3"
+    assert report_payload["observation_candidates"][0]["bias"] == "LONG"
+    assert report_payload["observation_candidates"][0]["executable"] is False
+    assert "short_observation_candidates" in report_payload
     assert report_payload["basket"]["status"] == "BLOCKED"
     assert report_payload["basket"]["assets"] == 0
 
@@ -836,7 +844,7 @@ def test_cli_run_blocks_actionable_when_model_quality_is_weak(
     assert "BLOCKERS" in summary
     assert "MODEL_WEAK           1" in summary
     assert "NO ACTIONABLE ASSETS" in summary
-    assert "OBSERVATION CANDIDATES" in summary
+    assert "LONG OBSERVATION CANDIDATES" in summary
     assert "PRIO3" in summary
     assert summary.count("TOP") == 1
 

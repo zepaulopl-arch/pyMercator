@@ -10,19 +10,61 @@ $script:PYMERCATOR_RUNTIME_DIR = ""
 $script:PYMERCATOR_MANIFEST_PATH = ""
 $script:PYMERCATOR_MANIFEST = $null
 $script:PYMERCATOR_SCRIPT_NAME = ""
+$script:PYMERCATOR_VT_ATTEMPTED = $false
+
+function Enable-PyMercatorVirtualTerminal {
+    if ($script:PYMERCATOR_VT_ATTEMPTED) {
+        return
+    }
+    $script:PYMERCATOR_VT_ATTEMPTED = $true
+
+    $source = @"
+using System;
+using System.Runtime.InteropServices;
+
+public static class PyMercatorConsoleMode {
+    [DllImport("kernel32.dll")]
+    private static extern IntPtr GetStdHandle(int nStdHandle);
+
+    [DllImport("kernel32.dll")]
+    private static extern bool GetConsoleMode(IntPtr hConsoleHandle, out int lpMode);
+
+    [DllImport("kernel32.dll")]
+    private static extern bool SetConsoleMode(IntPtr hConsoleHandle, int dwMode);
+
+    public static void EnableVirtualTerminal() {
+        IntPtr handle = GetStdHandle(-11);
+        int mode;
+        if (GetConsoleMode(handle, out mode)) {
+            SetConsoleMode(handle, mode | 0x0004);
+        }
+    }
+}
+"@
+    try {
+        Add-Type -TypeDefinition $source -ErrorAction SilentlyContinue | Out-Null
+        [PyMercatorConsoleMode]::EnableVirtualTerminal()
+    } catch {
+        return
+    }
+}
 
 function Set-PyMercatorColorMode {
     param([bool]$Enabled = $false)
 
     if ($Enabled) {
-        $script:PYMERCATOR_COLOR = "auto"
+        $script:PYMERCATOR_COLOR = "always"
         Remove-Item Env:\NO_COLOR -ErrorAction SilentlyContinue
         Remove-Item Env:\PY_COLORS -ErrorAction SilentlyContinue
+        $env:FORCE_COLOR = "1"
         $env:CLICOLOR = "1"
+        $env:TERM = "xterm-256color"
+        Enable-PyMercatorVirtualTerminal
     } else {
         $script:PYMERCATOR_COLOR = "never"
         $env:NO_COLOR = "1"
         $env:PY_COLORS = "0"
+        Remove-Item Env:\FORCE_COLOR -ErrorAction SilentlyContinue
         $env:CLICOLOR = "0"
     }
 }
@@ -721,6 +763,10 @@ function Show-PyMercatorSignals {
         $hedgeCandidates = @(Get-PyMercatorDailyObjectValue -Object $defensiveBook -Name "hedge_candidates" -Default @())
     }
     $observationCandidates = @(Get-PyMercatorDailyObjectValue -Object $payload -Name "observation_candidates" -Default @())
+    $shortObservationCandidates = @(Get-PyMercatorDailyObjectValue -Object $payload -Name "short_observation_candidates" -Default @())
+    if ($shortObservationCandidates.Count -eq 0) {
+        $shortObservationCandidates = $shortCandidates
+    }
     $decisions = @(Get-PyMercatorDailyObjectValue -Object $payload -Name "decisions" -Default @())
 
     $profile = Get-PyMercatorDailyObjectValue -Object $payload -Name "profile" -Default "CON"
@@ -866,11 +912,12 @@ function Show-PyMercatorSignals {
     }
 
     Write-Host ""
-    Write-Host "OBSERVATION"
+    Write-Host "LONG OBSERVATION"
     Write-Host "--------------------------------------------------------------------------------"
     Write-Host ("{0,2}  {1,-8} {2,6}  {3,-14} {4}" -f "#", "TICKER", "OBS", "CLASS", "REASON")
     if ($observationCandidates.Count -eq 0) {
-        Write-Host "No observation candidates."
+        Write-PyMercatorSummaryValue -Label "status" -Value "EMPTY"
+        Write-PyMercatorSummaryValue -Label "reason" -Value "no long observation candidates"
     } else {
         $index = 1
         foreach ($row in @($observationCandidates | Select-Object -First $ObservationLimit)) {
@@ -882,6 +929,31 @@ function Show-PyMercatorSignals {
                 (Format-PyMercatorSignalNumber -Value (Get-PyMercatorDailyObjectValue -Object $row -Name "obs_index" -Default "-") -Decimals 1),
                 (Format-PyMercatorSignalCell -Text $klass -Width 14 -Status $klass),
                 (Get-PyMercatorDailyObjectValue -Object $row -Name "reason" -Default "-")
+            )
+            $index += 1
+        }
+    }
+
+    Write-Host ""
+    Write-Host "SHORT OBSERVATION"
+    Write-Host "--------------------------------------------------------------------------------"
+    Write-Host ("{0,2}  {1,-8} {2,6}  {3,-12} {4}" -f "#", "TICKER", "SCORE", "CLASS", "REASON")
+    if ($shortObservationCandidates.Count -eq 0) {
+        Write-PyMercatorSummaryValue -Label "status" -Value "EMPTY"
+        Write-PyMercatorSummaryValue -Label "reason" -Value "no short observation candidates"
+    } else {
+        $index = 1
+        foreach ($row in @($shortObservationCandidates | Select-Object -First $ObservationLimit)) {
+            $klass = Normalize-PyMercatorSignalStatus -Value (Get-PyMercatorDailyObjectValue -Object $row -Name "class" -Default (Get-PyMercatorDailyObjectValue -Object $row -Name "short_setup_status" -Default "SHORT_SETUP"))
+            $reason = Get-PyMercatorDailyObjectValue -Object $row -Name "reason" -Default (Get-PyMercatorDailyObjectValue -Object $row -Name "setup_reason" -Default "-")
+            $score = Get-PyMercatorDailyObjectValue -Object $row -Name "score" -Default (Get-PyMercatorDailyObjectValue -Object $row -Name "short_score" -Default "-")
+            Write-Host (
+                "{0,2}  {1,-8} {2,6}  {3} {4}" -f
+                $index,
+                (Get-PyMercatorDailyObjectValue -Object $row -Name "ticker" -Default "-"),
+                (Format-PyMercatorSignalNumber -Value $score -Decimals 1),
+                (Format-PyMercatorSignalCell -Text $klass -Width 12 -Status $klass),
+                $reason
             )
             $index += 1
         }

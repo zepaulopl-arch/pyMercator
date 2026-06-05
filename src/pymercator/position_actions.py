@@ -759,10 +759,13 @@ def _short_row(
 
     row = {
         "ticker": decision.asset.ticker,
+        "bias": "SHORT",
         "direction": "SHORT",
         "trade_mode": str(policy.get("allowed_trade_modes", ["SWING"])[0] or "SWING"),
         "short_score": round(score, 2),
         "score": round(score, 2),
+        "class": setup_status,
+        "executable": False,
         "short_setup_status": setup_status,
         "short_risk_status": risk_status,
         "borrow_status": borrow_status,
@@ -787,6 +790,24 @@ def _short_row(
     if borrow_record:
         row["borrow"] = dict(borrow_record)
     return row
+
+
+def short_observation_candidates(short_candidates: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    rows: list[dict[str, Any]] = []
+    for row in short_candidates:
+        rows.append(
+            {
+                "ticker": row.get("ticker", "-"),
+                "bias": "SHORT",
+                "score": row.get("short_score", row.get("score", 0.0)),
+                "class": row.get("short_setup_status", "SHORT_SETUP"),
+                "reason": row.get("setup_reason") or row.get("reason", "-"),
+                "executable": False,
+                "borrow_status": row.get("borrow_status", "-"),
+                "permission": row.get("short_permission", row.get("permission", "-")),
+            }
+        )
+    return rows
 
 
 def build_short_book(
@@ -874,6 +895,7 @@ def build_position_actions(
         config=config,
         borrow_records=borrow_records,
     )
+    short_observation = short_observation_candidates(short_book["short_candidates"])
     sector_scores = _sector_weakness(report)
     defensive_book = build_defensive_book(
         report,
@@ -911,6 +933,7 @@ def build_position_actions(
         "defensive_book": defensive_book,
         "short_book": short_book["rows"],
         "short_candidates": short_book["short_candidates"],
+        "short_observation_candidates": short_observation,
         "hedge_candidates": defensive_book["hedge_candidates"],
         "equity_hedge_candidates": short_book["hedge_candidates"],
         "short_execution": "OBSERVATIONAL_ONLY",
