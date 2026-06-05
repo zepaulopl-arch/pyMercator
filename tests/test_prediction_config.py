@@ -14,6 +14,20 @@ def test_repository_prediction_config_declares_operational_default_engine():
     assert payload["autotune"]["audit"] is True
     assert payload["experimental_engines"]["enabled"] is False
     assert "histgradientboosting" in payload["experimental_engines"]["include"]
+    assert payload["operational"]["base_engines"] == [
+        "extratrees",
+        "randomforest",
+        "gradientboosting",
+    ]
+    assert list(payload["available_engines"]) == [
+        "extratrees",
+        "randomforest",
+        "gradientboosting",
+        "histgradientboosting",
+        "logistic_elasticnet",
+        "sgd_logloss_calibrated",
+        "adaboost",
+    ]
 
 
 def test_effective_prediction_config_exposes_operational_engines(tmp_path):

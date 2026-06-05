@@ -34,11 +34,16 @@ def _fake_lab_factory(
         return {
             "observations": observations,
             "accuracy": accuracy,
+            "balanced_accuracy": accuracy,
             "precision": 0.56,
             "recall": 0.57,
+            "auc": 0.58,
+            "brier_score": 0.24,
+            "edge": round(accuracy - 0.5, 6),
             "mae_return": 0.018,
             "target_up_rate": 0.52,
             "predicted_up_rate": 0.49,
+            "calibration_error": 0.04,
             "true_positive": 7,
             "true_negative": 6,
             "false_positive": 3,
@@ -501,6 +506,57 @@ def test_cli_train_details_with_engine_values_stays_summary_only(
         "extratrees",
         "randomforest",
         "gradientboosting",
+    ]
+
+
+def test_cli_train_accepts_histgradientboosting_as_experimental_engine(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+):
+    import pymercator.cli_train as train_mod
+
+    matrix, prices_dir, dataset, evaluation = _write_train_inputs(tmp_path)
+    calls: list[dict] = []
+    monkeypatch.setattr(train_mod, "run_prediction_lab", _fake_lab_factory(calls))
+
+    exit_code = main(
+        [
+            "train",
+            "--matrix",
+            str(matrix),
+            "--prices-dir",
+            str(prices_dir),
+            "--dataset-output",
+            str(dataset),
+            "--evaluation-output",
+            str(evaluation),
+            "--min-train-rows",
+            "2",
+            "--details",
+            "--engines",
+            "extratrees,randomforest,gradientboosting,histgradientboosting",
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert exit_code == 0
+    assert "PYMERCATOR TRAIN DETAIL" in output
+    assert "GLOBAL SUMMARY" in output
+    assert calls[0]["base_engines"] == [
+        "extratrees",
+        "randomforest",
+        "gradientboosting",
+        "histgradientboosting",
+    ]
+    payload = json.loads(evaluation.read_text(encoding="utf-8"))
+    assert payload["experimental"] is True
+    assert payload["operational"] is False
+    assert payload["base_engines"] == [
+        "extratrees",
+        "randomforest",
+        "gradientboosting",
+        "histgradientboosting",
     ]
 
 
@@ -1170,10 +1226,100 @@ def test_cli_train_benchmark_engines_writes_json_without_changing_config(
     payload = json.loads(output.read_text(encoding="utf-8"))
     assert payload["schema_version"] == "engine_benchmark.v1"
     assert payload["operational_config_changed"] is False
-    assert "histgradientboosting" in payload["engines"]
-    lightgbm = next(row for row in payload["rows"] if row["engine"] == "lightgbm")
-    assert lightgbm["status"] == "NOT_AVAILABLE"
+    assert payload["engines"] == [
+        "extratrees",
+        "randomforest",
+        "gradientboosting",
+        "histgradientboosting",
+        "logistic_elasticnet",
+        "sgd_logloss_calibrated",
+        "adaboost",
+    ]
+    assert "lightgbm" not in payload["engines"]
+    assert "BRIER" in rendered
+    assert "logistic_elasticnet" in rendered
+    assert "sgd_logloss_calibrated" in rendered
+    assert "adaboost" in rendered
+    hist = next(row for row in payload["rows"] if row["engine"] == "histgradientboosting")
+    assert "brier_score" in hist
+    assert "ridge_weight" in hist
     assert Path("config/prediction.json").read_text(encoding="utf-8") == before_config
+
+
+def test_cli_train_benchmark_marks_failed_engine_and_continues(
+    tmp_path: Path,
+    monkeypatch,
+):
+    import pymercator.cli_train as train_mod
+
+    matrix, prices_dir, dataset, evaluation = _write_train_inputs(tmp_path)
+    output = tmp_path / "latest_engine_benchmark.json"
+
+    def fake_lab(**kwargs):
+        evaluation_output = Path(kwargs["evaluation_output"])
+        dataset_output = Path(kwargs["dataset_output"])
+        evaluation_output.parent.mkdir(parents=True, exist_ok=True)
+        dataset_output.parent.mkdir(parents=True, exist_ok=True)
+        dataset_output.write_text("date,ticker\n2025-01-01,TCK001\n", encoding="utf-8")
+        base_engines = list(kwargs.get("base_engines") or [])
+        base_metrics = {engine: rich_metrics(0.55) for engine in base_engines}
+        engine_status = {engine: "OK" for engine in base_engines}
+        engine_status["adaboost"] = "FAILED"
+        evaluation_payload = {
+            "engine_status": engine_status,
+            "base_metrics": base_metrics,
+            "ridge_coefficients": {
+                "weights": {engine: 1.0 / len(base_engines) for engine in base_engines}
+            },
+            "autotune": {
+                "by_engine": [
+                    {"engine": engine, "time_seconds": 0.01}
+                    for engine in base_engines
+                ]
+            },
+        }
+        return {"dataset": {"rows": 1}, "evaluation": evaluation_payload}
+
+    def rich_metrics(accuracy: float) -> dict[str, object]:
+        return {
+            "accuracy": accuracy,
+            "balanced_accuracy": accuracy,
+            "auc": 0.58,
+            "brier_score": 0.24,
+            "false_positive_rate": 0.2,
+            "false_negative_rate": 0.3,
+            "predicted_up_rate": 0.5,
+            "target_up_rate": 0.5,
+            "calibration_error": 0.04,
+        }
+
+    monkeypatch.setattr(train_mod, "run_prediction_lab", fake_lab)
+
+    assert main(
+        [
+            "train",
+            "benchmark-engines",
+            "--matrix",
+            str(matrix),
+            "--prices-dir",
+            str(prices_dir),
+            "--dataset-output",
+            str(dataset),
+            "--evaluation-output",
+            str(evaluation),
+            "--min-train-rows",
+            "2",
+            "--benchmark-output",
+            str(output),
+        ]
+    ) == 0
+
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    adaboost = next(row for row in payload["rows"] if row["engine"] == "adaboost")
+    extratrees = next(row for row in payload["rows"] if row["engine"] == "extratrees")
+    assert adaboost["status"] == "FAIL"
+    assert adaboost["keep"] == "NO"
+    assert extratrees["status"] == "OK"
 
 
 def test_cli_train_rejects_sklearn_as_engine(tmp_path: Path, capsys):

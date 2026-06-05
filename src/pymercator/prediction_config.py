@@ -51,12 +51,28 @@ DEFAULT_AUTOTUNE_AUDIT_CONFIG: dict[str, Any] = {
 
 DEFAULT_EXPERIMENTAL_ENGINES_CONFIG: dict[str, Any] = {
     "enabled": False,
-    "include": ["histgradientboosting"],
-    "optional": ["lightgbm"],
+    "include": [
+        "histgradientboosting",
+        "logistic_elasticnet",
+        "sgd_logloss_calibrated",
+        "adaboost",
+    ],
+    "optional": [],
+}
+
+DEFAULT_AVAILABLE_ENGINES_CONFIG: dict[str, Any] = {
+    "extratrees": {},
+    "randomforest": {},
+    "gradientboosting": {},
+    "histgradientboosting": {},
+    "logistic_elasticnet": {},
+    "sgd_logloss_calibrated": {},
+    "adaboost": {},
 }
 
 DEFAULT_PREDICTION_CONFIG: dict[str, Any] = {
     "operational": DEFAULT_OPERATIONAL_CONFIG,
+    "available_engines": DEFAULT_AVAILABLE_ENGINES_CONFIG,
     "experimental": DEFAULT_EXPERIMENTAL_CONFIG,
     "autotune": DEFAULT_AUTOTUNE_AUDIT_CONFIG,
     "experimental_engines": DEFAULT_EXPERIMENTAL_ENGINES_CONFIG,

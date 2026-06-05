@@ -10,6 +10,7 @@ from typing import Any
 try:
     from sklearn.calibration import CalibratedClassifierCV
     from sklearn.ensemble import (
+        AdaBoostClassifier,
         ExtraTreesClassifier,
         ExtraTreesRegressor,
         GradientBoostingClassifier,
@@ -19,11 +20,15 @@ try:
         RandomForestClassifier,
         RandomForestRegressor,
     )
+    from sklearn.linear_model import LogisticRegression, SGDClassifier
     from sklearn.metrics import mean_absolute_error
     from sklearn.model_selection import TimeSeriesSplit
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import StandardScaler
 
     SKLEARN_AVAILABLE = True
 except Exception:
+    AdaBoostClassifier = None
     CalibratedClassifierCV = None
     ExtraTreesClassifier = None
     ExtraTreesRegressor = None
@@ -31,8 +36,12 @@ except Exception:
     GradientBoostingRegressor = None
     HistGradientBoostingClassifier = None
     HistGradientBoostingRegressor = None
+    LogisticRegression = None
+    Pipeline = None
     RandomForestClassifier = None
     RandomForestRegressor = None
+    SGDClassifier = None
+    StandardScaler = None
     TimeSeriesSplit = None
     mean_absolute_error = None
     SKLEARN_AVAILABLE = False
@@ -65,7 +74,20 @@ except Exception:
 
 BASELINE_ENGINES = ["rolling_majority"]
 LEGACY_BASE_ENGINES = ["extratrees", "randomforest", "gradientboosting"]
-EXPERIMENTAL_BASE_ENGINES = ["histgradientboosting", "lightgbm"]
+EXPERIMENTAL_BASE_ENGINES = [
+    "histgradientboosting",
+    "logistic_elasticnet",
+    "sgd_logloss_calibrated",
+    "adaboost",
+    "lightgbm",
+]
+SKLEARN_MODERN_ENGINES = [
+    "histgradientboosting",
+    "logistic_elasticnet",
+    "sgd_logloss_calibrated",
+    "adaboost",
+]
+ALL_BASE_ENGINES = [*LEGACY_BASE_ENGINES, *EXPERIMENTAL_BASE_ENGINES]
 ARBITER_ENGINES = ["ridge_ensemble"]
 VALID_PREDICTION_ENGINES = [
     *BASELINE_ENGINES,
@@ -508,6 +530,79 @@ def probability_distribution(probabilities: list[float]) -> dict[str, int]:
     return buckets
 
 
+def brier_score(actual_up: list[int], probabilities: list[float]) -> float:
+    if not actual_up or len(actual_up) != len(probabilities):
+        return 0.0
+    return round(
+        sum(
+            (_clip_probability(probability) - (1.0 if int(actual) else 0.0)) ** 2
+            for actual, probability in zip(actual_up, probabilities, strict=True)
+        )
+        / len(actual_up),
+        6,
+    )
+
+
+def roc_auc(actual_up: list[int], probabilities: list[float]) -> float | None:
+    if not actual_up or len(actual_up) != len(probabilities):
+        return None
+    positives = sum(1 for value in actual_up if int(value) == 1)
+    negatives = len(actual_up) - positives
+    if positives == 0 or negatives == 0:
+        return None
+
+    pairs = sorted(
+        (
+            (_clip_probability(probability), int(actual))
+            for actual, probability in zip(actual_up, probabilities, strict=True)
+        ),
+        key=lambda item: item[0],
+    )
+    rank = 1
+    positive_rank_sum = 0.0
+    index = 0
+    while index < len(pairs):
+        end = index + 1
+        while end < len(pairs) and pairs[end][0] == pairs[index][0]:
+            end += 1
+        average_rank = (rank + rank + (end - index) - 1) / 2.0
+        positive_rank_sum += average_rank * sum(item[1] for item in pairs[index:end])
+        rank += end - index
+        index = end
+
+    auc = (positive_rank_sum - positives * (positives + 1) / 2.0) / (
+        positives * negatives
+    )
+    return round(auc, 6)
+
+
+def calibration_error(
+    actual_up: list[int],
+    probabilities: list[float],
+    *,
+    bins: int = 10,
+) -> float:
+    if not actual_up or len(actual_up) != len(probabilities):
+        return 0.0
+    total = len(actual_up)
+    error = 0.0
+    for bucket in range(max(1, int(bins))):
+        lower = bucket / bins
+        upper = (bucket + 1) / bins
+        selected = [
+            (actual, _clip_probability(probability))
+            for actual, probability in zip(actual_up, probabilities, strict=True)
+            if (lower <= _clip_probability(probability) < upper)
+            or (bucket == bins - 1 and _clip_probability(probability) == 1.0)
+        ]
+        if not selected:
+            continue
+        actual_rate = sum(int(actual) for actual, _probability in selected) / len(selected)
+        probability_mean = sum(probability for _actual, probability in selected) / len(selected)
+        error += (len(selected) / total) * abs(actual_rate - probability_mean)
+    return round(error, 6)
+
+
 def apply_consensus_guard(
     predictions: dict[str, float],
     *,
@@ -599,6 +694,87 @@ class StableRidgeArbiter:
         )
 
 
+class ProbabilityReturnAdapter:
+    def __init__(
+        self,
+        classifier: Any,
+        *,
+        calibrated: bool = False,
+        method: str = "sigmoid",
+        cv: int = 3,
+    ):
+        self.classifier = classifier
+        self.calibrated = bool(calibrated)
+        self.method = method
+        self.cv = max(2, int(cv))
+        self.model: Any = None
+        self.classes_: list[Any] = []
+
+    def _fit_model(self, x_rows: list[list[float]], y_classes: list[int]) -> Any:
+        if not self.calibrated:
+            self.classifier.fit(x_rows, y_classes)
+            return self.classifier
+
+        if CalibratedClassifierCV is None:
+            raise RuntimeError("CalibratedClassifierCV is not available")
+
+        class_counts = {0: y_classes.count(0), 1: y_classes.count(1)}
+        min_class_count = min(class_counts.values())
+        if min_class_count < 2:
+            raise RuntimeError("calibration requires at least 2 rows per class")
+        folds = min(self.cv, min_class_count)
+        try:
+            calibrated = CalibratedClassifierCV(
+                estimator=self.classifier,
+                method=self.method,
+                cv=folds,
+            )
+        except TypeError:
+            calibrated = CalibratedClassifierCV(
+                base_estimator=self.classifier,
+                method=self.method,
+                cv=folds,
+            )
+        calibrated.fit(x_rows, y_classes)
+        return calibrated
+
+    def fit(self, x_rows: list[list[float]], y_values: list[float]) -> "ProbabilityReturnAdapter":
+        y_classes = [1 if float(value) > 0 else 0 for value in y_values]
+        if len(set(y_classes)) < 2:
+            raise RuntimeError("classifier engine requires both target classes")
+        self.model = self._fit_model(x_rows, y_classes)
+        self.classes_ = list(getattr(self.model, "classes_", []))
+        return self
+
+    def predict_proba(self, x_rows: list[list[float]]) -> Any:
+        if self.model is None or not hasattr(self.model, "predict_proba"):
+            raise RuntimeError("classifier engine is not fitted")
+        return self.model.predict_proba(x_rows)
+
+    def predict(self, x_rows: list[list[float]]) -> list[float]:
+        probabilities = self.predict_proba(x_rows)
+        classes = list(getattr(self.model, "classes_", self.classes_))
+        index = classes.index(1) if 1 in classes else 1
+        values: list[float] = []
+        for row_probabilities in probabilities:
+            selected_index = index if len(row_probabilities) > index else 0
+            probability = _clip_probability(float(row_probabilities[selected_index]))
+            values.append(_clip_return_value((probability - 0.5) * 2.0))
+        return values
+
+
+def _with_random_state(params: dict[str, Any]) -> dict[str, Any]:
+    resolved = dict(params)
+    resolved.setdefault("random_state", 42)
+    return resolved
+
+
+def _sklearn_pipeline(model: Any) -> Any:
+    if Pipeline is None or StandardScaler is None:
+        return None
+    return Pipeline([("scaler", StandardScaler()), ("model", model)])
+
+
 def _engine_defaults(engine: str) -> dict[str, Any]:
     if engine == "xgb":
         return {
@@ -643,10 +819,41 @@ def _engine_defaults(engine: str) -> dict[str, Any]:
 
     if engine == "histgradientboosting":
         return {
-            "max_iter": 80,
+            "max_iter": 200,
+            "learning_rate": 0.03,
             "max_leaf_nodes": 31,
-            "learning_rate": 0.06,
-            "l2_regularization": 0.0,
+            "l2_regularization": 0.1,
+            "early_stopping": "auto",
+            "random_state": 42,
+        }
+
+    if engine == "logistic_elasticnet":
+        return {
+            "penalty": "elasticnet",
+            "solver": "saga",
+            "l1_ratio": 0.15,
+            "C": 0.5,
+            "max_iter": 3000,
+            "class_weight": "balanced",
+            "random_state": 42,
+        }
+
+    if engine == "sgd_logloss_calibrated":
+        return {
+            "loss": "log_loss",
+            "penalty": "elasticnet",
+            "alpha": 0.0005,
+            "l1_ratio": 0.15,
+            "max_iter": 3000,
+            "class_weight": "balanced",
+            "random_state": 42,
+        }
+
+    if engine == "adaboost":
+        return {
+            "n_estimators": 100,
+            "learning_rate": 0.03,
+            "random_state": 42,
         }
 
     if engine == "lightgbm":
@@ -659,6 +866,25 @@ def _engine_defaults(engine: str) -> dict[str, Any]:
         }
 
     raise ValueError(f"Unknown legacy engine: {engine}")
+
+
+def _make_modern_classifier(engine: str, params: dict[str, Any]) -> Any:
+    if engine == "logistic_elasticnet":
+        if not SKLEARN_AVAILABLE or LogisticRegression is None:
+            return None
+        return _sklearn_pipeline(LogisticRegression(**_with_random_state(params)))
+
+    if engine == "sgd_logloss_calibrated":
+        if not SKLEARN_AVAILABLE or SGDClassifier is None:
+            return None
+        return _sklearn_pipeline(SGDClassifier(**_with_random_state(params)))
+
+    if engine == "adaboost":
+        if not SKLEARN_AVAILABLE or AdaBoostClassifier is None:
+            return None
+        return AdaBoostClassifier(**_with_random_state(params))
+
+    return None
 
 
 def _make_model(
@@ -722,9 +948,17 @@ def _make_model(
         if not SKLEARN_AVAILABLE or HistGradientBoostingRegressor is None:
             return None
 
-        return HistGradientBoostingRegressor(
-            **params,
-            random_state=42,
+        return HistGradientBoostingRegressor(**_with_random_state(params))
+
+    if engine in {"logistic_elasticnet", "sgd_logloss_calibrated", "adaboost"}:
+        classifier = _make_modern_classifier(engine, params)
+        if classifier is None:
+            return None
+        return ProbabilityReturnAdapter(
+            classifier,
+            calibrated=engine == "sgd_logloss_calibrated",
+            method="sigmoid",
+            cv=3,
         )
 
     if engine == "lightgbm":
@@ -779,10 +1013,10 @@ def _make_classifier(
         if not SKLEARN_AVAILABLE or HistGradientBoostingClassifier is None:
             return None
 
-        return HistGradientBoostingClassifier(
-            **params,
-            random_state=42,
-        )
+        return HistGradientBoostingClassifier(**_with_random_state(params))
+
+    if engine in {"logistic_elasticnet", "sgd_logloss_calibrated", "adaboost"}:
+        return _make_modern_classifier(engine, params)
 
     if engine == "lightgbm":
         if not LIGHTGBM_AVAILABLE or LGBMClassifier is None:
@@ -1366,15 +1600,20 @@ def metric_report(
 
     precision_den = tp + fp
     recall_den = tp + fn
+    specificity_den = tn + fp
     predicted_up_rate = sum(predictions_up) / total
     quality_status = _quality_status_from_up_rate(predicted_up_rate)
+    recall = tp / recall_den if recall_den else 0.0
+    specificity = tn / specificity_den if specificity_den else 0.0
 
     report: dict[str, Any] = {
         "observations": total,
         "accuracy": round((tp + tn) / total, 4),
+        "balanced_accuracy": round((recall + specificity) / 2.0, 4),
         "precision": round(tp / precision_den, 4) if precision_den else 0.0,
-        "recall": round(tp / recall_den, 4) if recall_den else 0.0,
+        "recall": round(recall, 4),
         "mae_return": round(mae, 4),
+        "edge": round(((tp + tn) / total) - 0.5, 6),
         "target_up_rate": round(sum(actual_up) / total, 4),
         "predicted_up_rate": round(predicted_up_rate, 4),
         "mean_predicted_return": round(sum(predictions_return) / total, 4),
@@ -1407,8 +1646,14 @@ def metric_report(
     if threshold_tuning:
         report["threshold_tuning"] = dict(threshold_tuning)
     if probabilities_up is not None:
-        report["calibrated_probability_stats"] = probability_stats(probabilities_up)
-        report["probability_distribution"] = probability_distribution(probabilities_up)
+        clipped_probabilities = [_clip_probability(value) for value in probabilities_up]
+        report["calibrated_probability_stats"] = probability_stats(clipped_probabilities)
+        report["probability_distribution"] = probability_distribution(clipped_probabilities)
+        report["brier_score"] = brier_score(actual_up, clipped_probabilities)
+        auc = roc_auc(actual_up, clipped_probabilities)
+        if auc is not None:
+            report["auc"] = auc
+        report["calibration_error"] = calibration_error(actual_up, clipped_probabilities)
     if calibration:
         report["calibration"] = dict(calibration)
 
@@ -1432,11 +1677,16 @@ def _zero_metrics() -> dict[str, Any]:
     return {
         "observations": 0,
         "accuracy": 0.0,
+        "balanced_accuracy": 0.0,
         "precision": 0.0,
         "recall": 0.0,
+        "auc": None,
+        "brier_score": 0.0,
+        "edge": 0.0,
         "mae_return": 0.0,
         "target_up_rate": 0.0,
         "predicted_up_rate": 0.0,
+        "calibration_error": 0.0,
         "mean_predicted_return": 0.0,
         "true_positive": 0,
         "true_negative": 0,
@@ -1897,7 +2147,7 @@ def evaluate_legacy_walk_forward(
 
         base_needed = [
             engine
-            for engine in LEGACY_BASE_ENGINES
+            for engine in ALL_BASE_ENGINES
             if engine in selected or uses_ridge_ensemble
         ]
 
@@ -1925,7 +2175,7 @@ def evaluate_legacy_walk_forward(
 
         ridge = StableRidgeArbiter(alpha=1.0)
         ridge_base_engines = [
-            engine for engine in LEGACY_BASE_ENGINES if base_models.get(engine) is not None
+            engine for engine in ALL_BASE_ENGINES if base_models.get(engine) is not None
         ]
 
         if uses_ridge_ensemble and len(ridge_base_engines) >= 2:
@@ -1988,7 +2238,7 @@ def evaluate_legacy_walk_forward(
             }
             guarded = apply_consensus_guard(base_pred)
 
-            for engine in LEGACY_BASE_ENGINES:
+            for engine in ALL_BASE_ENGINES:
                 if engine in tracked_engines:
                     value = guarded.get(engine, 0.0)
                     pred_ret[engine].append(value)
@@ -2000,10 +2250,10 @@ def evaluate_legacy_walk_forward(
                 pred_ret["ridge_ensemble"].append(value)
                 pred_up["ridge_ensemble"].append(1 if value > 0 else 0)
 
-    valid_base_engines = [engine for engine in LEGACY_BASE_ENGINES if engine in base_success]
+    valid_base_engines = [engine for engine in ALL_BASE_ENGINES if engine in base_success]
     failed_engines = [
         engine
-        for engine in LEGACY_BASE_ENGINES
+        for engine in ALL_BASE_ENGINES
         if uses_ridge_ensemble and engine not in valid_base_engines
     ]
 
@@ -2031,12 +2281,17 @@ def evaluate_legacy_walk_forward(
         }
 
     models = {
-        engine: metric_report(
-            rows=evaluation_rows,
-            predictions_up=pred_up[engine],
-            predictions_return=pred_ret[engine],
-            target_up_column=target_up_column,
-            target_return_column=target_return_column,
+        engine: (
+            metric_report(
+                rows=evaluation_rows,
+                predictions_up=pred_up[engine],
+                predictions_return=pred_ret[engine],
+                target_up_column=target_up_column,
+                target_return_column=target_return_column,
+            )
+            if len(pred_up[engine]) == len(evaluation_rows)
+            and len(pred_ret[engine]) == len(evaluation_rows)
+            else _zero_metrics()
         )
         for engine in tracked_engines
     }
@@ -2044,7 +2299,7 @@ def evaluate_legacy_walk_forward(
         engine
         for engine in tracked_engines
         if (
-            engine in LEGACY_BASE_ENGINES
+            engine in ALL_BASE_ENGINES
             and engine_status.get(engine) == "OK"
         )
         or (
@@ -2067,7 +2322,7 @@ def evaluate_legacy_walk_forward(
 
     base_metrics = {
         engine: models.get(engine, {})
-        for engine in LEGACY_BASE_ENGINES
+        for engine in ALL_BASE_ENGINES
         if engine in models
     }
     ensemble_metrics = models.get("ridge_ensemble", {})
@@ -2091,7 +2346,7 @@ def evaluate_legacy_walk_forward(
         "engine_used": engine_used,
         "is_baseline": engine_used in BASELINE_ENGINES,
         "trained_models": trained_models,
-        "base_engines": LEGACY_BASE_ENGINES.copy() if uses_ridge_ensemble else [],
+        "base_engines": base_engine_list.copy() if uses_ridge_ensemble else [],
         "valid_base_engines": valid_base_engines if uses_ridge_ensemble else [],
         "failed_engines": failed_engines if uses_ridge_ensemble else [],
         "meta_model": "ridge" if uses_ridge_ensemble else "",

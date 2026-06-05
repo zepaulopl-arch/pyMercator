@@ -373,8 +373,74 @@ def test_available_engines_exposes_legacy_engines():
     assert "randomforest" in engines
     assert "gradientboosting" in engines
     assert "histgradientboosting" in engines
+    assert "logistic_elasticnet" in engines
+    assert "sgd_logloss_calibrated" in engines
+    assert "adaboost" in engines
     assert "ridge_ensemble" in engines
     assert "sklearn" not in engines
+
+
+def test_modern_sklearn_engines_use_scaling_and_calibration():
+    import pymercator.legacy_prediction_engines as engines_mod
+
+    if not engines_mod.SKLEARN_AVAILABLE:
+        pytest.skip("sklearn not available")
+
+    from sklearn.calibration import CalibratedClassifierCV
+    from sklearn.pipeline import Pipeline
+    from sklearn.preprocessing import StandardScaler
+
+    logistic = engines_mod._make_classifier(
+        "logistic_elasticnet",
+        engines_mod._engine_defaults("logistic_elasticnet"),
+    )
+    assert isinstance(logistic, Pipeline)
+    assert isinstance(logistic.named_steps["scaler"], StandardScaler)
+    assert logistic.named_steps["model"].penalty == "elasticnet"
+
+    sgd = engines_mod._make_classifier(
+        "sgd_logloss_calibrated",
+        engines_mod._engine_defaults("sgd_logloss_calibrated"),
+    )
+    assert isinstance(sgd, Pipeline)
+    assert isinstance(sgd.named_steps["scaler"], StandardScaler)
+    assert sgd.named_steps["model"].loss == "log_loss"
+
+    return_model = engines_mod._make_model(
+        "sgd_logloss_calibrated",
+        engines_mod._engine_defaults("sgd_logloss_calibrated"),
+    )
+    assert isinstance(return_model, engines_mod.ProbabilityReturnAdapter)
+    assert return_model.calibrated is True
+    assert isinstance(return_model.classifier, Pipeline)
+
+    rows = []
+    for index in range(8):
+        rows.append(
+            {
+                "return_1d": index / 100,
+                "return_5d": index / 50,
+                "return_20d": index / 25,
+                "volatility_20d": 0.1,
+                "atr_pct": 0.03,
+                "trend_score": 60 if index % 2 else 40,
+                "momentum_score": 58 if index % 2 else 42,
+                "news_score": 55,
+                "market_trend": "UP",
+                "market_volatility": "NORMAL",
+                "target_up_5d": 1 if index % 2 else 0,
+            }
+        )
+    calibrated, meta = engines_mod.fit_calibrated_legacy_classifier(
+        "sgd_logloss_calibrated",
+        rows,
+        "target_up_5d",
+        params=engines_mod._engine_defaults("sgd_logloss_calibrated"),
+        calibration={"enabled": True, "method": "sigmoid", "cv": 2},
+        n_jobs=1,
+    )
+    assert meta["status"] == "OK"
+    assert isinstance(calibrated, CalibratedClassifierCV)
 
 
 def test_sklearn_library_name_is_not_a_prediction_engine():

@@ -216,7 +216,11 @@ def _prediction_engines_help() -> str:
 
         valid = ", ".join(VALID_PREDICTION_ENGINES)
     except Exception:
-        valid = "rolling_majority, extratrees, randomforest, gradientboosting, ridge_ensemble"
+        valid = (
+            "rolling_majority, extratrees, randomforest, gradientboosting, "
+            "histgradientboosting, logistic_elasticnet, sgd_logloss_calibrated, "
+            "adaboost, ridge_ensemble"
+        )
 
     return f"Prediction engines to run. Valid engines: {valid}"
 
@@ -481,6 +485,10 @@ def _run_short_diag_command(args: argparse.Namespace) -> int:
                 ("extratrees", sklearn_engine_status, sklearn_engine_status),
                 ("randomforest", sklearn_engine_status, sklearn_engine_status),
                 ("gradientboosting", sklearn_engine_status, sklearn_engine_status),
+                ("histgradientboosting", sklearn_engine_status, sklearn_engine_status),
+                ("logistic_elasticnet", sklearn_engine_status, sklearn_engine_status),
+                ("sgd_logloss_calibrated", sklearn_engine_status, sklearn_engine_status),
+                ("adaboost", sklearn_engine_status, sklearn_engine_status),
                 ("ridge", sklearn_engine_status, sklearn_engine_status),
                 ("ridge_ensemble", f"{sklearn_engine_status} per-horizon"),
                 ("multi_horizon_ridge", f"{sklearn_engine_status} default"),
@@ -545,7 +553,9 @@ def build_parser() -> argparse.ArgumentParser:
         )
         train_engines_help = (
             "Base engines for multi_horizon_ridge. Valid: extratrees, "
-            "randomforest, gradientboosting. Baseline: rolling_majority"
+            "randomforest, gradientboosting, histgradientboosting, "
+            "logistic_elasticnet, sgd_logloss_calibrated, adaboost. "
+            "Baseline: rolling_majority"
         )
         train_n_jobs_help = f"Parallel workers. Default: {DEFAULT_TRAIN_N_JOBS}"
         train_min_history_help = (

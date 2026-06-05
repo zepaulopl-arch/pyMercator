@@ -26,6 +26,15 @@
       "threshold_metric": "balanced_accuracy"
     }
   },
+  "available_engines": {
+    "extratrees": {},
+    "randomforest": {},
+    "gradientboosting": {},
+    "histgradientboosting": {},
+    "logistic_elasticnet": {},
+    "sgd_logloss_calibrated": {},
+    "adaboost": {}
+  },
   "experimental": {
     "allow_custom_horizons": false,
     "allow_custom_engines": false,
@@ -41,7 +50,12 @@
   },
   "experimental_engines": {
     "enabled": false,
-    "include": ["histgradientboosting"],
-    "optional": ["lightgbm"]
+    "include": [
+      "histgradientboosting",
+      "logistic_elasticnet",
+      "sgd_logloss_calibrated",
+      "adaboost"
+    ],
+    "optional": []
   }
 }

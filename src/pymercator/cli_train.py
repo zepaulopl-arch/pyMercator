@@ -28,13 +28,27 @@ from pymercator.ui import color_metric, colorize, muted_line, strip_ansi
 ENGINE_ALIASES = {
 }
 
-REAL_ENGINES = {"extratrees", "randomforest", "gradientboosting", "ridge_ensemble"}
+EXPERIMENTAL_ENGINE_NAMES = {
+    "histgradientboosting",
+    "logistic_elasticnet",
+    "sgd_logloss_calibrated",
+    "adaboost",
+}
+REAL_ENGINES = {
+    "extratrees",
+    "randomforest",
+    "gradientboosting",
+    *EXPERIMENTAL_ENGINE_NAMES,
+    "ridge_ensemble",
+}
 BENCHMARK_ENGINES = [
     "extratrees",
     "randomforest",
     "gradientboosting",
     "histgradientboosting",
-    "lightgbm",
+    "logistic_elasticnet",
+    "sgd_logloss_calibrated",
+    "adaboost",
 ]
 BASELINE_ENGINES = {"rolling_majority"}
 PROFILE_IGNORED_WARNING = "WARNING: --profile is ignored by train. Profiles are applied in run."
@@ -876,6 +890,7 @@ def run_train_flow(
     valid_train_engines = REAL_ENGINES | BASELINE_ENGINES
     unknown_engines = [engine for engine in selected_engines if engine not in valid_train_engines]
     if explicit_engines and unknown_engines:
+        valid_text = ", ".join(["rolling_majority", *sorted(REAL_ENGINES)])
         return {
             "command": "train",
             "horizons": selected_horizons,
@@ -883,8 +898,7 @@ def run_train_flow(
             "reason": (
                 "Unknown prediction engines: "
                 f"{', '.join(unknown_engines)}. "
-                "Valid train engines: rolling_majority, extratrees, "
-                "randomforest, gradientboosting, ridge_ensemble"
+                f"Valid train engines: {valid_text}"
             ),
             "files": files,
         }
@@ -903,6 +917,9 @@ def run_train_flow(
             for engine in selected_engines
             if engine in REAL_ENGINES and engine != "ridge_ensemble"
         ] or selected_base_engines
+
+    if any(engine in EXPERIMENTAL_ENGINE_NAMES for engine in selected_base_engines):
+        is_experimental = True
 
     observer_config = config.get("observer", {})
     if not is_experimental and not baseline_requested:
@@ -2553,9 +2570,9 @@ def _load_train_detail_payload(path: str | Path, fallback: dict[str, Any]) -> di
 
 
 def _engine_available_for_benchmark(engine: str) -> bool:
-    if engine == "lightgbm":
-        return bool(LIGHTGBM_AVAILABLE)
-    return bool(SKLEARN_AVAILABLE)
+    if engine in BENCHMARK_ENGINES:
+        return bool(SKLEARN_AVAILABLE)
+    return False
 
 
 def _benchmark_keep(row: dict[str, Any]) -> str:
@@ -2571,13 +2588,13 @@ def render_engine_benchmark(payload: dict[str, Any]) -> str:
         muted_line(),
         (
             f"{'ENGINE':<22} {'D5_EDGE':>8} {'D20_EDGE':>8} {'D60_EDGE':>8} "
-            f"{'AVG_EDGE':>9} {'FPR':>7} {'TIME':>8} {'KEEP':>6}"
+            f"{'AVG_EDGE':>9} {'FPR':>7} {'BRIER':>7} {'TIME':>8} {'KEEP':>6}"
         ),
     ]
     for row in rows:
-        if row.get("status") == "NOT_AVAILABLE":
+        if row.get("status") in {"NOT_AVAILABLE", "FAIL"}:
             lines.append(
-                f"{row.get('engine', '-'):<22} {'NOT_AVAILABLE':>42} {'NO':>6}"
+                f"{row.get('engine', '-'):<22} {row.get('status', '-'):>42} {'NO':>6}"
             )
             continue
         lines.append(
@@ -2587,6 +2604,7 @@ def render_engine_benchmark(payload: dict[str, Any]) -> str:
             f"{_format_compact_decimal(row.get('D60_edge'), 4, sign=True):>8} "
             f"{_format_compact_decimal(row.get('avg_edge'), 4, sign=True):>9} "
             f"{_format_compact_decimal(row.get('fpr'), 4):>7} "
+            f"{_format_compact_decimal(row.get('brier_score'), 4):>7} "
             f"{_format_duration(row.get('time_seconds', 0)):>8} "
             f"{row.get('keep', '-'):<6}"
         )
@@ -2627,7 +2645,7 @@ def run_train_benchmark_engines(args: Any) -> int:
         engine: {
             "engine": engine,
             "status": "OK" if engine in available_engines else "NOT_AVAILABLE",
-            "reason": "" if engine in available_engines else "optional engine not installed",
+            "reason": "" if engine in available_engines else "sklearn engine not available",
             "time_seconds": 0.0,
         }
         for engine in BENCHMARK_ENGINES
@@ -2654,20 +2672,49 @@ def run_train_benchmark_engines(args: Any) -> int:
                 )
                 evaluation = payload.get("evaluation", {})
                 metrics_by_engine = evaluation.get("base_metrics", {})
+                engine_status = evaluation.get("engine_status", {})
+                ridge_weights = (
+                    evaluation.get("ridge_coefficients", {})
+                    .get("weights", {})
+                    if isinstance(evaluation.get("ridge_coefficients", {}), dict)
+                    else {}
+                )
                 timing_by_engine = {
                     str(item.get("engine")): float(item.get("time_seconds", 0.0) or 0.0)
                     for item in evaluation.get("autotune", {}).get("by_engine", [])
                     if isinstance(item, dict)
                 }
                 for engine in available_engines:
+                    status = str(engine_status.get(engine, "OK"))
+                    if status not in {"", "OK"}:
+                        rows_by_engine[engine]["status"] = "FAIL"
+                        rows_by_engine[engine]["reason"] = status
                     metrics = metrics_by_engine.get(engine, {})
                     if not isinstance(metrics, dict):
                         metrics = {}
                     accuracy = _as_float(metrics.get("accuracy"), 0.0)
                     rows_by_engine[engine][f"{key}_edge"] = round(accuracy - 0.5, 6)
+                    for field, metric_key in [
+                        ("_accuracy", "accuracy"),
+                        ("_balanced_accuracy", "balanced_accuracy"),
+                        ("_auc", "auc"),
+                        ("_brier_scores", "brier_score"),
+                        ("_fnrs", "false_negative_rate"),
+                        ("_p_ups", "predicted_up_rate"),
+                        ("_target_rates", "target_up_rate"),
+                        ("_calibration_errors", "calibration_error"),
+                    ]:
+                        value = _as_optional_float(metrics.get(metric_key))
+                        if value is not None:
+                            rows_by_engine[engine].setdefault(field, []).append(value)
                     rows_by_engine[engine].setdefault("_fprs", []).append(
                         _as_float(metrics.get("false_positive_rate"), 0.0)
                     )
+                    ridge_weight = _as_optional_float(ridge_weights.get(engine))
+                    if ridge_weight is not None:
+                        rows_by_engine[engine].setdefault("_ridge_weights", []).append(
+                            ridge_weight
+                        )
                     rows_by_engine[engine]["time_seconds"] += timing_by_engine.get(engine, 0.0)
             except Exception as exc:
                 for engine in available_engines:
@@ -2675,6 +2722,17 @@ def run_train_benchmark_engines(args: Any) -> int:
                     rows_by_engine[engine]["reason"] = str(exc)
 
     rows: list[dict[str, Any]] = []
+    average_fields = {
+        "_accuracy": "accuracy",
+        "_balanced_accuracy": "balanced_accuracy",
+        "_auc": "auc",
+        "_brier_scores": "brier_score",
+        "_fnrs": "fnr",
+        "_p_ups": "p_up",
+        "_target_rates": "target_rate",
+        "_calibration_errors": "calibration_error",
+        "_ridge_weights": "ridge_weight",
+    }
     for engine in BENCHMARK_ENGINES:
         row = dict(rows_by_engine[engine])
         edges = [
@@ -2685,6 +2743,9 @@ def run_train_benchmark_engines(args: Any) -> int:
         row["avg_edge"] = round(sum(edges) / len(edges), 6) if edges else 0.0
         fprs = row.pop("_fprs", [])
         row["fpr"] = round(sum(fprs) / len(fprs), 6) if fprs else 0.0
+        for private_key, public_key in average_fields.items():
+            values = row.pop(private_key, [])
+            row[public_key] = round(sum(values) / len(values), 6) if values else None
         row["keep"] = _benchmark_keep(row)
         rows.append(row)
 
