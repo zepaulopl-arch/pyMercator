@@ -30,5 +30,18 @@
     "allow_custom_horizons": false,
     "allow_custom_engines": false,
     "allow_small_universe": false
+  },
+  "autotune": {
+    "enabled": false,
+    "mode": "random_search",
+    "n_iter": 20,
+    "cv_splits": 3,
+    "walk_forward": true,
+    "audit": true
+  },
+  "experimental_engines": {
+    "enabled": false,
+    "include": ["histgradientboosting"],
+    "optional": ["lightgbm"]
   }
 }

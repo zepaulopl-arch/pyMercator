@@ -40,9 +40,26 @@ DEFAULT_EXPERIMENTAL_CONFIG: dict[str, Any] = {
     "allow_small_universe": False,
 }
 
+DEFAULT_AUTOTUNE_AUDIT_CONFIG: dict[str, Any] = {
+    "enabled": False,
+    "mode": "random_search",
+    "n_iter": 20,
+    "cv_splits": 3,
+    "walk_forward": True,
+    "audit": True,
+}
+
+DEFAULT_EXPERIMENTAL_ENGINES_CONFIG: dict[str, Any] = {
+    "enabled": False,
+    "include": ["histgradientboosting"],
+    "optional": ["lightgbm"],
+}
+
 DEFAULT_PREDICTION_CONFIG: dict[str, Any] = {
     "operational": DEFAULT_OPERATIONAL_CONFIG,
     "experimental": DEFAULT_EXPERIMENTAL_CONFIG,
+    "autotune": DEFAULT_AUTOTUNE_AUDIT_CONFIG,
+    "experimental_engines": DEFAULT_EXPERIMENTAL_ENGINES_CONFIG,
 }
 
 

@@ -139,6 +139,69 @@ def _fake_lab_factory(
             if len(valid_base_engines) >= 2
             else {}
         )
+        autotune_enabled = bool(kwargs.get("autotune", False))
+        autotune_iter = int(kwargs.get("autotune_iter", 20) or 20)
+        autotune_cv = int(kwargs.get("autotune_cv", 3) or 3)
+        autotune_by_engine = [
+            {
+                "horizon": f"D{horizon}",
+                "engine": engine,
+                "trials": autotune_iter if autotune_enabled else 0,
+                "trials_requested": autotune_iter if autotune_enabled else 0,
+                "cv_splits": autotune_cv if autotune_enabled else 0,
+                "best_acc": 0.55,
+                "best_edge": 0.05,
+                "best_fpr": 0.3333,
+                "time_seconds": 1.0 if autotune_enabled else 0.0,
+                "best_params": {"n_estimators": 24},
+                "status": "OK",
+                "base_models_retrained": True,
+            }
+            for engine in valid_base_engines
+        ]
+        autotune_payload = {
+            "enabled": autotune_enabled,
+            "n_iter": autotune_iter,
+            "cv": autotune_cv,
+            "scoring": "neg_mean_absolute_error",
+            "tuned_params": {
+                engine: {
+                    "enabled": autotune_enabled,
+                    "params": {"n_estimators": 24},
+                    "status": "OK",
+                    "trials_requested": autotune_iter if autotune_enabled else 0,
+                    "trials_executed": autotune_iter if autotune_enabled else 0,
+                    "cv_splits": autotune_cv if autotune_enabled else 0,
+                    "fit_count": autotune_iter * autotune_cv + 1
+                    if autotune_enabled
+                    else 1,
+                    "base_models_retrained": True,
+                    "cache_used": False,
+                    "elapsed_seconds": 1.0 if autotune_enabled else 0.0,
+                }
+                for engine in valid_base_engines
+            },
+            "audit": {
+                "enabled": autotune_enabled,
+                "mode": "random_search" if autotune_enabled else "disabled",
+                "trials_requested": autotune_iter * len(valid_base_engines)
+                if autotune_enabled
+                else 0,
+                "trials_executed": autotune_iter * len(valid_base_engines)
+                if autotune_enabled
+                else 0,
+                "cv_splits": autotune_cv if autotune_enabled else 0,
+                "walk_forward": True,
+                "total_fits": (autotune_iter * autotune_cv + 1) * len(valid_base_engines)
+                if autotune_enabled
+                else len(valid_base_engines),
+                "cache_used": False,
+                "base_models_retrained": True,
+                "elapsed_seconds": float(len(valid_base_engines)) if autotune_enabled else 0.0,
+                "status": "OK",
+            },
+            "by_engine": autotune_by_engine,
+        }
         evaluation = {
             "rows": horizon_asset_count * 2,
             "evaluated_rows": horizon_asset_count,
@@ -158,6 +221,7 @@ def _fake_lab_factory(
             },
             "ensemble_metrics": ensemble_metrics,
             "ridge_coefficients": {"intercept": 0.0, "weights": weights},
+            "autotune": autotune_payload,
             "models": {"ridge_ensemble": ensemble_metrics},
             "output": str(evaluation_output),
         }
@@ -1006,6 +1070,96 @@ def test_cli_train_autotune_records_summary_in_operational_json(
         "D20": 156,
         "D60": 156,
     }
+    assert evaluation_payload["autotune_summary"]["enabled"] is True
+    assert evaluation_payload["autotune_summary"]["trials_executed"] > 0
+    assert evaluation_payload["autotune_summary"]["total_fits"] > 0
+    assert evaluation_payload["autotune_summary"]["base_models_retrained"] is True
+
+
+def test_cli_train_autotune_details_prints_audit_summary(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+):
+    import pymercator.cli_train as train_mod
+
+    matrix, prices_dir, dataset, evaluation = _write_train_inputs(tmp_path)
+    calls: list[dict] = []
+    monkeypatch.setattr(train_mod, "run_prediction_lab", _fake_lab_factory(calls))
+
+    exit_code = main(
+        [
+            "train",
+            "--matrix",
+            str(matrix),
+            "--prices-dir",
+            str(prices_dir),
+            "--dataset-output",
+            str(dataset),
+            "--evaluation-output",
+            str(evaluation),
+            "--min-train-rows",
+            "2",
+            "--autotune",
+            "--details",
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert exit_code == 0
+    assert "AUTOTUNE SUMMARY" in output
+    assert "AUTOTUNE BY ENGINE" in output
+    assert "AUTOTUNE IMPROVEMENT" in output
+    assert "trials_executed" in output
+    assert "base_models_retrained" in output
+    evaluation_payload = json.loads(evaluation.read_text(encoding="utf-8"))
+    assert evaluation_payload["autotune_summary"]["trials_executed"] > 0
+
+
+def test_cli_train_benchmark_engines_writes_json_without_changing_config(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+):
+    import pymercator.cli_train as train_mod
+
+    matrix, prices_dir, dataset, evaluation = _write_train_inputs(tmp_path)
+    output = tmp_path / "latest_engine_benchmark.json"
+    before_config = Path("config/prediction.json").read_text(encoding="utf-8")
+    calls: list[dict] = []
+    monkeypatch.setattr(train_mod, "run_prediction_lab", _fake_lab_factory(calls))
+    monkeypatch.setattr(train_mod, "LIGHTGBM_AVAILABLE", False)
+
+    exit_code = main(
+        [
+            "train",
+            "benchmark-engines",
+            "--matrix",
+            str(matrix),
+            "--prices-dir",
+            str(prices_dir),
+            "--dataset-output",
+            str(dataset),
+            "--evaluation-output",
+            str(evaluation),
+            "--min-train-rows",
+            "2",
+            "--benchmark-output",
+            str(output),
+        ]
+    )
+
+    rendered = capsys.readouterr().out
+    assert exit_code == 0
+    assert "ENGINE BENCHMARK" in rendered
+    assert output.exists()
+    payload = json.loads(output.read_text(encoding="utf-8"))
+    assert payload["schema_version"] == "engine_benchmark.v1"
+    assert payload["operational_config_changed"] is False
+    assert "histgradientboosting" in payload["engines"]
+    lightgbm = next(row for row in payload["rows"] if row["engine"] == "lightgbm")
+    assert lightgbm["status"] == "NOT_AVAILABLE"
+    assert Path("config/prediction.json").read_text(encoding="utf-8") == before_config
 
 
 def test_cli_train_rejects_sklearn_as_engine(tmp_path: Path, capsys):

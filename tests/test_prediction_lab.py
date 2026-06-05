@@ -372,6 +372,7 @@ def test_available_engines_exposes_legacy_engines():
     assert "extratrees" in engines
     assert "randomforest" in engines
     assert "gradientboosting" in engines
+    assert "histgradientboosting" in engines
     assert "ridge_ensemble" in engines
     assert "sklearn" not in engines
 

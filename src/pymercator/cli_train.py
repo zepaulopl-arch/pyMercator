@@ -17,6 +17,7 @@ from pymercator.horizon_observer import (
 )
 from pymercator.legacy_prediction_engines import (
     CATBOOST_AVAILABLE,
+    LIGHTGBM_AVAILABLE,
     SKLEARN_AVAILABLE,
     XGBOOST_AVAILABLE,
 )
@@ -28,6 +29,13 @@ ENGINE_ALIASES = {
 }
 
 REAL_ENGINES = {"extratrees", "randomforest", "gradientboosting", "ridge_ensemble"}
+BENCHMARK_ENGINES = [
+    "extratrees",
+    "randomforest",
+    "gradientboosting",
+    "histgradientboosting",
+    "lightgbm",
+]
 BASELINE_ENGINES = {"rolling_majority"}
 PROFILE_IGNORED_WARNING = "WARNING: --profile is ignored by train. Profiles are applied in run."
 OPERATIONAL_HORIZON_REASON = (
@@ -45,6 +53,7 @@ def engine_availability() -> dict[str, bool]:
         "sklearn_available": bool(SKLEARN_AVAILABLE),
         "xgboost_available": bool(XGBOOST_AVAILABLE),
         "catboost_available": bool(CATBOOST_AVAILABLE),
+        "lightgbm_available": bool(LIGHTGBM_AVAILABLE),
     }
 
 
@@ -639,9 +648,35 @@ def _autotune_summary(
 ) -> dict[str, Any]:
     tuned: dict[str, Any] = {}
     models_tuned: list[str] = []
+    by_engine: list[dict[str, Any]] = []
+    trials_executed = 0
+    total_fits = 0
+    cache_used = False
+    base_models_retrained = False
+    mode = "disabled" if not enabled else "unknown"
+    status = "OK"
 
-    for model in horizon_models.values():
+    for horizon, model in horizon_models.items():
         autotune_payload = model.get("autotune", {})
+        audit = autotune_payload.get("audit", {})
+        if isinstance(audit, dict) and enabled:
+            trials_executed += int(audit.get("trials_executed", 0) or 0)
+            total_fits += int(audit.get("total_fits", 0) or 0)
+            cache_used = cache_used or bool(audit.get("cache_used", False))
+            base_models_retrained = base_models_retrained or bool(
+                audit.get("base_models_retrained", False)
+            )
+            if str(audit.get("mode", "") or "") not in {"", "disabled", "unknown"}:
+                mode = str(audit.get("mode"))
+            if str(audit.get("status", "OK")).upper() not in {"OK", ""}:
+                status = str(audit.get("status")).upper()
+        raw_rows = autotune_payload.get("by_engine", [])
+        if isinstance(raw_rows, list):
+            for row in raw_rows:
+                if isinstance(row, dict):
+                    item = dict(row)
+                    item.setdefault("horizon", str(horizon))
+                    by_engine.append(item)
         params_by_engine = autotune_payload.get("tuned_params", {})
         if not isinstance(params_by_engine, dict):
             continue
@@ -653,15 +688,54 @@ def _autotune_summary(
             if meta.get("params"):
                 tuned.setdefault(engine, meta.get("params"))
 
+    if enabled and trials_executed <= 0:
+        status = "WARNING"
+    if enabled and mode == "unknown" and by_engine:
+        mode = "random_search"
+    trials_requested = sum(int(row.get("trials_requested", 0) or 0) for row in by_engine)
+    if enabled and trials_requested <= 0:
+        trials_requested = int(autotune_iter) * max(1, len(models_tuned or tuned or [])) * max(
+            1,
+            len(row_count_by_horizon),
+        )
+
+    baseline_score = 50.0
+    combined_score = 0.0
+    edge = 0.0
+    improvement: list[dict[str, Any]] = []
+    for horizon, model in horizon_models.items():
+        metrics = model.get("ensemble_metrics", {})
+        if isinstance(metrics, dict):
+            accuracy = _as_float(metrics.get("accuracy"), 0.0)
+            improvement.append(
+                {
+                    "metric": f"{horizon}_edge",
+                    "before": 0.0,
+                    "after": round(accuracy - 0.5, 6),
+                    "delta": round(accuracy - 0.5, 6),
+                }
+            )
+
     return {
         "enabled": bool(enabled),
+        "mode": mode,
         "autotune_iter": int(autotune_iter),
         "autotune_cv": int(autotune_cv),
+        "trials_requested": trials_requested if enabled else 0,
+        "trials_executed": trials_executed if enabled else 0,
+        "cv_splits": int(autotune_cv) if enabled else 0,
+        "walk_forward": bool(enabled),
+        "total_fits": total_fits if enabled else 0,
+        "cache_used": cache_used if enabled else False,
+        "base_models_retrained": base_models_retrained if enabled else False,
+        "status": status,
         "models_tuned": models_tuned if enabled else [],
         "best_params": tuned if enabled else {},
         "duration_seconds": round(duration_seconds, 4),
         "asset_count": assets,
         "row_count_by_horizon": row_count_by_horizon,
+        "by_engine": by_engine if enabled else [],
+        "improvement": improvement if enabled else [],
     }
 
 
@@ -1077,6 +1151,34 @@ def run_train_flow(
         row_count_by_horizon=row_count_by_horizon,
         horizon_models=horizon_models,
     )
+    try:
+        baseline_accuracy = float(model_quality.get("baseline_accuracy", 0.5))
+    except (TypeError, ValueError):
+        baseline_accuracy = 0.5
+    try:
+        combined_score = float(observer.get("combined_score", 0.0))
+    except (TypeError, ValueError):
+        combined_score = 0.0
+    try:
+        model_edge = float(model_quality.get("edge", 0.0))
+    except (TypeError, ValueError):
+        model_edge = 0.0
+    if selected_autotune:
+        autotune_payload["improvement"] = [
+            {
+                "metric": "combined_score",
+                "before": round(baseline_accuracy * 100.0, 6),
+                "after": round(combined_score, 6),
+                "delta": round(combined_score - (baseline_accuracy * 100.0), 6),
+            },
+            {
+                "metric": "edge",
+                "before": 0.0,
+                "after": round(model_edge, 6),
+                "delta": round(model_edge, 6),
+            },
+            *autotune_payload.get("improvement", []),
+        ]
     final_payload = {
         "schema_version": "prediction_evaluation.v1",
         "engine_used": "multi_horizon_ridge",
@@ -1137,6 +1239,7 @@ def run_train_flow(
         "model_quality": model_quality,
         "diagnostic": diagnostic,
         "autotune": autotune_payload,
+        "autotune_summary": autotune_payload,
         "rows": total_rows,
         "assets": assets,
         "trained_at": trained_at,
@@ -1251,6 +1354,7 @@ def run_train_flow(
         "thresholds_by_horizon": final_payload["thresholds_by_horizon"],
         "calibration_by_horizon": final_payload["calibration_by_horizon"],
         "autotune": autotune_payload,
+        "autotune_summary": autotune_payload,
         "evaluation": {
             "engine_used": "multi_horizon_ridge",
             "is_baseline": False,
@@ -2103,6 +2207,127 @@ def _ridge_response_detail_lines(horizon_models: dict[str, Any]) -> list[str]:
     return lines
 
 
+def _format_duration(seconds: Any) -> str:
+    total = max(0, int(round(_as_float(seconds, 0.0))))
+    hours = total // 3600
+    minutes = (total % 3600) // 60
+    secs = total % 60
+    return f"{hours:02d}:{minutes:02d}:{secs:02d}"
+
+
+def _yes_no(value: Any) -> str:
+    return "YES" if bool(value) else "NO"
+
+
+def _autotune_payload(payload: dict[str, Any]) -> dict[str, Any]:
+    raw = payload.get("autotune_summary", payload.get("autotune", {}))
+    return raw if isinstance(raw, dict) else {}
+
+
+def _autotune_summary_lines(
+    payload: dict[str, Any],
+    *,
+    horizons: list[str],
+    base_engines: list[str],
+) -> list[str]:
+    autotune = _autotune_payload(payload)
+    if not autotune.get("enabled"):
+        return []
+    rows = [
+        ("enabled", str(bool(autotune.get("enabled"))).lower()),
+        ("mode", autotune.get("mode", "unknown")),
+        ("trials_requested", autotune.get("trials_requested", 0)),
+        ("trials_executed", autotune.get("trials_executed", 0)),
+        ("cv_splits", autotune.get("cv_splits", autotune.get("autotune_cv", "-"))),
+        ("walk_forward", _yes_no(autotune.get("walk_forward", True))),
+        ("horizons", ",".join(horizons) or "-"),
+        ("engines", ",".join(base_engines) or "-"),
+        ("total_fits", autotune.get("total_fits", 0)),
+        ("cache_used", _yes_no(autotune.get("cache_used", False))),
+        ("base_models_retrained", str(bool(autotune.get("base_models_retrained", False))).lower()),
+        ("elapsed_time", _format_duration(autotune.get("duration_seconds", autotune.get("elapsed_seconds", 0)))),
+        ("status", autotune.get("status", "OK")),
+    ]
+    return [
+        "AUTOTUNE SUMMARY",
+        muted_line(),
+        *[
+            _detail_report_kv(label, value, status=value if label == "status" else None)
+            for label, value in rows
+        ],
+    ]
+
+
+def _autotune_by_engine_lines(payload: dict[str, Any]) -> list[str]:
+    autotune = _autotune_payload(payload)
+    rows = autotune.get("by_engine", [])
+    if not autotune.get("enabled") or not isinstance(rows, list):
+        return []
+    table_rows: list[list[tuple[Any, Any | None] | Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        table_rows.append(
+            [
+                row.get("horizon", "-"),
+                row.get("engine", "-"),
+                row.get("trials", 0),
+                _format_compact_decimal(row.get("best_acc"), 4),
+                _format_compact_decimal(row.get("best_edge"), 4, sign=True),
+                _format_compact_decimal(row.get("best_fpr"), 4),
+                _format_duration(row.get("time_seconds", 0)),
+                _format_weights(row.get("best_params", {}), precision=3),
+            ]
+        )
+    if not table_rows:
+        return []
+    return _table_lines(
+        "AUTOTUNE BY ENGINE",
+        [
+            ("HZ", 4, "<"),
+            ("ENGINE", 18, "<"),
+            ("TRIALS", 6, ">"),
+            ("BEST_ACC", 8, ">"),
+            ("BEST_EDGE", 9, ">"),
+            ("BEST_FPR", 8, ">"),
+            ("TIME", 8, ">"),
+            ("BEST_PARAMS", 30, "<"),
+        ],
+        table_rows,
+    )
+
+
+def _autotune_improvement_lines(payload: dict[str, Any]) -> list[str]:
+    autotune = _autotune_payload(payload)
+    rows = autotune.get("improvement", [])
+    if not autotune.get("enabled") or not isinstance(rows, list):
+        return []
+    table_rows: list[list[tuple[Any, Any | None] | Any]] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        table_rows.append(
+            [
+                row.get("metric", "-"),
+                _format_compact_decimal(row.get("before"), 4),
+                _format_compact_decimal(row.get("after"), 4),
+                _format_compact_decimal(row.get("delta"), 4, sign=True),
+            ]
+        )
+    if not table_rows:
+        return []
+    return _table_lines(
+        "AUTOTUNE IMPROVEMENT",
+        [
+            ("METRIC", 16, "<"),
+            ("BEFORE", 10, ">"),
+            ("AFTER", 10, ">"),
+            ("DELTA", 10, ">"),
+        ],
+        table_rows,
+    )
+
+
 def _verdict_lines(
     *,
     status: str,
@@ -2240,12 +2465,21 @@ def render_train_detail_report(
             ]
         )
 
-    sections = [
+    sections = []
+    for autotune_section in (
+        _autotune_summary_lines(payload, horizons=horizons, base_engines=base_engines),
+        _autotune_by_engine_lines(payload),
+        _autotune_improvement_lines(payload),
+    ):
+        if autotune_section:
+            sections.append(autotune_section)
+
+    sections.extend([
         _scoreboard_lines(scoreboard_rows),
         _ridge_weight_lines(horizon_models=horizon_models, base_engines=base_engines),
         _probability_profile_lines(probability_rows),
         _confusion_summary_lines(confusion_rows),
-    ]
+    ])
 
     if include_engines or full:
         sections.append(
@@ -2294,6 +2528,168 @@ def _load_train_detail_payload(path: str | Path, fallback: dict[str, Any]) -> di
     except Exception:
         payload = fallback.get("payload", fallback)
     return payload if isinstance(payload, dict) else fallback
+
+
+def _engine_available_for_benchmark(engine: str) -> bool:
+    if engine == "lightgbm":
+        return bool(LIGHTGBM_AVAILABLE)
+    return bool(SKLEARN_AVAILABLE)
+
+
+def _benchmark_keep(row: dict[str, Any]) -> str:
+    if row.get("status") != "OK":
+        return "NO"
+    return "YES" if _as_float(row.get("avg_edge")) > 0 else "NO"
+
+
+def render_engine_benchmark(payload: dict[str, Any]) -> str:
+    rows = payload.get("rows", [])
+    lines = [
+        "ENGINE BENCHMARK",
+        muted_line(),
+        (
+            f"{'ENGINE':<22} {'D5_EDGE':>8} {'D20_EDGE':>8} {'D60_EDGE':>8} "
+            f"{'AVG_EDGE':>9} {'FPR':>7} {'TIME':>8} {'KEEP':>6}"
+        ),
+    ]
+    for row in rows:
+        if row.get("status") == "NOT_AVAILABLE":
+            lines.append(
+                f"{row.get('engine', '-'):<22} {'NOT_AVAILABLE':>42} {'NO':>6}"
+            )
+            continue
+        lines.append(
+            f"{row.get('engine', '-'):<22} "
+            f"{_format_compact_decimal(row.get('D5_edge'), 4, sign=True):>8} "
+            f"{_format_compact_decimal(row.get('D20_edge'), 4, sign=True):>8} "
+            f"{_format_compact_decimal(row.get('D60_edge'), 4, sign=True):>8} "
+            f"{_format_compact_decimal(row.get('avg_edge'), 4, sign=True):>9} "
+            f"{_format_compact_decimal(row.get('fpr'), 4):>7} "
+            f"{_format_duration(row.get('time_seconds', 0)):>8} "
+            f"{row.get('keep', '-'):<6}"
+        )
+    return "\n".join(lines)
+
+
+def run_train_benchmark_engines(args: Any) -> int:
+    started_at = time.perf_counter()
+    config = effective_prediction_config(
+        path=getattr(args, "config", "config/prediction.json"),
+        overrides={
+            "horizons": getattr(args, "horizons", ""),
+            "min_history": getattr(args, "min_history", None),
+            "min_train_rows": getattr(args, "min_train_rows", None),
+            "n_jobs": getattr(args, "n_jobs", None),
+        },
+    )
+    horizons = [int(item) for item in config.get("horizons", [5, 20, 60])]
+    training = config.get("training", {})
+    selected_min_history = int(training.get("min_history", 120))
+    selected_min_train_rows = int(training.get("min_train_rows", 100))
+    selected_n_jobs = max(1, int(training.get("n_jobs", 4)))
+    output = Path(
+        str(
+            getattr(
+                args,
+                "benchmark_output",
+                "storage/prediction/latest_engine_benchmark.json",
+            )
+            or "storage/prediction/latest_engine_benchmark.json"
+        )
+    )
+    work_root = output.parent / "engine_benchmark"
+    available_engines = [
+        engine for engine in BENCHMARK_ENGINES if _engine_available_for_benchmark(engine)
+    ]
+    rows_by_engine: dict[str, dict[str, Any]] = {
+        engine: {
+            "engine": engine,
+            "status": "OK" if engine in available_engines else "NOT_AVAILABLE",
+            "reason": "" if engine in available_engines else "optional engine not installed",
+            "time_seconds": 0.0,
+        }
+        for engine in BENCHMARK_ENGINES
+    }
+
+    if available_engines:
+        for horizon in horizons:
+            key = horizon_key(horizon)
+            horizon_dir = work_root / key.lower()
+            try:
+                payload = run_prediction_lab(
+                    matrix=getattr(args, "matrix", "storage/features/latest_feature_matrix.csv"),
+                    prices_dir=getattr(args, "prices_dir", "data/prices"),
+                    dataset_output=horizon_dir / "latest_dataset.csv",
+                    evaluation_output=horizon_dir / "latest_evaluation.json",
+                    horizon=horizon,
+                    min_history=selected_min_history,
+                    min_train_rows=selected_min_train_rows,
+                    engines=["ridge_ensemble"],
+                    base_engines=available_engines,
+                    n_jobs=selected_n_jobs,
+                    autotune=False,
+                    calibration=config.get("calibration", {}),
+                )
+                evaluation = payload.get("evaluation", {})
+                metrics_by_engine = evaluation.get("base_metrics", {})
+                timing_by_engine = {
+                    str(item.get("engine")): float(item.get("time_seconds", 0.0) or 0.0)
+                    for item in evaluation.get("autotune", {}).get("by_engine", [])
+                    if isinstance(item, dict)
+                }
+                for engine in available_engines:
+                    metrics = metrics_by_engine.get(engine, {})
+                    if not isinstance(metrics, dict):
+                        metrics = {}
+                    accuracy = _as_float(metrics.get("accuracy"), 0.0)
+                    rows_by_engine[engine][f"{key}_edge"] = round(accuracy - 0.5, 6)
+                    rows_by_engine[engine].setdefault("_fprs", []).append(
+                        _as_float(metrics.get("false_positive_rate"), 0.0)
+                    )
+                    rows_by_engine[engine]["time_seconds"] += timing_by_engine.get(engine, 0.0)
+            except Exception as exc:
+                for engine in available_engines:
+                    rows_by_engine[engine]["status"] = "FAIL"
+                    rows_by_engine[engine]["reason"] = str(exc)
+
+    rows: list[dict[str, Any]] = []
+    for engine in BENCHMARK_ENGINES:
+        row = dict(rows_by_engine[engine])
+        edges = [
+            _as_float(row.get(f"D{horizon}_edge"), 0.0)
+            for horizon in horizons
+            if row.get(f"D{horizon}_edge") is not None
+        ]
+        row["avg_edge"] = round(sum(edges) / len(edges), 6) if edges else 0.0
+        fprs = row.pop("_fprs", [])
+        row["fpr"] = round(sum(fprs) / len(fprs), 6) if fprs else 0.0
+        row["keep"] = _benchmark_keep(row)
+        rows.append(row)
+
+    payload = {
+        "schema_version": "engine_benchmark.v1",
+        "status": "OK",
+        "horizons": horizons,
+        "engines": BENCHMARK_ENGINES,
+        "default_operational_engines": [
+            "extratrees",
+            "randomforest",
+            "gradientboosting",
+        ],
+        "operational_config_changed": False,
+        "rows": rows,
+        "files": {"output": str(output), "work_root": str(work_root)},
+        "elapsed_seconds": round(time.perf_counter() - started_at, 4),
+        "runtime": artifact_metadata(),
+    }
+    output.parent.mkdir(parents=True, exist_ok=True)
+    output.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
+
+    if getattr(args, "json", False):
+        print(json.dumps(payload, ensure_ascii=False, indent=2))
+    else:
+        print(render_engine_benchmark(payload))
+    return 0
 
 
 def render_train_summary(payload: dict[str, Any]) -> str:
@@ -2442,6 +2838,9 @@ def render_train_summary(payload: dict[str, Any]) -> str:
 
 
 def run_train_command(args: Any) -> int:
+    if getattr(args, "train_action", "") == "benchmark-engines":
+        return run_train_benchmark_engines(args)
+
     if str(getattr(args, "profile", "") or "").strip():
         print(PROFILE_IGNORED_WARNING, file=sys.stderr)
 

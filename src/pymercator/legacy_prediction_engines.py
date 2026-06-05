@@ -4,6 +4,7 @@ from __future__ import annotations
 import itertools
 import math
 import random
+import time
 from typing import Any
 
 try:
@@ -13,6 +14,8 @@ try:
         ExtraTreesRegressor,
         GradientBoostingClassifier,
         GradientBoostingRegressor,
+        HistGradientBoostingClassifier,
+        HistGradientBoostingRegressor,
         RandomForestClassifier,
         RandomForestRegressor,
     )
@@ -26,6 +29,8 @@ except Exception:
     ExtraTreesRegressor = None
     GradientBoostingClassifier = None
     GradientBoostingRegressor = None
+    HistGradientBoostingClassifier = None
+    HistGradientBoostingRegressor = None
     RandomForestClassifier = None
     RandomForestRegressor = None
     TimeSeriesSplit = None
@@ -48,13 +53,24 @@ except Exception:
     CatBoostRegressor = None
     CATBOOST_AVAILABLE = False
 
+try:
+    from lightgbm import LGBMClassifier, LGBMRegressor
+
+    LIGHTGBM_AVAILABLE = True
+except Exception:
+    LGBMClassifier = None
+    LGBMRegressor = None
+    LIGHTGBM_AVAILABLE = False
+
 
 BASELINE_ENGINES = ["rolling_majority"]
 LEGACY_BASE_ENGINES = ["extratrees", "randomforest", "gradientboosting"]
+EXPERIMENTAL_BASE_ENGINES = ["histgradientboosting", "lightgbm"]
 ARBITER_ENGINES = ["ridge_ensemble"]
 VALID_PREDICTION_ENGINES = [
     *BASELINE_ENGINES,
     *LEGACY_BASE_ENGINES,
+    *EXPERIMENTAL_BASE_ENGINES,
     *ARBITER_ENGINES,
 ]
 DEFAULT_ENGINES = ["ridge_ensemble"]
@@ -116,6 +132,18 @@ AUTOTUNE_SPACES: dict[str, dict[str, list[Any]]] = {
         "max_depth": [2, 3, 4],
         "learning_rate": [0.02, 0.05, 0.1],
         "subsample": [0.7, 0.9, 1.0],
+    },
+    "histgradientboosting": {
+        "max_iter": [40, 80, 120],
+        "max_leaf_nodes": [15, 31, 63],
+        "learning_rate": [0.03, 0.06, 0.1],
+        "l2_regularization": [0.0, 0.1, 1.0],
+    },
+    "lightgbm": {
+        "n_estimators": [40, 80, 120],
+        "num_leaves": [15, 31, 63],
+        "learning_rate": [0.03, 0.06, 0.1],
+        "min_child_samples": [10, 20, 40],
     },
 }
 
@@ -588,6 +616,23 @@ def _engine_defaults(engine: str) -> dict[str, Any]:
             "subsample": 0.9,
         }
 
+    if engine == "histgradientboosting":
+        return {
+            "max_iter": 80,
+            "max_leaf_nodes": 31,
+            "learning_rate": 0.06,
+            "l2_regularization": 0.0,
+        }
+
+    if engine == "lightgbm":
+        return {
+            "n_estimators": 80,
+            "num_leaves": 31,
+            "learning_rate": 0.06,
+            "min_child_samples": 20,
+            "verbosity": -1,
+        }
+
     raise ValueError(f"Unknown legacy engine: {engine}")
 
 
@@ -648,6 +693,25 @@ def _make_model(
             random_state=42,
         )
 
+    if engine == "histgradientboosting":
+        if not SKLEARN_AVAILABLE or HistGradientBoostingRegressor is None:
+            return None
+
+        return HistGradientBoostingRegressor(
+            **params,
+            random_state=42,
+        )
+
+    if engine == "lightgbm":
+        if not LIGHTGBM_AVAILABLE or LGBMRegressor is None:
+            return None
+
+        return LGBMRegressor(
+            **params,
+            random_state=42,
+            n_jobs=n_jobs,
+        )
+
     raise ValueError(f"Unknown legacy engine: {engine}")
 
 
@@ -684,6 +748,25 @@ def _make_classifier(
         return GradientBoostingClassifier(
             **params,
             random_state=42,
+        )
+
+    if engine == "histgradientboosting":
+        if not SKLEARN_AVAILABLE or HistGradientBoostingClassifier is None:
+            return None
+
+        return HistGradientBoostingClassifier(
+            **params,
+            random_state=42,
+        )
+
+    if engine == "lightgbm":
+        if not LIGHTGBM_AVAILABLE or LGBMClassifier is None:
+            return None
+
+        return LGBMClassifier(
+            **params,
+            random_state=42,
+            n_jobs=n_jobs,
         )
 
     return None
@@ -761,20 +844,41 @@ def _cv_mae(
     cv: int = 3,
     n_jobs: int = 4,
 ) -> float:
+    result = _cv_mae_with_audit(
+        engine,
+        x_train,
+        y_train,
+        params,
+        cv=cv,
+        n_jobs=n_jobs,
+    )
+    return float(result["score"])
+
+
+def _cv_mae_with_audit(
+    engine: str,
+    x_train: list[list[float]],
+    y_train: list[float],
+    params: dict[str, Any],
+    *,
+    cv: int = 3,
+    n_jobs: int = 4,
+) -> dict[str, Any]:
     if len(x_train) < max(10, cv + 2):
-        return 0.0
+        return {"score": 0.0, "fits": 0, "splits": 0}
 
     if TimeSeriesSplit is None or mean_absolute_error is None:
-        return 0.0
+        return {"score": 0.0, "fits": 0, "splits": 0}
 
     splits = TimeSeriesSplit(n_splits=max(2, int(cv)))
     errors: list[float] = []
+    fits = 0
 
     for train_idx, test_idx in splits.split(x_train):
         model = _make_model(engine, params, n_jobs=n_jobs)
 
         if model is None:
-            return float("inf")
+            return {"score": float("inf"), "fits": fits, "splits": len(errors)}
 
         x_fit = [x_train[index] for index in train_idx]
         y_fit = [y_train[index] for index in train_idx]
@@ -782,10 +886,84 @@ def _cv_mae(
         y_test = [y_train[index] for index in test_idx]
 
         model.fit(x_fit, y_fit)
+        fits += 1
         pred = model.predict(x_test)
         errors.append(float(mean_absolute_error(y_test, pred)))
 
-    return sum(errors) / len(errors) if errors else float("inf")
+    return {
+        "score": sum(errors) / len(errors) if errors else float("inf"),
+        "fits": fits,
+        "splits": len(errors),
+    }
+
+
+def tune_legacy_engine_params_with_audit(
+    engine: str,
+    train_rows: list[dict[str, Any]],
+    target_return_column: str,
+    *,
+    n_iter: int = 15,
+    cv: int = 3,
+    n_jobs: int = 4,
+) -> dict[str, Any]:
+    started_at = time.perf_counter()
+    x_train = [_feature_vector(row) for row in train_rows]
+    y_train = _target_return_values(train_rows, target_return_column)
+
+    if not x_train:
+        defaults = _engine_defaults(engine)
+        return {
+            "params": defaults,
+            "trials_requested": int(n_iter),
+            "trials_executed": 0,
+            "cv_splits": int(cv),
+            "fit_count": 0,
+            "best_score": None,
+            "default_score": None,
+            "elapsed_seconds": round(time.perf_counter() - started_at, 6),
+            "mode": "random_search",
+            "cache_used": False,
+        }
+
+    best_params = _engine_defaults(engine)
+    best_score = float("inf")
+    default_score: float | None = None
+    total_fits = 0
+    trials_executed = 0
+
+    for params in _candidate_param_sets(engine, n_iter=n_iter):
+        result = _cv_mae_with_audit(
+            engine,
+            x_train,
+            y_train,
+            params,
+            cv=cv,
+            n_jobs=n_jobs,
+        )
+        score = float(result["score"])
+        trials_executed += 1
+        total_fits += int(result["fits"])
+        if default_score is None:
+            default_score = score
+
+        if score < best_score:
+            best_score = score
+            best_params = params
+
+    return {
+        "params": best_params,
+        "trials_requested": int(n_iter),
+        "trials_executed": trials_executed,
+        "cv_splits": int(cv),
+        "fit_count": total_fits,
+        "best_score": None if math.isinf(best_score) else round(best_score, 8),
+        "default_score": (
+            None if default_score is None or math.isinf(default_score) else round(default_score, 8)
+        ),
+        "elapsed_seconds": round(time.perf_counter() - started_at, 6),
+        "mode": "random_search",
+        "cache_used": False,
+    }
 
 
 def tune_legacy_engine_params(
@@ -797,30 +975,16 @@ def tune_legacy_engine_params(
     cv: int = 3,
     n_jobs: int = 4,
 ) -> dict[str, Any]:
-    x_train = [_feature_vector(row) for row in train_rows]
-    y_train = _target_return_values(train_rows, target_return_column)
-
-    if not x_train:
-        return _engine_defaults(engine)
-
-    best_params = _engine_defaults(engine)
-    best_score = float("inf")
-
-    for params in _candidate_param_sets(engine, n_iter=n_iter):
-        score = _cv_mae(
+    return dict(
+        tune_legacy_engine_params_with_audit(
             engine,
-            x_train,
-            y_train,
-            params,
+            train_rows,
+            target_return_column,
+            n_iter=n_iter,
             cv=cv,
             n_jobs=n_jobs,
-        )
-
-        if score < best_score:
-            best_score = score
-            best_params = params
-
-    return best_params
+        )["params"]
+    )
 
 
 def fit_legacy_engine(
@@ -833,14 +997,39 @@ def fit_legacy_engine(
     autotune_iter: int = 15,
     autotune_cv: int = 3,
 ) -> tuple[Any, dict[str, Any]]:
+    started_at = time.perf_counter()
     x_train = [_feature_vector(row) for row in train_rows]
     y_train = _target_return_values(train_rows, target_return_column)
 
     if not x_train:
-        return None, {"enabled": bool(autotune), "params": {}, "status": "NO_DATA"}
+        return None, {
+            "enabled": bool(autotune),
+            "params": {},
+            "status": "NO_DATA",
+            "mode": "random_search" if autotune else "disabled",
+            "trials_requested": int(autotune_iter) if autotune else 0,
+            "trials_executed": 0,
+            "cv_splits": int(autotune_cv) if autotune else 0,
+            "fit_count": 0,
+            "base_models_retrained": False,
+            "cache_used": False,
+            "elapsed_seconds": round(time.perf_counter() - started_at, 6),
+        }
 
-    params = (
-        tune_legacy_engine_params(
+    tune_audit = {
+        "params": _engine_defaults(engine),
+        "trials_requested": int(autotune_iter) if autotune else 0,
+        "trials_executed": 0,
+        "cv_splits": int(autotune_cv) if autotune else 0,
+        "fit_count": 0,
+        "best_score": None,
+        "default_score": None,
+        "elapsed_seconds": 0.0,
+        "mode": "disabled",
+        "cache_used": False,
+    }
+    if autotune:
+        tune_audit = tune_legacy_engine_params_with_audit(
             engine,
             train_rows,
             target_return_column,
@@ -848,9 +1037,7 @@ def fit_legacy_engine(
             cv=autotune_cv,
             n_jobs=n_jobs,
         )
-        if autotune
-        else _engine_defaults(engine)
-    )
+    params = dict(tune_audit["params"])
 
     model = _make_model(engine, params, n_jobs=n_jobs)
 
@@ -859,22 +1046,53 @@ def fit_legacy_engine(
             "enabled": bool(autotune),
             "params": params,
             "status": "UNAVAILABLE",
+            "mode": tune_audit.get("mode", "random_search" if autotune else "disabled"),
+            "trials_requested": int(tune_audit.get("trials_requested", 0)),
+            "trials_executed": int(tune_audit.get("trials_executed", 0)),
+            "cv_splits": int(tune_audit.get("cv_splits", 0)),
+            "fit_count": int(tune_audit.get("fit_count", 0)),
+            "best_score": tune_audit.get("best_score"),
+            "default_score": tune_audit.get("default_score"),
+            "base_models_retrained": False,
+            "cache_used": bool(tune_audit.get("cache_used", False)),
+            "elapsed_seconds": round(time.perf_counter() - started_at, 6),
         }
 
     try:
         model.fit(x_train, y_train)
+        final_fit_count = 1
     except Exception as exc:
         return None, {
             "enabled": bool(autotune),
             "params": params,
             "status": "FAILED",
             "error": str(exc),
+            "mode": tune_audit.get("mode", "random_search" if autotune else "disabled"),
+            "trials_requested": int(tune_audit.get("trials_requested", 0)),
+            "trials_executed": int(tune_audit.get("trials_executed", 0)),
+            "cv_splits": int(tune_audit.get("cv_splits", 0)),
+            "fit_count": int(tune_audit.get("fit_count", 0)),
+            "best_score": tune_audit.get("best_score"),
+            "default_score": tune_audit.get("default_score"),
+            "base_models_retrained": False,
+            "cache_used": bool(tune_audit.get("cache_used", False)),
+            "elapsed_seconds": round(time.perf_counter() - started_at, 6),
         }
 
     return model, {
         "enabled": bool(autotune),
         "params": params,
         "status": "OK",
+        "mode": tune_audit.get("mode", "random_search" if autotune else "disabled"),
+        "trials_requested": int(tune_audit.get("trials_requested", 0)),
+        "trials_executed": int(tune_audit.get("trials_executed", 0)),
+        "cv_splits": int(tune_audit.get("cv_splits", 0)),
+        "fit_count": int(tune_audit.get("fit_count", 0)) + final_fit_count,
+        "best_score": tune_audit.get("best_score"),
+        "default_score": tune_audit.get("default_score"),
+        "base_models_retrained": True,
+        "cache_used": bool(tune_audit.get("cache_used", False)),
+        "elapsed_seconds": round(time.perf_counter() - started_at, 6),
     }
 
 
@@ -1176,10 +1394,11 @@ def _normalize_base_engines(base_engines: list[str] | None = None) -> list[str]:
     if not base_engines:
         return LEGACY_BASE_ENGINES.copy()
 
+    allowed = {*LEGACY_BASE_ENGINES, *EXPERIMENTAL_BASE_ENGINES}
     normalized: list[str] = []
     for engine in base_engines:
         name = str(engine).strip().lower()
-        if name in LEGACY_BASE_ENGINES and name not in normalized:
+        if name in allowed and name not in normalized:
             normalized.append(name)
     return normalized
 
@@ -1476,6 +1695,53 @@ def _evaluate_ridge_ensemble_temporal(
         *valid_base_engines,
         *(["ridge_ensemble"] if status in {"OK", "DEGRADED"} else []),
     ]
+    autotune_by_engine: list[dict[str, Any]] = []
+    autotune_total_fits = 0
+    autotune_trials_executed = 0
+    autotune_base_retrained = False
+    for engine in base_engines:
+        meta = tuned_params.get(engine, {})
+        metrics = base_metrics.get(engine, {})
+        accuracy = _to_float(metrics.get("accuracy"), 0.0)
+        autotune_total_fits += int(meta.get("fit_count", 0) or 0)
+        autotune_trials_executed += int(meta.get("trials_executed", 0) or 0)
+        autotune_base_retrained = autotune_base_retrained or bool(
+            meta.get("base_models_retrained", False)
+        )
+        autotune_by_engine.append(
+            {
+                "horizon": f"D{int(horizon)}",
+                "engine": engine,
+                "trials": int(meta.get("trials_executed", 0) or 0),
+                "trials_requested": int(meta.get("trials_requested", 0) or 0),
+                "cv_splits": int(meta.get("cv_splits", autotune_cv if autotune else 0) or 0),
+                "best_acc": accuracy,
+                "best_edge": round(accuracy - 0.5, 6),
+                "best_fpr": _to_float(metrics.get("false_positive_rate"), 0.0),
+                "time_seconds": round(float(meta.get("elapsed_seconds", 0.0) or 0.0), 6),
+                "best_params": dict(meta.get("params", {})),
+                "status": str(meta.get("status", "UNKNOWN")),
+                "base_models_retrained": bool(meta.get("base_models_retrained", False)),
+            }
+        )
+    autotune_audit = {
+        "enabled": bool(autotune),
+        "mode": "random_search" if autotune and autotune_trials_executed > 0 else (
+            "threshold_only" if autotune and threshold_tuning else "unknown" if autotune else "disabled"
+        ),
+        "trials_requested": int(autotune_iter) * len(base_engines) if autotune else 0,
+        "trials_executed": autotune_trials_executed if autotune else 0,
+        "cv_splits": int(autotune_cv) if autotune else 0,
+        "walk_forward": True,
+        "total_fits": autotune_total_fits if autotune else 0,
+        "cache_used": False,
+        "base_models_retrained": autotune_base_retrained if autotune else False,
+        "elapsed_seconds": round(
+            sum(float(item.get("time_seconds", 0.0) or 0.0) for item in autotune_by_engine),
+            6,
+        ),
+        "status": "OK" if (not autotune or autotune_trials_executed > 0) else "WARNING",
+    }
 
     return {
         "status": status,
@@ -1490,6 +1756,8 @@ def _evaluate_ridge_ensemble_temporal(
             "cv": int(autotune_cv),
             "scoring": "neg_mean_absolute_error",
             "tuned_params": tuned_params,
+            "audit": autotune_audit,
+            "by_engine": autotune_by_engine,
         },
         "engines": selected,
         "engine_status": engine_status,

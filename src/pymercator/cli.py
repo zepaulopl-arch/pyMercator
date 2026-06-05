@@ -631,6 +631,12 @@ def build_parser() -> argparse.ArgumentParser:
             description="Train multi-horizon prediction ensemble. Profile-independent.",
         )
         train_parser.set_defaults(command="train", detail_engines=False)
+        train_parser.add_argument(
+            "train_action",
+            nargs="?",
+            choices=["benchmark-engines"],
+            help="Advanced train action. Use benchmark-engines to compare engines.",
+        )
         train_parser.add_argument("--profile", default="", help=argparse.SUPPRESS)
         train_parser.add_argument(
             "--details",
@@ -765,6 +771,11 @@ def build_parser() -> argparse.ArgumentParser:
             "--allow-small-universe",
             action="store_true",
             help="Allow assets below operational min_assets; requires --experimental.",
+        )
+        train_parser.add_argument(
+            "--benchmark-output",
+            default="storage/prediction/latest_engine_benchmark.json",
+            help="Engine benchmark JSON output.",
         )
         train_parser.add_argument("--json", action="store_true")
 

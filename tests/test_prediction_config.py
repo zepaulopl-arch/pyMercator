@@ -9,6 +9,11 @@ def test_repository_prediction_config_declares_operational_default_engine():
 
     assert payload["operational"]["default_engine"] == "multi_horizon_ridge"
     assert payload["operational"]["per_horizon_engine"] == "ridge_ensemble"
+    assert payload["operational"]["autotune"] is False
+    assert payload["autotune"]["mode"] == "random_search"
+    assert payload["autotune"]["audit"] is True
+    assert payload["experimental_engines"]["enabled"] is False
+    assert "histgradientboosting" in payload["experimental_engines"]["include"]
 
 
 def test_effective_prediction_config_exposes_operational_engines(tmp_path):
