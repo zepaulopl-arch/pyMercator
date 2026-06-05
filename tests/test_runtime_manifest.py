@@ -265,8 +265,8 @@ def test_ops_common_renders_daily_signal_screen(tmp_path: Path):
     assert "risk-off + downtrend" in output
     assert "CASH" in output
     assert "PREFERRED" in output
-    assert "LONG OBSERVATION" not in output
-    assert "SHORT OBSERVATION" not in output
+    assert "LONG OBSERVATION" in output
+    assert "SHORT OBSERVATION" in output
     assert "\nOBSERVATION\n" not in output
     assert "BASKET" in output
     assert "FINAL DECISION" in output
