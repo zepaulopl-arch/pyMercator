@@ -217,6 +217,7 @@ def test_cli_run_executes_daily_with_defaults_for_outputs(tmp_path: Path, capsys
             str(run_dir),
             "--evaluation",
             str(evaluation),
+            "--no-basket",
             "--basket-output",
             str(basket_output),
             "--json",
@@ -274,7 +275,7 @@ def test_cli_run_consumes_consolidated_market_context(tmp_path: Path, capsys):
     assert report_payload["market_context"]["schema_version"] == "market_context.v2"
 
 
-def test_cli_run_with_basket_generates_basket(tmp_path: Path, monkeypatch, capsys):
+def test_cli_run_default_generates_basket(tmp_path: Path, monkeypatch, capsys):
     import pymercator.cli_run as run_mod
 
     context = tmp_path / "context.json"
@@ -316,7 +317,6 @@ def test_cli_run_with_basket_generates_basket(tmp_path: Path, monkeypatch, capsy
             str(run_dir),
             "--evaluation",
             str(evaluation),
-            "--basket",
             "--basket-output",
             str(basket_output),
             "--json",

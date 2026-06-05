@@ -14,6 +14,8 @@ $logDir = New-PyMercatorLogDir -Prefix "daily_train" -ScriptName $scriptName
 $listName = $script:PYMERCATOR_DEFAULT_LIST
 $profiles = @("CON", "BAL", "AGR", "RLX")
 $updateStatus = "storage\context\latest_update_status.json"
+$trainLog = Join-Path $logDir "02_train_details.log"
+$conPaths = $null
 
 function New-ProfilePaths {
     param([string]$Profile)
@@ -67,13 +69,14 @@ $null = Invoke-PyMercatorStep `
         "--output",
         "storage\prediction\latest_train_detail_report.txt"
     ) `
-    -LogFile (Join-Path $logDir "02_train_details.log")
+    -LogFile $trainLog
 
 $conBasket = ""
 foreach ($profile in $profiles) {
     $paths = New-ProfilePaths -Profile $profile
     if ($profile -eq "CON") {
         $conBasket = $paths.Basket
+        $conPaths = $paths
     }
     $null = Invoke-PyMercatorStep `
         -Python $PY `
@@ -110,7 +113,17 @@ $null = Write-RunManifest -Status "OK" -Outputs @{
     runtime_dir = $logDir
 }
 
-Show-PyMercatorProfileSummary -LogDir $logDir -Profiles $profiles
+$null = Show-PyMercatorProfileSummary -LogDir $logDir -Profiles $profiles -SkipVerdict
+$null = Show-PyMercatorSystemChecks
+Show-PyMercatorVerdict
+Show-PyMercatorKeyFiles -Files @{
+    train_log = $trainLog
+    pytest_log = ""
+    report_CON = $conPaths.Report
+    report_CON_json = $conPaths.Json
+    basket_CON = $conPaths.Basket
+    manifest = $script:PYMERCATOR_MANIFEST_PATH
+}
 
 Write-Host ""
 Write-Host "============================================================"

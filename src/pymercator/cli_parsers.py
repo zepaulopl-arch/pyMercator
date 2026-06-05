@@ -32,7 +32,12 @@ def add_run_parser(subparsers: argparse._SubParsersAction[Any]) -> argparse.Argu
         "--json-output",
         default="storage/reports/latest_daily_report.json",
     )
-    run_parser.add_argument("--basket", action="store_true")
+    run_parser.add_argument(
+        "--basket",
+        action=argparse.BooleanOptionalAction,
+        default=True,
+        help="Generate basket output. Default: enabled. Use --no-basket to disable.",
+    )
     run_parser.add_argument("--slots", type=int, default=5)
     run_parser.add_argument("--min-sectors", type=int, default=3)
     run_parser.add_argument("--min-weight", type=float, default=0.10)

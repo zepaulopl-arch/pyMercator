@@ -14,6 +14,10 @@ $logDir = New-PyMercatorLogDir -Prefix "weekend_full" -ScriptName $scriptName
 $listName = $script:PYMERCATOR_DEFAULT_LIST
 $profiles = @("CON", "BAL", "AGR", "RLX")
 $updateStatus = "storage\context\latest_update_status.json"
+$trainLog = Join-Path $logDir "04_train_autotune_details.log"
+$scenarioPositiveLog = Join-Path $logDir "09_scenario_positive.log"
+$pytestLog = Join-Path $logDir "10_pytest.log"
+$conPaths = $null
 
 function New-ProfilePaths {
     param([string]$Profile)
@@ -73,10 +77,13 @@ $null = Invoke-PyMercatorStep `
         "--output",
         "storage\prediction\latest_train_detail_report.txt"
     ) `
-    -LogFile (Join-Path $logDir "04_train_autotune_details.log")
+    -LogFile $trainLog
 
 foreach ($profile in $profiles) {
     $paths = New-ProfilePaths -Profile $profile
+    if ($profile -eq "CON") {
+        $conPaths = $paths
+    }
     $null = Invoke-PyMercatorStep `
         -Python $PY `
         -Name "Run $profile basket" `
@@ -117,23 +124,55 @@ $null = Invoke-PyMercatorStep `
         "--basket-output",
         (Join-Path $logDir "scenario_positive_basket.csv")
     ) `
-    -LogFile (Join-Path $logDir "09_scenario_positive.log")
+    -LogFile $scenarioPositiveLog `
+    -Critical $false
 
 $null = Invoke-NativeStep `
     -Name "Pytest" `
     -Command @($PY, "-m", "pytest", "tests", "-q") `
-    -LogFile (Join-Path $logDir "10_pytest.log")
+    -LogFile $pytestLog `
+    -Critical $false
 
 $null = Write-RunManifest -Status "OK" -Outputs @{
     train_detail_report = "storage\prediction\latest_train_detail_report.txt"
     update_status = $updateStatus
     scenario_report_json = (Join-Path $logDir "scenario_positive_report.json")
     scenario_basket_csv = (Join-Path $logDir "scenario_positive_basket.csv")
-    pytest_log = (Join-Path $logDir "10_pytest.log")
+    pytest_log = $pytestLog
     runtime_dir = $logDir
 }
 
-Show-PyMercatorProfileSummary -LogDir $logDir -Profiles $profiles
+$scenarioExitCode = 0
+$pytestExitCode = 0
+foreach ($command in @($script:PYMERCATOR_MANIFEST.commands)) {
+    if ($command.log -eq $scenarioPositiveLog) {
+        $scenarioExitCode = [int]$command.exit_code
+    }
+    if ($command.log -eq $pytestLog) {
+        $pytestExitCode = [int]$command.exit_code
+    }
+}
+
+$null = Show-PyMercatorProfileSummary -LogDir $logDir -Profiles $profiles -SkipVerdict
+$systemChecks = Show-PyMercatorSystemChecks `
+    -ScenarioLog $scenarioPositiveLog `
+    -ScenarioExitCode $scenarioExitCode `
+    -PytestLog $pytestLog `
+    -PytestExitCode $pytestExitCode
+Show-PyMercatorVerdict
+Show-PyMercatorKeyFiles -Files @{
+    train_log = $trainLog
+    pytest_log = $pytestLog
+    report_CON = $conPaths.Report
+    report_CON_json = $conPaths.Json
+    basket_CON = $conPaths.Basket
+    manifest = $script:PYMERCATOR_MANIFEST_PATH
+}
+
+if ($systemChecks.ScenarioPositive -eq "FAIL" -or $systemChecks.Pytest -eq "FAIL") {
+    $null = Write-RunManifest -Status "FAIL"
+    throw "WEEKEND FULL FAILED: system checks failed"
+}
 
 Write-Host ""
 Write-Host "============================================================"

@@ -18,6 +18,9 @@ $runDir = Join-Path $logDir "run_CON"
 $basketOutput = Join-Path $logDir "basket_CON.csv"
 $basketJson = [System.IO.Path]::ChangeExtension($basketOutput, ".json")
 $updateStatus = "storage\context\latest_update_status.json"
+$updateLog = Join-Path $logDir "00_update_ibov.log"
+$runLog = Join-Path $logDir "02_run_CON_basket.log"
+$observeLog = Join-Path $logDir "03_observe_ibov.log"
 
 Write-PyMercatorRuntimeHeader -Title "PYMERCATOR DAILY SIGNAL"
 
@@ -25,7 +28,7 @@ $null = Invoke-PyMercatorStep `
     -Python $PY `
     -Name "Update $listName" `
     -PyArgs @("update", "--list", $listName) `
-    -LogFile (Join-Path $logDir "00_update_ibov.log")
+    -LogFile $updateLog
 
 $null = Invoke-PyMercatorStep `
     -Python $PY `
@@ -50,13 +53,13 @@ $null = Invoke-PyMercatorStep `
         "--basket-output",
         $basketOutput
     ) `
-    -LogFile (Join-Path $logDir "02_run_CON_basket.log")
+    -LogFile $runLog
 
 $null = Invoke-PyMercatorStep `
     -Python $PY `
     -Name "Observe $listName" `
     -PyArgs @("observe", "--list", $listName) `
-    -LogFile (Join-Path $logDir "03_observe_ibov.log") `
+    -LogFile $observeLog `
     -Critical $false
 
 $null = Invoke-PyMercatorStep `
@@ -74,6 +77,23 @@ $null = Write-RunManifest -Status "OK" -Outputs @{
     basket_json = $basketJson
     update_status = $updateStatus
 }
+
+Show-PyMercatorSignals `
+    -ReportJson $jsonOutput `
+    -BasketFile $basketOutput `
+    -UpdateStatusFile $updateStatus `
+    -RunLog $runLog `
+    -ObserveLog $observeLog
+Show-PyMercatorKeyFiles `
+    -Order @("report", "json", "basket", "update_log", "run_log", "observe_log") `
+    -Files @{
+        report = $reportOutput
+        json = $jsonOutput
+        basket = $basketOutput
+        update_log = $updateLog
+        run_log = $runLog
+        observe_log = $observeLog
+    }
 
 Write-Host ""
 Write-Host "============================================================"
