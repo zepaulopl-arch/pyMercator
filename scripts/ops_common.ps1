@@ -394,8 +394,8 @@ function Write-PyMercatorSummaryValue {
     )
 
     $text = if ($null -eq $Value -or "$Value" -eq "") { "-" } else { "$Value" }
-    Write-Host ("{0,-18} " -f $Label) -NoNewline
-    Write-Host (Format-PyMercatorSignalText -Text $text -Status $Status)
+    $formattedValue = Format-PyMercatorSignalText -Text $text -Status $Status
+    Write-Host ("{0,-18} {1}" -f $Label, $formattedValue)
 }
 
 function Get-PyMercatorDailyObjectValue {
@@ -887,8 +887,12 @@ function Show-PyMercatorSignals {
     if ($hedgeCandidates.Count -eq 0 -and $cashStatus -ne "PREFERRED") {
         Write-Host "No hedge or cash defense candidates."
     } else {
+        $printedCashDefense = $false
         foreach ($row in @($hedgeCandidates | Select-Object -First 5)) {
             $target = Get-PyMercatorDailyObjectValue -Object $row -Name "target" -Default "-"
+            if ("$target".ToUpperInvariant() -eq "CASH") {
+                $printedCashDefense = $true
+            }
             $status = Normalize-PyMercatorSignalStatus -Value (Get-PyMercatorDailyObjectValue -Object $row -Name "status" -Default (Get-PyMercatorDailyObjectValue -Object $row -Name "action" -Default "WATCH"))
             if ($status -eq "HEDGE_WATCH") {
                 $status = "WATCH"
@@ -901,7 +905,7 @@ function Show-PyMercatorSignals {
                 $reason
             )
         }
-        if ($cashStatus -eq "PREFERRED") {
+        if ($cashStatus -eq "PREFERRED" -and -not $printedCashDefense) {
             Write-Host (
                 "{0,-10}  {1}  {2}" -f
                 "CASH",
