@@ -26,6 +26,6 @@
     "per_horizon_selection": true
   },
   "history": {
-    "max_rows_per_asset": 1500
+    "max_rows_per_asset": 360
   }
 }

@@ -267,6 +267,49 @@ def test_ridge_ensemble_degrades_when_one_base_engine_fails(
     assert payload["valid_base_engines"] == ["extratrees", "randomforest"]
 
 
+def test_autotune_uses_recent_sample_for_large_training_sets(monkeypatch):
+    import pymercator.legacy_prediction_engines as engines_mod
+
+    rows = [
+        {
+            "date": f"2025-01-{(index % 28) + 1:02d}",
+            "ticker": f"T{index % 4}",
+            "return_1d": float(index % 5),
+            "target_return_5d": float((index % 7) - 3),
+        }
+        for index in range(40)
+    ]
+    seen_sample_sizes: list[int] = []
+
+    monkeypatch.setattr(engines_mod, "AUTOTUNE_MAX_SAMPLE_ROWS", 12)
+    monkeypatch.setattr(engines_mod, "AUTOTUNE_MIN_SAMPLE_ROWS", 8)
+    monkeypatch.setattr(
+        engines_mod,
+        "_candidate_param_sets",
+        lambda _engine, n_iter=15: [{"n_estimators": 24} for _ in range(n_iter)],
+    )
+
+    def fake_cv(_engine, x_train, _y_train, _params, *, cv=3, n_jobs=4):
+        seen_sample_sizes.append(len(x_train))
+        return {"score": 1.0, "fits": 1, "splits": 1}
+
+    monkeypatch.setattr(engines_mod, "_cv_mae_with_audit", fake_cv)
+
+    payload = engines_mod.tune_legacy_engine_params_with_audit(
+        "extratrees",
+        rows,
+        "target_return_5d",
+        n_iter=2,
+        cv=3,
+    )
+
+    assert seen_sample_sizes == [12, 12]
+    assert payload["input_rows"] == 40
+    assert payload["sample_rows"] == 12
+    assert payload["sampled"] is True
+    assert payload["trials_executed"] == 2
+
+
 def test_ridge_ensemble_fails_with_only_one_base_engine(
     tmp_path: Path,
     monkeypatch,

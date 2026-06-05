@@ -35,7 +35,7 @@ DEFAULT_FEATURES_CONFIG: dict[str, Any] = {
         "per_horizon_selection": True,
     },
     "history": {
-        "max_rows_per_asset": 1500,
+        "max_rows_per_asset": 360,
     },
 }
 

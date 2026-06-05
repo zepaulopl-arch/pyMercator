@@ -97,6 +97,8 @@ FEATURE_COLUMNS = [
 ]
 _ACTIVE_FEATURE_COLUMNS = FEATURE_COLUMNS.copy()
 FEATURE_METADATA_COLUMNS = {"date", "ticker", "sector", "_close", "feature_set"}
+AUTOTUNE_MAX_SAMPLE_ROWS = 5_000
+AUTOTUNE_MIN_SAMPLE_ROWS = 1_000
 
 AUTOTUNE_SPACES: dict[str, dict[str, list[Any]]] = {
     "extratrees": {
@@ -221,6 +223,54 @@ def _target_up_values(
     target_up_column: str,
 ) -> list[int]:
     return [int(_to_float(row.get(target_up_column), 0.0)) for row in rows]
+
+
+def _select_autotune_rows(
+    rows: list[dict[str, Any]],
+    *,
+    max_rows: int | None = None,
+) -> tuple[list[dict[str, Any]], dict[str, Any]]:
+    if max_rows is None:
+        max_rows = AUTOTUNE_MAX_SAMPLE_ROWS
+    input_rows = len(rows)
+    if max_rows <= 0 or input_rows <= max_rows:
+        return rows, {
+            "input_rows": input_rows,
+            "sample_rows": input_rows,
+            "sample_max_rows": int(max_rows),
+            "sampled": False,
+            "sample_assets": len({str(row.get("ticker", "")) for row in rows if row.get("ticker")}),
+        }
+
+    indexed_rows = list(enumerate(rows))
+    by_ticker: dict[str, list[tuple[int, dict[str, Any]]]] = {}
+    for index, row in indexed_rows:
+        ticker = str(row.get("ticker", "")).strip().upper() or "_UNKNOWN"
+        by_ticker.setdefault(ticker, []).append((index, row))
+
+    per_asset = max(1, math.ceil(max_rows / max(1, len(by_ticker))))
+    selected: list[tuple[int, dict[str, Any]]] = []
+    for group in by_ticker.values():
+        selected.extend(group[-per_asset:])
+
+    if len(selected) > max_rows:
+        selected = sorted(selected, key=lambda item: item[0])[-max_rows:]
+
+    if len(selected) < min(AUTOTUNE_MIN_SAMPLE_ROWS, input_rows):
+        seen = {index for index, _row in selected}
+        fill_needed = min(AUTOTUNE_MIN_SAMPLE_ROWS, input_rows) - len(selected)
+        fill_rows = [item for item in indexed_rows if item[0] not in seen][-fill_needed:]
+        selected.extend(fill_rows)
+
+    selected = sorted(selected, key=lambda item: item[0])
+    sampled_rows = [row for _index, row in selected]
+    return sampled_rows, {
+        "input_rows": input_rows,
+        "sample_rows": len(sampled_rows),
+        "sample_max_rows": int(max_rows),
+        "sampled": len(sampled_rows) < input_rows,
+        "sample_assets": len({str(row.get("ticker", "")) for row in sampled_rows if row.get("ticker")}),
+    }
 
 
 def _median(values: list[float]) -> float:
@@ -1052,8 +1102,9 @@ def tune_legacy_engine_params_with_audit(
     n_jobs: int = 4,
 ) -> dict[str, Any]:
     started_at = time.perf_counter()
-    x_train = [_feature_vector(row) for row in train_rows]
-    y_train = _target_return_values(train_rows, target_return_column)
+    tune_rows, sample_meta = _select_autotune_rows(train_rows)
+    x_train = [_feature_vector(row) for row in tune_rows]
+    y_train = _target_return_values(tune_rows, target_return_column)
 
     if not x_train:
         defaults = _engine_defaults(engine)
@@ -1068,6 +1119,7 @@ def tune_legacy_engine_params_with_audit(
             "elapsed_seconds": round(time.perf_counter() - started_at, 6),
             "mode": "random_search",
             "cache_used": False,
+            **sample_meta,
         }
 
     best_params = _engine_defaults(engine)
@@ -1108,6 +1160,7 @@ def tune_legacy_engine_params_with_audit(
         "elapsed_seconds": round(time.perf_counter() - started_at, 6),
         "mode": "random_search",
         "cache_used": False,
+        **sample_meta,
     }
 
 
