@@ -12,6 +12,7 @@ from pymercator.cli_parsers import (
     add_basket_parser,
     add_borrow_parser,
     add_context_parser,
+    add_db_parser,
     add_observe_parser,
     add_positions_parser,
     add_run_parser,
@@ -96,6 +97,12 @@ def _run_borrow_command(args: argparse.Namespace) -> int:
     from pymercator.cli_borrow import run_borrow_command
 
     return run_borrow_command(args)
+
+
+def _run_db_command(args: argparse.Namespace) -> int:
+    from pymercator.cli_db import run_db_command
+
+    return run_db_command(args)
 
 
 def _run_legacy_command(args: argparse.Namespace) -> int:
@@ -781,6 +788,7 @@ def build_parser() -> argparse.ArgumentParser:
         train_parser.add_argument("--json", action="store_true")
 
         add_run_parser(subparsers)
+        add_db_parser(subparsers)
         add_observe_parser(subparsers)
         add_positions_parser(subparsers)
         add_borrow_parser(subparsers)
@@ -1362,6 +1370,9 @@ def main(argv: list[str] | None = None) -> int:
 
         if args.command == "run":
             return _run_run_command(args)
+
+        if args.command == "db":
+            return _run_db_command(args)
 
         if args.command == "observe":
             return _run_observe_command(args)

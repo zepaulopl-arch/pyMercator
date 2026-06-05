@@ -49,9 +49,60 @@ def add_run_parser(subparsers: argparse._SubParsersAction[Any]) -> argparse.Argu
         "--basket-output",
         default="storage/baskets/latest_daily_basket.csv",
     )
+    run_parser.add_argument(
+        "--db",
+        default="data/aurum.db",
+        help="SQLite operational history database. Default: data/aurum.db",
+    )
     run_parser.add_argument("--allow-experimental-model", action="store_true")
     run_parser.add_argument("--json", action="store_true")
     return run_parser
+
+
+def add_db_parser(subparsers: argparse._SubParsersAction[Any]) -> argparse.ArgumentParser:
+    def add_common(parser: argparse.ArgumentParser, *, suppress_default: bool = False) -> None:
+        parser.add_argument(
+            "--db",
+            default=argparse.SUPPRESS if suppress_default else "data/aurum.db",
+            help="SQLite operational history database. Default: data/aurum.db",
+        )
+        parser.add_argument(
+            "--json",
+            action="store_true",
+            default=argparse.SUPPRESS if suppress_default else False,
+        )
+
+    db_parser = subparsers.add_parser(
+        "db",
+        help="Query local SQLite operational history.",
+        description="Query local SQLite operational history.",
+    )
+    db_parser.set_defaults(command="db", db_command="status")
+    add_common(db_parser)
+    db_subparsers = db_parser.add_subparsers(dest="db_command")
+
+    status_parser = db_subparsers.add_parser("status", help="Show DB STATUS")
+    status_parser.set_defaults(db_command="status")
+    add_common(status_parser, suppress_default=True)
+
+    last_run_parser = db_subparsers.add_parser("last-run", help="Show DB LAST RUN")
+    last_run_parser.set_defaults(db_command="last-run")
+    add_common(last_run_parser, suppress_default=True)
+
+    signal_parser = db_subparsers.add_parser("signal", help="Show DB SIGNAL <TICKER>")
+    signal_parser.set_defaults(db_command="signal")
+    signal_parser.add_argument("ticker")
+    signal_parser.add_argument("--limit", type=int, default=20)
+    add_common(signal_parser, suppress_default=True)
+
+    rank_parser = db_subparsers.add_parser("rank-last", help="Show DB RANK LAST")
+    rank_parser.set_defaults(db_command="rank-last")
+    add_common(rank_parser, suppress_default=True)
+
+    sim_parser = db_subparsers.add_parser("sim-last", help="Show DB SIM LAST")
+    sim_parser.set_defaults(db_command="sim-last")
+    add_common(sim_parser, suppress_default=True)
+    return db_parser
 
 
 def add_observe_parser(

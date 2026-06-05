@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -21,6 +22,7 @@ from pymercator.position_actions import build_position_actions, render_position_
 from pymercator.policy import normalize_profile
 from pymercator.reports.json_report import daily_report_to_dict, write_daily_report_json
 from pymercator.reports.terminal import render_daily_report
+from pymercator.storage.repositories import save_daily_run
 from pymercator.top_reasons import (
     TOP_REASONS_WIDTH,
     format_top_reason_legend,
@@ -201,6 +203,21 @@ def _blocked_payload(
     }
 
 
+def _finalize_run_payload(
+    payload: dict[str, Any],
+    *,
+    db_path: str,
+    persist_db: bool,
+) -> dict[str, Any]:
+    if not persist_db:
+        return payload
+    try:
+        save_daily_run(payload, db_path=db_path)
+    except Exception as exc:
+        payload["_db_warning"] = f"failed to save operational history: {exc}"
+    return payload
+
+
 def _load_operational_market_context(path: str) -> dict[str, Any]:
     source = Path(path)
     raw = json.loads(source.read_text(encoding="utf-8-sig"))
@@ -282,6 +299,8 @@ def run_decision_flow(
     stop: str = "progressive",
     basket_output: str = "storage/baskets/latest_daily_basket.csv",
     allow_experimental_model: bool = False,
+    db_path: str = "data/aurum.db",
+    persist_db: bool = True,
 ) -> dict[str, Any]:
     normalized_profile = normalize_profile(profile)
     files = {
@@ -301,31 +320,43 @@ def run_decision_flow(
     try:
         context_payload = _load_operational_market_context(context)
     except Exception as exc:
-        return _blocked_payload(
-            profile=normalized_profile,
-            list_name=list_name,
-            reason="invalid or insufficient market context",
-            files=files,
-            detail={"error": str(exc), "context": context},
+        return _finalize_run_payload(
+            _blocked_payload(
+                profile=normalized_profile,
+                list_name=list_name,
+                reason="invalid or insufficient market context",
+                files=files,
+                detail={"error": str(exc), "context": context},
+            ),
+            db_path=db_path,
+            persist_db=persist_db,
         )
 
     update_status_payload = _load_update_status(context)
     prediction_payload = _load_prediction_observer(evaluation)
     if prediction_payload.get("status") and prediction_payload.get("status") != "OK":
-        return _blocked_payload(
-            profile=normalized_profile,
-            list_name=list_name,
-            reason="invalid prediction evaluation",
-            files=files,
-            detail={"evaluation": evaluation, "prediction": prediction_payload},
+        return _finalize_run_payload(
+            _blocked_payload(
+                profile=normalized_profile,
+                list_name=list_name,
+                reason="invalid prediction evaluation",
+                files=files,
+                detail={"evaluation": evaluation, "prediction": prediction_payload},
+            ),
+            db_path=db_path,
+            persist_db=persist_db,
         )
     if prediction_payload.get("experimental") and not allow_experimental_model:
-        return _blocked_payload(
-            profile=normalized_profile,
-            list_name=list_name,
-            reason="experimental prediction evaluation requires --allow-experimental-model",
-            files=files,
-            detail={"evaluation": evaluation, "prediction": prediction_payload},
+        return _finalize_run_payload(
+            _blocked_payload(
+                profile=normalized_profile,
+                list_name=list_name,
+                reason="experimental prediction evaluation requires --allow-experimental-model",
+                files=files,
+                detail={"evaluation": evaluation, "prediction": prediction_payload},
+            ),
+            db_path=db_path,
+            persist_db=persist_db,
         )
 
     try:
@@ -341,15 +372,19 @@ def run_decision_flow(
         )
 
         if report.market_regime.regime.value == "UNKNOWN":
-            return _blocked_payload(
-                profile=normalized_profile,
-                list_name=list_name,
-                reason="invalid or insufficient market context",
-                files=files,
-                detail={
-                    "context": context_payload,
-                    "regime_reasons": list(report.market_regime.reasons),
-                },
+            return _finalize_run_payload(
+                _blocked_payload(
+                    profile=normalized_profile,
+                    list_name=list_name,
+                    reason="invalid or insufficient market context",
+                    files=files,
+                    detail={
+                        "context": context_payload,
+                        "regime_reasons": list(report.market_regime.reasons),
+                    },
+                ),
+                db_path=db_path,
+                persist_db=persist_db,
             )
 
         report = governance.apply_model_quality_guard(report, prediction_payload, policy)
@@ -447,20 +482,24 @@ def run_decision_flow(
         )
 
     except Exception as exc:
-        return {
-            "command": "run",
-            "profile": normalized_profile,
-            "list": list_name.upper(),
-            "status": "FAIL",
-            "reason": str(exc),
-            "files": files,
-        }
+        return _finalize_run_payload(
+            {
+                "command": "run",
+                "profile": normalized_profile,
+                "list": list_name.upper(),
+                "status": "FAIL",
+                "reason": str(exc),
+                "files": files,
+            },
+            db_path=db_path,
+            persist_db=persist_db,
+        )
 
     ready = _count_status(report, ExecutionStatus.READY)
     watch = _count_status(report, ExecutionStatus.WATCH)
     blocked = _count_status(report, ExecutionStatus.BLOCKED)
 
-    return {
+    payload = {
         "command": "run",
         "profile": normalized_profile,
         "list": list_name.upper(),
@@ -510,6 +549,7 @@ def run_decision_flow(
             market_context=context_payload,
         ),
     }
+    return _finalize_run_payload(payload, db_path=db_path, persist_db=persist_db)
 
 
 def render_run_summary(payload: dict[str, Any]) -> str:
@@ -778,7 +818,12 @@ def run_run_command(args: Any) -> int:
         stop=args.stop,
         basket_output=args.basket_output,
         allow_experimental_model=getattr(args, "allow_experimental_model", False),
+        db_path=getattr(args, "db", "data/aurum.db"),
     )
+
+    db_warning = payload.pop("_db_warning", "")
+    if db_warning:
+        print(f"DB WARNING: {db_warning}", file=sys.stderr)
 
     if getattr(args, "json", False):
         print(json.dumps(payload, ensure_ascii=False, indent=2))

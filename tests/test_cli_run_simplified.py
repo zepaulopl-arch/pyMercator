@@ -191,12 +191,19 @@ def _fake_report(profile: str) -> DailyReport:
 
 
 def test_cli_run_executes_daily_with_defaults_for_outputs(tmp_path: Path, capsys):
+    from pymercator.storage.repositories import (
+        latest_daily_run,
+        signals_for_ticker,
+        table_counts,
+    )
+
     context = tmp_path / "context.json"
     report = tmp_path / "report.txt"
     json_report = tmp_path / "report.json"
     run_dir = tmp_path / "latest"
     basket_output = tmp_path / "basket.csv"
     evaluation = tmp_path / "evaluation.json"
+    db_path = tmp_path / "aurum.db"
     _write_context(context)
     _write_multi_horizon_evaluation(evaluation)
 
@@ -220,6 +227,8 @@ def test_cli_run_executes_daily_with_defaults_for_outputs(tmp_path: Path, capsys
             "--no-basket",
             "--basket-output",
             str(basket_output),
+            "--db",
+            str(db_path),
             "--json",
         ]
     )
@@ -235,6 +244,68 @@ def test_cli_run_executes_daily_with_defaults_for_outputs(tmp_path: Path, capsys
     assert payload["status"] == "OK"
     assert payload["profile"] == "CON"
     assert payload["basket"] is None
+
+    assert db_path.exists()
+    counts = table_counts(db_path=db_path)
+    assert counts["daily_runs"] == 1
+    assert counts["signals"] > 0
+    assert counts["rankings"] > 0
+    run = latest_daily_run(db_path=db_path)
+    assert run is not None
+    assert run["profile"] == "CON"
+    assert run["status"] == "OK"
+    assert signals_for_ticker("PRIO3", db_path=db_path)
+
+
+def test_cli_run_warns_but_continues_when_db_persistence_fails(
+    tmp_path: Path,
+    monkeypatch,
+    capsys,
+):
+    import pymercator.cli_run as run_mod
+
+    context = tmp_path / "context.json"
+    report = tmp_path / "report.txt"
+    json_report = tmp_path / "report.json"
+    run_dir = tmp_path / "latest"
+    evaluation = tmp_path / "evaluation.json"
+    _write_context(context)
+    _write_multi_horizon_evaluation(evaluation)
+
+    def fail_save(*args, **kwargs):
+        raise RuntimeError("database locked")
+
+    monkeypatch.setattr(run_mod, "save_daily_run", fail_save)
+
+    exit_code = main(
+        [
+            "run",
+            "--profile",
+            "CON",
+            "--universe",
+            "data/universes/ibov_sample.csv",
+            "--context",
+            str(context),
+            "--report-output",
+            str(report),
+            "--json-output",
+            str(json_report),
+            "--run-dir",
+            str(run_dir),
+            "--evaluation",
+            str(evaluation),
+            "--no-basket",
+            "--json",
+        ]
+    )
+
+    captured = capsys.readouterr()
+    payload = json.loads(captured.out)
+    assert exit_code == 0
+    assert payload["status"] == "OK"
+    assert "_db_warning" not in payload
+    assert "DB WARNING" in captured.err
+    assert "database locked" in captured.err
 
 
 def test_cli_run_consumes_consolidated_market_context(tmp_path: Path, capsys):

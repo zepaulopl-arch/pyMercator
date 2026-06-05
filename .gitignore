@@ -44,6 +44,8 @@ data/prices/
 data/indices/
 data/sentiment/
 data/universes/ibov_live.csv
+data/*.db
+data/*.sqlite
 
 # Generated operational artifacts
 storage/scenario_runs/
