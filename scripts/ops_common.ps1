@@ -548,10 +548,10 @@ function Get-PyMercatorSignalColorCode {
     param([string]$Status)
 
     $key = "$Status".ToUpperInvariant()
-    if ($key -match "^(OK|PASS|STRONG|READY|EXEC_READY|RISK_ON|TREND_CONFIRM|ALIGNED_STRONG|REVIEW LONG BASKET|REVIEW BASKET)$") {
+    if ($key -match "^(OK|PASS|STRONG|READY|EXEC_READY|RISK_ON|TREND_CONFIRM|ALIGNED_STRONG|REVIEW LONG BASKET|REVIEW BASKET|OBS_FAVORABLE|BUY_SETUP|SELL_SETUP)$") {
         return "32"
     }
-    if ($key -match "^(WARNING|PARTIAL|WATCH|MANUAL_ONLY|MANUAL REVIEW|CHOPPY)$") {
+    if ($key -match "^(WARNING|PARTIAL|WATCH|MANUAL_ONLY|MANUAL REVIEW|CHOPPY|HEDGE_WATCH)$") {
         return "33"
     }
     if ($key -match "^(FAIL|WEAK|DEGENERATE|BLOCKED|SHORT_BLOCKED|RISK_OFF|AVOID|NO LONG TRADE)$") {
@@ -642,9 +642,59 @@ function Normalize-PyMercatorSignalStatus {
     return $text
 }
 
+function Get-PyMercatorObservationClassForTicker {
+    param(
+        [string]$Ticker,
+        [object[]]$Candidates,
+        [string]$Default = "WATCH"
+    )
+
+    $tickerKey = "$Ticker".Trim().ToUpperInvariant()
+    if (-not $tickerKey) {
+        return $Default
+    }
+
+    foreach ($candidate in @($Candidates)) {
+        $candidateTicker = "$(Get-PyMercatorDailyObjectValue -Object $candidate -Name 'ticker' -Default '')".Trim().ToUpperInvariant()
+        if ($candidateTicker -eq $tickerKey) {
+            return Normalize-PyMercatorSignalStatus -Value (Get-PyMercatorDailyObjectValue -Object $candidate -Name "class" -Default $Default)
+        }
+    }
+
+    return $Default
+}
+
+function Get-PyMercatorBoardSignal {
+    param(
+        [object]$Value,
+        [string]$Default
+    )
+
+    if ($null -eq $Value -or "$Value" -eq "") {
+        $text = "$Default"
+    } else {
+        $text = "$Value"
+    }
+    $text = $text.Trim().ToUpperInvariant()
+    if ($text -match "SHORT_SETUP|SELL") {
+        return "SELL_SETUP"
+    }
+    if ($text -match "BUY|LONG") {
+        return "BUY_SETUP"
+    }
+    if ($text -match "HEDGE") {
+        return "HEDGE_WATCH"
+    }
+    if ($text -match "NO_") {
+        return "NO_SETUP"
+    }
+    return $Default
+}
+
 function Get-PyMercatorLongSignalRows {
     param(
         [object[]]$Decisions,
+        [object[]]$ObservationCandidates = @(),
         [int]$Limit = 10
     )
 
@@ -654,21 +704,35 @@ function Get-PyMercatorLongSignalRows {
         $ranking = Get-PyMercatorDailyObjectValue -Object $item -Name "ranking" -Default $null
         $permission = Get-PyMercatorDailyObjectValue -Object $item -Name "permission" -Default $null
         $validation = Get-PyMercatorDailyObjectValue -Object $item -Name "validation" -Default $null
-        $action = Normalize-PyMercatorSignalStatus -Value (Get-PyMercatorDailyObjectValue -Object $permission -Name "status" -Default "")
-        if ($action -eq "-") {
-            $action = Normalize-PyMercatorSignalStatus -Value (Get-PyMercatorDailyObjectValue -Object $validation -Name "status" -Default "-")
+        $execution = Normalize-PyMercatorSignalStatus -Value (Get-PyMercatorDailyObjectValue -Object $permission -Name "status" -Default "")
+        if ($execution -eq "-") {
+            $execution = Normalize-PyMercatorSignalStatus -Value (Get-PyMercatorDailyObjectValue -Object $validation -Name "status" -Default "-")
         }
         $score = Get-PyMercatorDailyObjectValue -Object $ranking -Name "context_score" -Default (Get-PyMercatorDailyObjectValue -Object $ranking -Name "raw_score" -Default "-")
+        $signalRaw = Get-PyMercatorDailyObjectValue -Object $ranking -Name "context_signal" -Default (Get-PyMercatorDailyObjectValue -Object $ranking -Name "raw_signal" -Default "BUY")
         $reason = Get-PyMercatorDailyObjectValue -Object $item -Name "decision_label" -Default ""
-        if (-not $reason) {
-            $reasons = @(Get-PyMercatorDailyObjectValue -Object $item -Name "blocker_reasons" -Default @())
-            $reason = if ($reasons.Count -gt 0) { ($reasons -join "+") } else { "-" }
+        $reasons = @(Get-PyMercatorDailyObjectValue -Object $item -Name "blocker_reasons" -Default @())
+        if ($reasons.Count -gt 0) {
+            $reason = $reasons -join "+"
+        } elseif (-not $reason) {
+            $permissionReasons = @(Get-PyMercatorDailyObjectValue -Object $permission -Name "reasons" -Default @())
+            $validationReasons = @(Get-PyMercatorDailyObjectValue -Object $validation -Name "reasons" -Default @())
+            if ($permissionReasons.Count -gt 0) {
+                $reason = $permissionReasons[0]
+            } elseif ($validationReasons.Count -gt 0) {
+                $reason = $validationReasons[0]
+            } else {
+                $reason = "-"
+            }
         }
+        $ticker = Get-PyMercatorDailyObjectValue -Object $asset -Name "ticker" -Default "-"
         $rows += [pscustomobject]@{
-            Ticker = Get-PyMercatorDailyObjectValue -Object $asset -Name "ticker" -Default "-"
-            Action = $action
+            Ticker = $ticker
+            ObsClass = Get-PyMercatorObservationClassForTicker -Ticker $ticker -Candidates $ObservationCandidates -Default "WATCH"
+            Signal = Get-PyMercatorBoardSignal -Value $signalRaw -Default "BUY_SETUP"
+            Execution = $execution
             Score = $score
-            Reason = $reason
+            MainReason = $reason
         }
     }
     return $rows
@@ -685,22 +749,19 @@ function Get-PyMercatorShortSignalRows {
         $borrow = Normalize-PyMercatorSignalStatus -Value (Get-PyMercatorDailyObjectValue -Object $item -Name "borrow_status" -Default "-")
         $permission = Normalize-PyMercatorSignalStatus -Value (Get-PyMercatorDailyObjectValue -Object $item -Name "short_permission" -Default (Get-PyMercatorDailyObjectValue -Object $item -Name "permission" -Default "-"))
         $execution = $permission
-        $action = "review"
+        $reason = Get-PyMercatorDailyObjectValue -Object $item -Name "reason" -Default (Get-PyMercatorDailyObjectValue -Object $item -Name "setup_reason" -Default "-")
         if ($borrow -eq "DATA_MISSING") {
             $execution = "DATA_BLOCKED"
-            $action = "check borrow"
-        } elseif ($permission -eq "READY") {
-            $action = "review short"
-        } elseif ($permission -eq "BLOCKED") {
-            $action = "blocked"
+            $reason = "borrow data missing"
         }
+        $setup = Get-PyMercatorDailyObjectValue -Object $item -Name "short_setup_status" -Default (Get-PyMercatorDailyObjectValue -Object $item -Name "class" -Default "SHORT_SETUP")
         $rows += [pscustomobject]@{
             Ticker = Get-PyMercatorDailyObjectValue -Object $item -Name "ticker" -Default "-"
-            Score = Get-PyMercatorDailyObjectValue -Object $item -Name "short_score" -Default (Get-PyMercatorDailyObjectValue -Object $item -Name "score" -Default "-")
-            Setup = Get-PyMercatorDailyObjectValue -Object $item -Name "short_setup_status" -Default "SHORT_SETUP"
-            Borrow = $borrow
+            ObsClass = Normalize-PyMercatorSignalStatus -Value (Get-PyMercatorDailyObjectValue -Object $item -Name "class" -Default $setup)
+            Signal = Get-PyMercatorBoardSignal -Value $setup -Default "SELL_SETUP"
             Execution = $execution
-            Action = $action
+            Score = Get-PyMercatorDailyObjectValue -Object $item -Name "short_score" -Default (Get-PyMercatorDailyObjectValue -Object $item -Name "score" -Default "-")
+            MainReason = $reason
         }
     }
     return $rows
@@ -832,34 +893,36 @@ function Show-PyMercatorSignals {
     Write-Host ("{0,-18} {1}" -f "CASH", (Format-PyMercatorSignalText -Text $cashStatus -Status $cashStatus))
 
     Write-Host ""
-    Write-Host "BUY / LONG SIGNALS"
+    Write-Host "LONG / BUY BOARD"
     Write-Host "--------------------------------------------------------------------------------"
-    Write-Host ("{0,2}  {1,-8} {2,-8} {3,7}  {4}" -f "#", "TICKER", "ACTION", "SCORE", "REASON")
-    $longRows = @(Get-PyMercatorLongSignalRows -Decisions $decisions -Limit $LongLimit)
+    Write-Host ("{0,2}  {1,-8} {2,-13} {3,-11} {4,-12} {5,7}  {6}" -f "#", "TICKER", "OBS_CLASS", "SIGNAL", "EXECUTION", "SCORE", "MAIN_REASON")
+    $longRows = @(Get-PyMercatorLongSignalRows -Decisions $decisions -ObservationCandidates $observationCandidates -Limit $LongLimit)
     if ($longRows.Count -eq 0) {
         Write-Host "No long candidates in report."
     } else {
         $index = 1
         foreach ($row in $longRows) {
             Write-Host (
-                "{0,2}  {1,-8} {2} {3,7}  {4}" -f
+                "{0,2}  {1,-8} {2} {3} {4} {5,7}  {6}" -f
                 $index,
                 $row.Ticker,
-                (Format-PyMercatorSignalCell -Text $row.Action -Width 8 -Status $row.Action),
+                (Format-PyMercatorSignalCell -Text $row.ObsClass -Width 13 -Status $row.ObsClass),
+                (Format-PyMercatorSignalCell -Text $row.Signal -Width 11 -Status $row.Signal),
+                (Format-PyMercatorSignalCell -Text $row.Execution -Width 12 -Status $row.Execution),
                 (Format-PyMercatorSignalNumber -Value $row.Score -Decimals 1),
-                $row.Reason
+                $row.MainReason
             )
             $index += 1
         }
         if ($actionable -eq 0) {
-            Write-Host "No READY long signal."
+            Write-Host "No READY long execution."
         }
     }
 
     Write-Host ""
-    Write-Host "SELL-SHORT SIGNALS"
+    Write-Host "SHORT / SELL BOARD"
     Write-Host "--------------------------------------------------------------------------------"
-    Write-Host ("{0,2}  {1,-8} {2,11}  {3,-12} {4,-12} {5,-12} {6}" -f "#", "TICKER", "SETUP_SCORE", "SETUP", "BORROW", "EXECUTION", "ACTION")
+    Write-Host ("{0,2}  {1,-8} {2,-13} {3,-11} {4,-12} {5,7}  {6}" -f "#", "TICKER", "OBS_CLASS", "SIGNAL", "EXECUTION", "SCORE", "MAIN_REASON")
     $shortRows = @(Get-PyMercatorShortSignalRows -Candidates $shortCandidates -Limit $ShortLimit)
     if ($shortRows.Count -eq 0) {
         Write-Host "No short setup candidates."
@@ -867,14 +930,14 @@ function Show-PyMercatorSignals {
         $index = 1
         foreach ($row in $shortRows) {
             Write-Host (
-                "{0,2}  {1,-8} {2,11}  {3,-12} {4} {5} {6}" -f
+                "{0,2}  {1,-8} {2} {3} {4} {5,7}  {6}" -f
                 $index,
                 $row.Ticker,
-                (Format-PyMercatorSignalNumber -Value $row.Score -Decimals 1),
-                $row.Setup,
-                (Format-PyMercatorSignalCell -Text $row.Borrow -Width 12 -Status $row.Borrow),
+                (Format-PyMercatorSignalCell -Text $row.ObsClass -Width 13 -Status $row.ObsClass),
+                (Format-PyMercatorSignalCell -Text $row.Signal -Width 11 -Status $row.Signal),
                 (Format-PyMercatorSignalCell -Text $row.Execution -Width 12 -Status $row.Execution),
-                $row.Action
+                (Format-PyMercatorSignalNumber -Value $row.Score -Decimals 1),
+                $row.MainReason
             )
             $index += 1
         }
@@ -912,54 +975,6 @@ function Show-PyMercatorSignals {
                 (Format-PyMercatorSignalCell -Text "PREFERRED" -Width 9 -Status "PREFERRED"),
                 "no long basket allowed"
             )
-        }
-    }
-
-    Write-Host ""
-    Write-Host "LONG OBSERVATION"
-    Write-Host "--------------------------------------------------------------------------------"
-    Write-Host ("{0,2}  {1,-8} {2,6}  {3,-14} {4}" -f "#", "TICKER", "OBS", "CLASS", "REASON")
-    if ($observationCandidates.Count -eq 0) {
-        Write-PyMercatorSummaryValue -Label "status" -Value "EMPTY"
-        Write-PyMercatorSummaryValue -Label "reason" -Value "no long observation candidates"
-    } else {
-        $index = 1
-        foreach ($row in @($observationCandidates | Select-Object -First $ObservationLimit)) {
-            $klass = Normalize-PyMercatorSignalStatus -Value (Get-PyMercatorDailyObjectValue -Object $row -Name "class" -Default "-")
-            Write-Host (
-                "{0,2}  {1,-8} {2,6}  {3} {4}" -f
-                $index,
-                (Get-PyMercatorDailyObjectValue -Object $row -Name "ticker" -Default "-"),
-                (Format-PyMercatorSignalNumber -Value (Get-PyMercatorDailyObjectValue -Object $row -Name "obs_index" -Default "-") -Decimals 1),
-                (Format-PyMercatorSignalCell -Text $klass -Width 14 -Status $klass),
-                (Get-PyMercatorDailyObjectValue -Object $row -Name "reason" -Default "-")
-            )
-            $index += 1
-        }
-    }
-
-    Write-Host ""
-    Write-Host "SHORT OBSERVATION"
-    Write-Host "--------------------------------------------------------------------------------"
-    Write-Host ("{0,2}  {1,-8} {2,6}  {3,-12} {4}" -f "#", "TICKER", "SCORE", "CLASS", "REASON")
-    if ($shortObservationCandidates.Count -eq 0) {
-        Write-PyMercatorSummaryValue -Label "status" -Value "EMPTY"
-        Write-PyMercatorSummaryValue -Label "reason" -Value "no short observation candidates"
-    } else {
-        $index = 1
-        foreach ($row in @($shortObservationCandidates | Select-Object -First $ObservationLimit)) {
-            $klass = Normalize-PyMercatorSignalStatus -Value (Get-PyMercatorDailyObjectValue -Object $row -Name "class" -Default (Get-PyMercatorDailyObjectValue -Object $row -Name "short_setup_status" -Default "SHORT_SETUP"))
-            $reason = Get-PyMercatorDailyObjectValue -Object $row -Name "reason" -Default (Get-PyMercatorDailyObjectValue -Object $row -Name "setup_reason" -Default "-")
-            $score = Get-PyMercatorDailyObjectValue -Object $row -Name "score" -Default (Get-PyMercatorDailyObjectValue -Object $row -Name "short_score" -Default "-")
-            Write-Host (
-                "{0,2}  {1,-8} {2,6}  {3} {4}" -f
-                $index,
-                (Get-PyMercatorDailyObjectValue -Object $row -Name "ticker" -Default "-"),
-                (Format-PyMercatorSignalNumber -Value $score -Decimals 1),
-                (Format-PyMercatorSignalCell -Text $klass -Width 12 -Status $klass),
-                $reason
-            )
-            $index += 1
         }
     }
 

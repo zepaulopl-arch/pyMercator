@@ -38,7 +38,7 @@ Existing audit artifacts:
 
 - `python -m pytest tests -q`: `284 passed, 1 skipped in 43.67s`.
 - `.\scripts\run_daily_signal.ps1`: exit `0`, runtime `runtime\daily_signal_20260604_220826`.
-- `.\scripts\run_daily_signal.ps1`: showed `PYMERCATOR SIGNALS`, `BUY / LONG SIGNALS`, `SELL-SHORT SIGNALS`, `HEDGE / DEFENSE`, `EXECUTION`, and `DATA_BLOCKED`.
+- `.\scripts\run_daily_signal.ps1`: now shows `PYMERCATOR SIGNALS`, `LONG / BUY BOARD`, `SHORT / SELL BOARD`, `HEDGE / DEFENSE`, `EXECUTION`, and `DATA_BLOCKED`.
 - `.\scripts\run_daily_signal.ps1`: no loose `0` lines detected; no ANSI detected in terminal capture; no ANSI detected in runtime artifacts.
 - `.\scripts\run_daily_signal.ps1 -Color`: exit `0`, runtime `runtime\daily_signal_20260604_221241`.
 - `.\scripts\run_daily_signal.ps1 -Color`: binary capture confirmed ANSI in terminal output; no ANSI detected in runtime artifacts.

@@ -197,7 +197,7 @@ def test_ops_common_renders_daily_signal_screen(tmp_path: Path):
                 ],
                 "observation_candidates": [
                     {
-                        "ticker": "CCC3",
+                        "ticker": "AAA3",
                         "bias": "LONG",
                         "score": 75.0,
                         "obs_index": 75.0,
@@ -245,10 +245,19 @@ def test_ops_common_renders_daily_signal_screen(tmp_path: Path):
     assert "data_quality" in output
     assert "77.0" in output
     assert "0 EXEC_READY | 1 DATA_BLOCKED" in output
-    assert "BUY / LONG SIGNALS" in output
-    assert "SELL-SHORT SIGNALS" in output
+    assert "LONG / BUY BOARD" in output
+    assert "SHORT / SELL BOARD" in output
+    assert "OBS_CLASS" in output
+    assert "SIGNAL" in output
     assert "EXECUTION" in output
+    assert "MAIN_REASON" in output
+    assert "BUY_SETUP" in output
+    assert "SELL_SETUP" in output
     assert "DATA_BLOCKED" in output
+    assert "borrow data missing" in output
+    assert "BUY / LONG SIGNALS" not in output
+    assert "SELL-SHORT SIGNALS" not in output
+    assert "SETUP_SCORE" not in output
     assert "PERMISSION" not in output
     assert "BLOCKED/DATA" not in output
     assert "HEDGE / DEFENSE" in output
@@ -256,10 +265,9 @@ def test_ops_common_renders_daily_signal_screen(tmp_path: Path):
     assert "risk-off + downtrend" in output
     assert "CASH" in output
     assert "PREFERRED" in output
-    assert "LONG OBSERVATION" in output
-    assert "SHORT OBSERVATION" in output
+    assert "LONG OBSERVATION" not in output
+    assert "SHORT OBSERVATION" not in output
     assert "\nOBSERVATION\n" not in output
-    assert "weak trend/mom + risk-off" in output
     assert "BASKET" in output
     assert "FINAL DECISION" in output
     assert "NO LONG TRADE." in output
