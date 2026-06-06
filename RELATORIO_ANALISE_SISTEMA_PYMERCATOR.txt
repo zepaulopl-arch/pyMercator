@@ -134,9 +134,9 @@ basket
   -> grava csv/json/txt em modo ANALYSIS_ONLY
 
 scripts
-  -> run_daily_signal.ps1: rotina normal, sem treino
-  -> run_daily_train.ps1: rotina com treino sem autotune
-  -> run_weekend_full.ps1: auditoria pesada, autotune, scenario e pytest
+  -> signal.ps1: rotina normal, sem treino
+  -> train.ps1: rotina com treino sem autotune
+  -> weekend.ps1: auditoria pesada, autotune, scenario e pytest
 
 Ponto forte arquitetural:
 
@@ -784,9 +784,9 @@ O main continua unico, mas build_parser fica modular.
 
 Arquivos atuais uteis:
 
-- scripts\run_daily_signal.ps1
-- scripts\run_daily_train.ps1
-- scripts\run_weekend_full.ps1
+- scripts\signal.ps1
+- scripts\train.ps1
+- scripts\weekend.ps1
 - scripts\ops_common.ps1
 
 Legados:

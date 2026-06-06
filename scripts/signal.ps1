@@ -40,19 +40,19 @@ $null = Invoke-PyMercatorStep `
     -Python $PY `
     -Name "Run CON basket" `
     -PyArgs @(
-        "run",
-        "--profile",
-        "CON",
-        "--basket",
-        "--report-output",
-        $reportOutput,
-        "--json-output",
-        $jsonOutput,
-        "--run-dir",
-        $runDir,
-        "--basket-output",
-        $basketOutput
-    ) `
+    "run",
+    "--profile",
+    "CON",
+    "--basket",
+    "--report-output",
+    $reportOutput,
+    "--json-output",
+    $jsonOutput,
+    "--run-dir",
+    $runDir,
+    "--basket-output",
+    $basketOutput
+) `
     -LogFile $runLog
 
 $null = Invoke-PyMercatorStep `
@@ -70,11 +70,11 @@ $null = Invoke-PyMercatorStep `
     -Critical $false
 
 $null = Write-RunManifest -Status "OK" -Outputs @{
-    report_txt = $reportOutput
-    report_json = $jsonOutput
-    run_dir = $runDir
-    basket_csv = $basketOutput
-    basket_json = $basketJson
+    report_txt    = $reportOutput
+    report_json   = $jsonOutput
+    run_dir       = $runDir
+    basket_csv    = $basketOutput
+    basket_json   = $basketJson
     update_status = $updateStatus
 }
 
@@ -87,13 +87,13 @@ Show-PyMercatorSignals `
 Show-PyMercatorKeyFiles `
     -Order @("report", "json", "basket", "update_log", "run_log", "observe_log") `
     -Files @{
-        report = $reportOutput
-        json = $jsonOutput
-        basket = $basketOutput
-        update_log = $updateLog
-        run_log = $runLog
-        observe_log = $observeLog
-    }
+    report      = $reportOutput
+    json        = $jsonOutput
+    basket      = $basketOutput
+    update_log  = $updateLog
+    run_log     = $runLog
+    observe_log = $observeLog
+}
 
 Write-Host ""
 Write-Host "============================================================"

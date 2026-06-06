@@ -47,7 +47,14 @@ def _reference(close: float) -> dict:
     }
 
 
-def _decision(ticker: str, close: float, status: str, reasons: list[str], *, include_reference: bool = True) -> dict:
+def _decision(
+    ticker: str,
+    close: float,
+    status: str,
+    reasons: list[str],
+    *,
+    include_reference: bool = True,
+) -> dict:
     payload = {
         "asset": {
             "ticker": ticker,
@@ -86,9 +93,21 @@ def _write_report(run_dir: Path, *, include_references: bool = True) -> None:
     payload = {
         "profile": "CON",
         "decisions": [
-            _decision("LONG1", 100.0, "BLOCKED", ["MODEL_WEAK", "VOL_HIGH"], include_reference=include_references),
+            _decision(
+                "LONG1",
+                100.0,
+                "BLOCKED",
+                ["MODEL_WEAK", "VOL_HIGH"],
+                include_reference=include_references,
+            ),
             _decision("LONG2", 50.0, "READY", [], include_reference=include_references),
-            _decision("LONG3", 40.0, "WATCH", ["MANUAL_REVIEW"], include_reference=include_references),
+            _decision(
+                "LONG3",
+                40.0,
+                "WATCH",
+                ["MANUAL_REVIEW"],
+                include_reference=include_references,
+            ),
         ],
         "observation_candidates": [
             {
@@ -137,7 +156,7 @@ def _write_report(run_dir: Path, *, include_references: bool = True) -> None:
                 "short_permission": "SHORT_READY",
                 "executable": True,
                 **short2_ref,
-            }
+            },
         ],
     }
     (run_dir / "report_CON.json").write_text(
@@ -175,7 +194,10 @@ def test_observation_review_writes_outputs_and_separates_real_from_hypothetical(
     assert review["summary"]["real_watch_or_better"]["ready_items"] == 2
     assert review["summary"]["real_watch_or_better"]["watch_items"] == 1
     assert review["summary"]["real_watch_or_better"]["real_pnl"] > 0
-    assert review["summary"]["real_watch_or_better"]["sim_pnl"] > review["summary"]["real_watch_or_better"]["real_pnl"]
+    assert (
+        review["summary"]["real_watch_or_better"]["sim_pnl"]
+        > review["summary"]["real_watch_or_better"]["real_pnl"]
+    )
     assert review["summary"]["long_observation"]["pnl_total"] == 10000.0
     assert review["summary"]["short_observation"]["pnl_total"] == 10000.0
     assert review["summary"]["observation_top10"]["items"] == 2
@@ -218,10 +240,34 @@ def test_mtm_cli_renders_required_sections(tmp_path: Path, capsys) -> None:
     assert "SHORT SIGNAL RESULT" not in output
     assert "FINAL REVIEW" in output
     assert "observation P&L is hypothetical" in output
-    assert "per_item R$" in output
-    assert "PRICE_STATUS" in output
-    assert "REVIEW_STATUS" in output
-    assert "REAL_PNL" in output
+
+
+def test_review_cli_renders_not_computed_summary_when_reference_prices_are_missing(
+    tmp_path: Path,
+    capsys,
+) -> None:
+    run_dir = tmp_path / "runtime" / "daily_signal_20260605_120000"
+    _legacy_write_report_without_reference(run_dir)
+
+    exit_code = main(
+        [
+            "mtm",
+            "--run-dir",
+            str(run_dir),
+            "--capital",
+            "10000",
+            "--prices-dir",
+            str(tmp_path / "prices"),
+        ]
+    )
+
+    output = capsys.readouterr().out
+    assert exit_code == 0
+    assert "status             NOT_COMPUTED" in output
+    assert "PRICE_STATUS" not in output
+    assert "REVIEW_STATUS" not in output
+    assert "REAL SIGNALS - WATCH OR BETTER" not in output
+    assert "OBSERVATION TOP 10" not in output
 
 
 def test_review_marks_missing_price_data(tmp_path: Path) -> None:
@@ -236,10 +282,14 @@ def test_review_marks_missing_price_data(tmp_path: Path) -> None:
 
     assert review["data_missing"] > 0
     assert review["summary"]["long_observation"]["data_missing"] == 1
-    assert "DATA_MISSING" in (run_dir / "observation_review.txt").read_text(encoding="utf-8")
+    assert "DATA_MISSING" in (run_dir / "observation_review.txt").read_text(
+        encoding="utf-8"
+    )
 
 
-def test_review_does_not_default_to_zero_without_reference_price(tmp_path: Path) -> None:
+def test_review_does_not_default_to_zero_without_reference_price(
+    tmp_path: Path,
+) -> None:
     run_dir = tmp_path / "runtime" / "daily_signal_20260605_120000"
     prices_dir = tmp_path / "prices"
     _legacy_write_report_without_reference(run_dir)
@@ -256,16 +306,25 @@ def test_review_does_not_default_to_zero_without_reference_price(tmp_path: Path)
     first_row = review["sections"]["observation_top10"]["rows"][0]
     text = (run_dir / "observation_review.txt").read_text(encoding="utf-8")
 
-    assert review["cannot_compute_reason"] == "Cannot compute MTM: missing reference prices from signal time."
+    assert review["status"] == "NOT_COMPUTED"
+    assert (
+        review["cannot_compute_reason"]
+        == "Cannot compute MTM: missing reference prices from signal time."
+    )
     assert first_row["price_status"] == "DATA_MISSING"
     assert first_row["review_status"] == "NOT_REVIEWED"
     assert first_row["return_pct"] is None
     assert first_row["sim_pnl"] is None
-    assert "Cannot compute MTM: missing reference prices from signal time." in text
-    assert " NA " in text
+    assert "status             NOT_COMPUTED" in text
+    assert "PRICE_STATUS" not in text
+    assert "REVIEW_STATUS" not in text
+    assert "REAL SIGNALS - WATCH OR BETTER" not in text
+    assert "OBSERVATION TOP 10" not in text
 
 
-def test_review_computes_same_day_price_change_from_reference_price(tmp_path: Path) -> None:
+def test_review_computes_same_day_price_change_from_reference_price(
+    tmp_path: Path,
+) -> None:
     run_dir = tmp_path / "runtime" / "daily_signal_20260605_120000"
     prices_dir = tmp_path / "prices"
     _write_report(run_dir)

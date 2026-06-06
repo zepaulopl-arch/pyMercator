@@ -5,7 +5,7 @@
 Dia normal:
 
 ```powershell
-.\scripts\run_daily_signal.ps1
+.\scripts\signal.ps1
 ```
 
 Fim da tarde:
@@ -17,13 +17,13 @@ Fim da tarde:
 Treino eventual:
 
 ```powershell
-.\scripts\run_daily_train.ps1
+.\scripts\train.ps1
 ```
 
 Fim de semana:
 
 ```powershell
-.\scripts\run_weekend_full.ps1
+.\scripts\weekend.ps1
 ```
 
 ## Diagnostico

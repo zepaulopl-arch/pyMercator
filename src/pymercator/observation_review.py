@@ -187,7 +187,9 @@ def _item_reference_fields(
         "ref_price": price if price > 0 else None,
         "ref_date": _as_text(item.get("ref_date") or fallback.get("ref_date"), ""),
         "ref_ts": _as_text(item.get("ref_ts") or fallback.get("ref_ts"), ""),
-        "ref_source": _as_text(item.get("ref_source") or fallback.get("ref_source"), ""),
+        "ref_source": _as_text(
+            item.get("ref_source") or fallback.get("ref_source"), ""
+        ),
     }
 
 
@@ -199,8 +201,12 @@ def _decision_reason(item: dict[str, Any]) -> str:
 
 
 def _decision_execution(item: dict[str, Any]) -> str:
-    permission = item.get("permission", {}) if isinstance(item.get("permission"), dict) else {}
-    validation = item.get("validation", {}) if isinstance(item.get("validation"), dict) else {}
+    permission = (
+        item.get("permission", {}) if isinstance(item.get("permission"), dict) else {}
+    )
+    validation = (
+        item.get("validation", {}) if isinstance(item.get("validation"), dict) else {}
+    )
     return _normalize_execution(permission.get("status") or validation.get("status"))
 
 
@@ -220,7 +226,9 @@ def _short_execution(item: dict[str, Any]) -> str:
 def _short_reason(item: dict[str, Any], execution: str) -> str:
     if execution == "DATA_BLOCKED":
         return "borrow data missing"
-    return _as_text(item.get("borrow_reason") or item.get("reason") or item.get("setup_reason"))
+    return _as_text(
+        item.get("borrow_reason") or item.get("reason") or item.get("setup_reason")
+    )
 
 
 def _classify_block(direction: str, pnl: float, *, relevance_brl: float) -> str:
@@ -295,7 +303,9 @@ def _review_row(
 
     if not ref_price or ref_price <= 0:
         row["review_class"] = "DATA_MISSING"
-        row["main_reason"] = "Cannot compute MTM: missing reference prices from signal time."
+        row["main_reason"] = (
+            "Cannot compute MTM: missing reference prices from signal time."
+        )
         return row
 
     try:
@@ -396,8 +406,16 @@ def _short_candidate_source(payload: dict[str, Any]) -> list[dict[str, Any]]:
     short_candidates = payload.get("short_candidates", []) or []
     if short_candidates:
         return [item for item in short_candidates if isinstance(item, dict)]
-    defensive = payload.get("defensive_book", {}) if isinstance(payload.get("defensive_book"), dict) else {}
-    return [item for item in defensive.get("short_candidates", []) or [] if isinstance(item, dict)]
+    defensive = (
+        payload.get("defensive_book", {})
+        if isinstance(payload.get("defensive_book"), dict)
+        else {}
+    )
+    return [
+        item
+        for item in defensive.get("short_candidates", []) or []
+        if isinstance(item, dict)
+    ]
 
 
 def _build_raw_rows(payload: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
@@ -452,11 +470,17 @@ def _build_raw_rows(payload: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
             {
                 "ticker": ticker,
                 "direction": "LONG",
-                "obs_class": _as_text(item.get("class"), "WATCH").replace("OBS_READY", "OBS_FAVORABLE"),
+                "obs_class": _as_text(item.get("class"), "WATCH").replace(
+                    "OBS_READY", "OBS_FAVORABLE"
+                ),
                 "signal": _long_signal(decision) if decision else "BUY_SETUP",
                 "execution": _decision_execution(decision) if decision else "WATCH",
                 "score": _as_float(item.get("score") or item.get("obs_index")),
-                "main_reason": _decision_reason(decision) if decision else _as_text(item.get("reason")),
+                "main_reason": (
+                    _decision_reason(decision)
+                    if decision
+                    else _as_text(item.get("reason"))
+                ),
                 **ref,
             }
         )
@@ -501,16 +525,24 @@ def _section_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
     wins = [row for row in valid if _as_float(row.get("sim_pnl")) > 0]
     total_pnl = sum(_as_float(row.get("sim_pnl")) for row in valid)
     real_pnl = sum(_as_float(row.get("real_pnl")) for row in valid)
-    returns = [_as_float(row.get("return_pct")) for row in valid if row.get("return_pct") is not None]
+    returns = [
+        _as_float(row.get("return_pct"))
+        for row in valid
+        if row.get("return_pct") is not None
+    ]
     long_rows = [row for row in valid if row.get("direction") == "LONG"]
     short_rows = [row for row in valid if row.get("direction") == "SHORT"]
     long_pnl = sum(_as_float(row.get("sim_pnl")) for row in long_rows)
     short_pnl = sum(_as_float(row.get("sim_pnl")) for row in short_rows)
     long_returns = [
-        _as_float(row.get("return_pct")) for row in long_rows if row.get("return_pct") is not None
+        _as_float(row.get("return_pct"))
+        for row in long_rows
+        if row.get("return_pct") is not None
     ]
     short_returns = [
-        _as_float(row.get("return_pct")) for row in short_rows if row.get("return_pct") is not None
+        _as_float(row.get("return_pct"))
+        for row in short_rows
+        if row.get("return_pct") is not None
     ]
     long_wins = [row for row in long_rows if _as_float(row.get("sim_pnl")) > 0]
     short_wins = [row for row in short_rows if _as_float(row.get("sim_pnl")) > 0]
@@ -518,9 +550,12 @@ def _section_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
     short_items = sum(1 for row in rows if row.get("direction") == "SHORT")
     ready_items = sum(1 for row in rows if row.get("execution") == "READY")
     watch_items = sum(1 for row in rows if row.get("execution") == "WATCH")
-    blocked_items = sum(1 for row in rows if row.get("execution") in {"BLOCKED", "DATA_BLOCKED"})
+    blocked_items = sum(
+        1 for row in rows if row.get("execution") in {"BLOCKED", "DATA_BLOCKED"}
+    )
     missing_reference = sum(
-        1 for row in rows
+        1
+        for row in rows
         if row.get("price_status") == "DATA_MISSING"
         and "missing reference" in str(row.get("main_reason", "")).lower()
     )
@@ -552,7 +587,9 @@ def _section_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "items": len(rows),
         "valid_items": len(valid),
         "notional_per_item": round(notional_per_item, 2),
-        "data_missing": sum(1 for row in rows if row.get("price_status") == "DATA_MISSING"),
+        "data_missing": sum(
+            1 for row in rows if row.get("price_status") == "DATA_MISSING"
+        ),
         "missing_reference": missing_reference,
         "stale_items": stale_items,
         "long_items": long_items,
@@ -568,10 +605,18 @@ def _section_summary(rows: list[dict[str, Any]]) -> dict[str, Any]:
         "total_long_pnl": round(long_pnl, 2),
         "total_short_pnl": round(short_pnl, 2),
         "total_observation_pnl": round(total_pnl, 2),
-        "long_hit_rate": round((len(long_wins) / len(long_rows)) * 100.0, 2) if long_rows else 0.0,
-        "short_hit_rate": round((len(short_wins) / len(short_rows)) * 100.0, 2) if short_rows else 0.0,
-        "avg_long_return": round(sum(long_returns) / len(long_returns), 4) if long_returns else None,
-        "avg_short_return": round(sum(short_returns) / len(short_returns), 4) if short_returns else None,
+        "long_hit_rate": (
+            round((len(long_wins) / len(long_rows)) * 100.0, 2) if long_rows else 0.0
+        ),
+        "short_hit_rate": (
+            round((len(short_wins) / len(short_rows)) * 100.0, 2) if short_rows else 0.0
+        ),
+        "avg_long_return": (
+            round(sum(long_returns) / len(long_returns), 4) if long_returns else None
+        ),
+        "avg_short_return": (
+            round(sum(short_returns) / len(short_returns), 4) if short_returns else None
+        ),
         "best_observation": compact(best),
         "worst_observation": compact(worst),
         "classes": classes,
@@ -590,24 +635,55 @@ def _render_pct(value: Any) -> str:
     return f"{_as_float(value):.2f}%"
 
 
-def _render_rows(title: str, rows: list[dict[str, Any]], limit: int = 12) -> list[str]:
+def _market_read(long_pnl: float, short_pnl: float) -> str:
+    if long_pnl == short_pnl:
+        return "MIXED"
+    if long_pnl > 0 and short_pnl <= 0:
+        return "LONG_BETTER_THAN_SHORT"
+    if short_pnl > 0 and long_pnl <= 0:
+        return "SHORT_BETTER_THAN_LONG"
+    if long_pnl > 0 and short_pnl > 0:
+        return "BOTH_POSITIVE"
+    if long_pnl < 0 and short_pnl < 0:
+        return "BOTH_NEGATIVE"
+    if long_pnl > short_pnl:
+        return "LONG_BETTER_THAN_SHORT"
+    if short_pnl > long_pnl:
+        return "SHORT_BETTER_THAN_LONG"
+    return "MIXED"
+
+
+def _compact_best_worst(summary: dict[str, Any]) -> tuple[str, str]:
+    best = summary.get("best_observation") or {}
+    worst = summary.get("worst_observation") or {}
+    best_text = f"{best.get('ticker', '-')} {best.get('direction', '-')} R$ {_render_money(best.get('sim_pnl'))}"
+    worst_text = f"{worst.get('ticker', '-')} {worst.get('direction', '-')} R$ {_render_money(worst.get('sim_pnl'))}"
+    return best_text, worst_text
+
+
+def _render_table_rows(
+    title: str,
+    rows: list[dict[str, Any]],
+    limit: int = 12,
+    radar_section: bool = False,
+    status_label: str = "RADAR_STATUS",
+) -> list[str]:
+    def _row_status(row: dict[str, Any]) -> str:
+        if radar_section:
+            status = _as_text(row.get("review_class"), "-")
+            if status in {"MISSED_OPPORTUNITY", "GOOD_BLOCK", "NEUTRAL_BLOCK"}:
+                pnl = _as_float(row.get("sim_pnl"))
+                if pnl > 0:
+                    return "RADAR_GAIN"
+                if pnl < 0:
+                    return "RADAR_LOSS"
+                return "RADAR_FLAT"
+            return status
+        return _as_text(row.get("execution"), "-")
+
     lines = [title, "-" * 80]
-    summary = _section_summary(rows)
-    sim_pnl = _render_money(summary["sim_pnl"])
-    real_pnl = _render_money(summary["real_pnl"])
     lines.append(
-        f"items {summary['items']} | long {summary['long_items']} | "
-        f"short {summary['short_items']} | ready {summary['ready_items']} | "
-        f"per_item R$ {_render_money(summary['notional_per_item'])} | "
-        f"watch {summary['watch_items']} | hit_rate {summary['hit_rate']:.2f}% | "
-        f"avg_return {summary['avg_return_pct']:.2f}% | "
-        f"sim_pnl R$ {sim_pnl} | real_pnl R$ {real_pnl}"
-    )
-    lines.append("")
-    lines.append(
-        f"{'#':>2}  {'TICKER':<8} {'DIR':<5} {'SIGNAL':<10} {'EXECUTION':<12} "
-        f"{'SCORE':>6} {'RET':>8} {'SIM_PNL':>11} {'REAL_PNL':>11} "
-        f"{'PRICE_STATUS':<13} {'REVIEW_STATUS':<13} MAIN_REASON"
+        f"{'#':>2}  {'TICKER':<8} {'EXECUTION':<12} {'SCORE':>6} {'MOVE':>8} {'PNL':>11} {status_label:<12} REASON"
     )
     if not rows:
         lines.append("status             EMPTY")
@@ -615,89 +691,216 @@ def _render_rows(title: str, rows: list[dict[str, Any]], limit: int = 12) -> lis
         return lines
     for index, row in enumerate(rows[:limit], start=1):
         lines.append(
-            f"{index:>2}  {row['ticker']:<8} {row['direction']:<5} "
-            f"{row['signal']:<10} {row['execution']:<12} "
+            f"{index:>2}  {row['ticker']:<8} {row['execution']:<12} "
             f"{_as_float(row.get('score')):>6.1f} {_render_pct(row.get('return_pct')):>8} "
-            f"{_render_money(row.get('sim_pnl')):>11} "
-            f"{_render_money(row.get('real_pnl')):>11} "
-            f"{row['price_status']:<13} {row['review_status']:<13} "
-            f"{row['main_reason']}"
+            f"{_render_money(row.get('sim_pnl')):>11} {_row_status(row):<12} {row['main_reason']}"
         )
     if len(rows) > limit:
         lines.append(f"... {len(rows) - limit} more rows in observation_review.csv")
     return lines
 
 
-def render_observation_review(payload: dict[str, Any]) -> str:
-    summaries = payload["summary"]
-    observation_summary = summaries["observation_top10"]
-    best_observation = observation_summary.get("best_observation") or {}
-    worst_observation = observation_summary.get("worst_observation") or {}
+def _render_not_computed_review(payload: dict[str, Any]) -> str:
+    outputs = (
+        payload.get("outputs", {}) if isinstance(payload.get("outputs"), dict) else {}
+    )
+    reason = (
+        payload.get("cannot_compute_reason")
+        or payload.get("reason")
+        or "Cannot compute MTM: missing reference prices from signal time."
+    )
     lines = [
         "AURUM MTM REVIEW",
         "-" * 80,
-        f"run_dir            {payload['run_dir']}",
-        f"capital            R$ {_render_money(payload['capital'])}",
-        f"mode               {payload['mode']}",
-        "note               SIM_PNL simulates every listed row; REAL_PNL is only executable READY/OK",
-        "note               observation P&L is hypothetical; it is not a real trade record",
+        "status             NOT_COMPUTED",
+        f"reason             {reason}",
+        f"capital            R$ {_render_money(payload.get('capital'))}",
+        f"run_dir            {payload.get('run_dir')}",
+        "",
+        "FINANCIAL RESULT",
+        "-" * 80,
+        "real_trades        0",
+        "real_pnl           R$ 0.00",
+        "observation_pnl    NOT COMPUTED",
+        "long_pnl           NOT COMPUTED",
+        "short_pnl          NOT COMPUTED",
+        f"data_missing       {payload.get('data_missing', 0)}",
+        "",
+        "ACTION REQUIRED",
+        "-" * 80,
+        "Run a new daily signal after enabling reference price capture.",
     ]
-    if payload.get("cannot_compute_reason"):
-        lines.extend(["", f"WARNING            {payload['cannot_compute_reason']}"])
+    return "\n".join(lines)
+
+
+def _render_real_operations(rows: list[dict[str, Any]]) -> list[str]:
+    long_rows = [row for row in rows if row.get("direction") == "LONG"]
+    short_rows = [row for row in rows if row.get("direction") == "SHORT"]
+    real_long_pnl = round(sum(_as_float(row.get("real_pnl")) for row in long_rows), 2)
+    real_short_pnl = round(sum(_as_float(row.get("real_pnl")) for row in short_rows), 2)
+    real_total_pnl = round(real_long_pnl + real_short_pnl, 2)
+    lines = ["REAL OPERATIONS", "-" * 80]
+    if not rows:
+        lines.extend(
+            [
+                "status             NO REAL TRADES",
+                "real_long_items    0",
+                "real_long_pnl      R$ 0.00",
+                "real_short_items   0",
+                "real_short_pnl     R$ 0.00",
+                "real_total_pnl     R$ 0.00",
+            ]
+        )
+        return lines
+
     lines.extend(
         [
+            f"real_long_items    {len(long_rows)}",
+            f"real_long_pnl      R$ {_render_money(real_long_pnl)}",
+            f"real_short_items   {len(short_rows)}",
+            f"real_short_pnl     R$ {_render_money(real_short_pnl)}",
+            f"real_total_pnl     R$ {_render_money(real_total_pnl)}",
+        ]
+    )
+    if long_rows:
+        lines.append("")
+        lines.extend(
+            _render_table_rows(
+                "REAL LONG",
+                long_rows,
+                limit=12,
+                radar_section=False,
+                status_label="STATUS",
+            )
+        )
+    if short_rows:
+        lines.append("")
+        lines.extend(
+            _render_table_rows(
+                "REAL SHORT",
+                short_rows,
+                limit=12,
+                radar_section=False,
+                status_label="STATUS",
+            )
+        )
+    return lines
+
+
+def _render_radar_summary(
+    long_rows: list[dict[str, Any]], short_rows: list[dict[str, Any]]
+) -> list[str]:
+    long_summary = _section_summary(long_rows)
+    short_summary = _section_summary(short_rows)
+    long_best, long_worst = _compact_best_worst(long_summary)
+    short_best, short_worst = _compact_best_worst(short_summary)
+    radar_total_items = len(long_rows) + len(short_rows)
+    radar_total_pnl = round(long_summary["pnl_total"] + short_summary["pnl_total"], 2)
+    market_read = _market_read(long_summary["pnl_total"], short_summary["pnl_total"])
+    verdict = (
+        "RADAR_GAIN"
+        if radar_total_pnl > 0
+        else "RADAR_LOSS" if radar_total_pnl < 0 else "FLAT"
+    )
+
+    lines = ["RADAR SUMMARY", "-" * 80]
+    lines.extend(
+        [
+            f"radar_long_items   {long_summary['items']}",
+            f"radar_long_pnl     R$ {_render_money(long_summary['pnl_total'])}",
+            f"radar_long_hit     {_render_pct(long_summary['hit_rate'])}",
+            f"radar_long_avg_move {_render_pct(long_summary['avg_return_pct'])}",
+            f"best_long          {long_best}",
+            f"worst_long         {long_worst}",
             "",
-            "REAL SIGNALS - WATCH OR BETTER",
-            "-" * 80,
-            "scope              long and short setups with execution WATCH or READY",
+            f"radar_short_items  {short_summary['items']}",
+            f"radar_short_pnl    R$ {_render_money(short_summary['pnl_total'])}",
+            f"radar_short_hit    {_render_pct(short_summary['hit_rate'])}",
+            f"radar_short_avg_move {_render_pct(short_summary['avg_return_pct'])}",
+            f"best_short         {short_best}",
+            f"worst_short        {short_worst}",
             "",
-            *_render_rows(
-                "REAL SIGNAL RESULT (LONG + SHORT)",
-                payload["sections"]["real_watch_or_better"]["rows"],
-            ),
-            "",
-            "OBSERVATION TOP 10",
-            "-" * 80,
-            "scope              top 10 long plus top 10 short observations; radar only, not execution",
-            "",
-            *_render_rows(
-                "OBSERVATION RESULT (TOP 10 LONG + TOP 10 SHORT)",
-                payload["sections"]["observation_top10"]["rows"],
-                limit=20,
-            ),
-            "",
+            f"radar_total_items  {radar_total_items}",
+            f"radar_total_pnl    R$ {_render_money(radar_total_pnl)}",
+            f"market_read        {market_read}",
+            f"verdict            {verdict}",
+        ]
+    )
+    return lines
+
+
+def render_observation_review(payload: dict[str, Any]) -> str:
+    if payload.get("status") == "NOT_COMPUTED":
+        return _render_not_computed_review(payload)
+
+    real_rows = payload["sections"]["real_watch_or_better"]["rows"]
+    radar_rows = payload["sections"]["observation_top10"]["rows"]
+    long_radar_rows = [row for row in radar_rows if row.get("direction") == "LONG"]
+    short_radar_rows = [row for row in radar_rows if row.get("direction") == "SHORT"]
+    real_long_rows = [row for row in real_rows if row.get("direction") == "LONG"]
+    real_short_rows = [row for row in real_rows if row.get("direction") == "SHORT"]
+
+    real_long_pnl = round(
+        sum(_as_float(row.get("real_pnl")) for row in real_long_rows), 2
+    )
+    real_short_pnl = round(
+        sum(_as_float(row.get("real_pnl")) for row in real_short_rows), 2
+    )
+    real_total_pnl = round(real_long_pnl + real_short_pnl, 2)
+    radar_long_pnl = round(
+        sum(_as_float(row.get("sim_pnl")) for row in long_radar_rows), 2
+    )
+    radar_short_pnl = round(
+        sum(_as_float(row.get("sim_pnl")) for row in short_radar_rows), 2
+    )
+    radar_total_pnl = round(radar_long_pnl + radar_short_pnl, 2)
+    market_read = _market_read(radar_long_pnl, radar_short_pnl)
+    verdict = (
+        "RADAR_GAIN"
+        if radar_total_pnl > 0
+        else "RADAR_LOSS" if radar_total_pnl < 0 else "FLAT"
+    )
+
+    lines = [
+        "AURUM MTM REVIEW",
+        "-" * 80,
+        f"capital            R$ {_render_money(payload['capital'])}",
+        f"real_pnl           R$ {_render_money(real_total_pnl)}",
+        f"radar_pnl          R$ {_render_money(radar_total_pnl)}",
+        f"verdict            {verdict}",
+        "",
+    ]
+    lines.extend(_render_real_operations(real_rows))
+    lines.append("")
+    lines.extend(_render_radar_summary(long_radar_rows, short_radar_rows))
+    if long_radar_rows:
+        lines.append("")
+        lines.extend(
+            _render_table_rows(
+                "RADAR LONG", long_radar_rows, limit=20, radar_section=True
+            )
+        )
+    if short_radar_rows:
+        lines.append("")
+        lines.extend(
+            _render_table_rows(
+                "RADAR SHORT", short_radar_rows, limit=20, radar_section=True
+            )
+        )
+    lines.append("")
+    lines.extend(
+        [
             "FINAL REVIEW",
             "-" * 80,
-            f"real_signals       {summaries['real_watch_or_better']['items']} watch_or_better",
-            f"real_signals_sim   R$ {_render_money(summaries['real_watch_or_better']['sim_pnl'])}",
-            f"real_signals_pnl   R$ {_render_money(summaries['real_watch_or_better']['real_pnl'])}",
-            f"observation_top10  {summaries['observation_top10']['items']} candidates",
-            f"total_long_pnl     R$ {_render_money(observation_summary['total_long_pnl'])}",
-            f"total_short_pnl    R$ {_render_money(observation_summary['total_short_pnl'])}",
-            f"observation_pnl    R$ {_render_money(observation_summary['total_observation_pnl'])}",
-            f"long_hit_rate      {observation_summary['long_hit_rate']:.2f}%",
-            f"short_hit_rate     {observation_summary['short_hit_rate']:.2f}%",
-            f"avg_long_return    {_render_pct(observation_summary['avg_long_return'])}",
-            f"avg_short_return   {_render_pct(observation_summary['avg_short_return'])}",
-            (
-                "best_observation  "
-                f"{best_observation.get('ticker', '-')} {best_observation.get('direction', '-')} "
-                f"R$ {_render_money(best_observation.get('sim_pnl'))}"
-            ),
-            (
-                "worst_observation "
-                f"{worst_observation.get('ticker', '-')} {worst_observation.get('direction', '-')} "
-                f"R$ {_render_money(worst_observation.get('sim_pnl'))}"
-            ),
-            f"all_obs_hyp        R$ {_render_money(summaries['hypothetical_observation']['sim_pnl'])}",
-            f"data_missing       {payload['data_missing']}",
-            f"stale_prices       {payload['stale_prices']}",
-            "",
-            "FILES",
-            "-" * 80,
-            f"txt                {payload['outputs']['txt']}",
-            f"csv                {payload['outputs']['csv']}",
-            f"json               {payload['outputs']['json']}",
+            f"real_long_pnl      R$ {_render_money(real_long_pnl)}",
+            f"real_short_pnl     R$ {_render_money(real_short_pnl)}",
+            f"real_total_pnl     R$ {_render_money(real_total_pnl)}",
+            f"radar_long_pnl     R$ {_render_money(radar_long_pnl)}",
+            f"radar_short_pnl    R$ {_render_money(radar_short_pnl)}",
+            f"radar_total_pnl    R$ {_render_money(radar_total_pnl)}",
+            f"combined_pnl       R$ {_render_money(real_total_pnl + radar_total_pnl)}",
+            f"market_read        {market_read}",
+            f"verdict            {verdict}",
         ]
     )
     return "\n".join(lines)
@@ -710,6 +913,38 @@ def _write_csv(path: Path, rows: list[dict[str, Any]]) -> None:
         writer.writeheader()
         for row in rows:
             writer.writerow({column: row.get(column, "") for column in REVIEW_COLUMNS})
+
+
+def _write_not_computed_csv(path: Path, payload: dict[str, Any]) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    fieldnames = [
+        "status",
+        "reason",
+        "capital",
+        "real_trades",
+        "real_pnl",
+        "observation_pnl",
+        "long_pnl",
+        "short_pnl",
+        "data_missing",
+    ]
+    with path.open("w", encoding="utf-8", newline="") as file:
+        writer = csv.DictWriter(file, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerow(
+            {
+                "status": "NOT_COMPUTED",
+                "reason": payload.get("cannot_compute_reason")
+                or "Cannot compute MTM: missing reference prices from signal time.",
+                "capital": payload.get("capital", 0.0),
+                "real_trades": 0,
+                "real_pnl": 0.0,
+                "observation_pnl": "",
+                "long_pnl": "",
+                "short_pnl": "",
+                "data_missing": payload.get("data_missing", 0),
+            }
+        )
 
 
 def run_observation_review(
@@ -770,15 +1005,18 @@ def run_observation_review(
             hypothetical=section in {"long_observation", "short_observation"},
         )
 
-    hypothetical_raw = raw.get("long_observation", []) + raw.get("short_observation", [])
+    hypothetical_raw = raw.get("long_observation", []) + raw.get(
+        "short_observation", []
+    )
     signal_raw = raw.get("long_signals", []) + raw.get("short_signals", [])
     real_watch_raw = [
-        row for row in signal_raw
-        if row.get("execution") in {"READY", "WATCH", "SHORT_READY", "SHORT_MANUAL_ONLY"}
+        row
+        for row in signal_raw
+        if row.get("execution")
+        in {"READY", "WATCH", "SHORT_READY", "SHORT_MANUAL_ONLY"}
     ]
     blocked_raw = [
-        row for row in signal_raw
-        if row.get("execution") in {"BLOCKED", "DATA_BLOCKED"}
+        row for row in signal_raw if row.get("execution") in {"BLOCKED", "DATA_BLOCKED"}
     ]
     top_long_observations = sorted(
         raw.get("long_observation", []),
@@ -817,33 +1055,41 @@ def run_observation_review(
         observation_top10_raw,
         hypothetical=True,
     )
-    all_rows = [
-        row
-        for rows in rows_by_section.values()
-        for row in rows
-    ]
+    all_rows = [row for rows in rows_by_section.values() for row in rows]
     visible_rows = (
-        rows_by_section["real_watch_or_better"]
-        + rows_by_section["observation_top10"]
+        rows_by_section["real_watch_or_better"] + rows_by_section["observation_top10"]
     )
 
     txt_path = run_path / "observation_review.txt"
     csv_path = run_path / "observation_review.csv"
     json_path = run_path / "observation_review.json"
-    data_missing = sum(1 for row in visible_rows if row.get("price_status") == "DATA_MISSING")
+    data_missing = sum(
+        1 for row in visible_rows if row.get("price_status") == "DATA_MISSING"
+    )
     stale_prices = sum(1 for row in visible_rows if row.get("price_status") == "STALE")
     missing_reference = sum(
-        1 for row in visible_rows
+        1
+        for row in visible_rows
         if row.get("price_status") == "DATA_MISSING"
         and "missing reference" in str(row.get("main_reason", "")).lower()
     )
-    reviewed_rows = sum(1 for row in visible_rows if row.get("review_status") == "REVIEWED")
+    reviewed_rows = sum(
+        1 for row in visible_rows if row.get("review_status") == "REVIEWED"
+    )
     cannot_compute_reason = ""
-    if missing_reference and reviewed_rows == 0:
-        cannot_compute_reason = "Cannot compute MTM: missing reference prices from signal time."
+    not_computed = (
+        bool(visible_rows)
+        and reviewed_rows == 0
+        and missing_reference == len(visible_rows)
+    )
+    if not_computed:
+        cannot_compute_reason = (
+            "Cannot compute MTM: missing reference prices from signal time."
+        )
 
     review: dict[str, Any] = {
         "schema_version": "observation_review.v1",
+        "status": "NOT_COMPUTED" if not_computed else "COMPUTED",
         "generated_at": datetime.now().isoformat(timespec="seconds"),
         "run_dir": str(run_path),
         "report_json": str(report_path),
@@ -861,8 +1107,7 @@ def run_observation_review(
             for section, rows in rows_by_section.items()
         },
         "summary": {
-            section: _section_summary(rows)
-            for section, rows in rows_by_section.items()
+            section: _section_summary(rows) for section, rows in rows_by_section.items()
         },
         "data_missing": data_missing,
         "stale_prices": stale_prices,
@@ -875,7 +1120,11 @@ def run_observation_review(
             "json": str(json_path),
         },
     }
-    _write_csv(csv_path, all_rows)
+    if review["status"] == "NOT_COMPUTED":
+        _write_not_computed_csv(csv_path, review)
+    else:
+        _write_csv(csv_path, all_rows)
+
     json_path.write_text(
         json.dumps(review, ensure_ascii=False, indent=2),
         encoding="utf-8",

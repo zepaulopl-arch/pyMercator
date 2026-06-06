@@ -8,26 +8,26 @@ Python diretos sao para diagnostico, desenvolvimento ou execucao pontual.
 
 ## Comandos que o operador precisa decorar
 
-1. `.\scripts\run_daily_signal.ps1`
+1. `.\scripts\signal.ps1`
 2. `.\scripts\review.ps1`
-3. `.\scripts\run_daily_train.ps1`
-4. `.\scripts\run_weekend_full.ps1`
+3. `.\scripts\train.ps1`
+4. `.\scripts\weekend.ps1`
 5. `python -m pymercator diag`
 
 ## Operacao simplificada recomendada
 
 | Rotina | Comando | Classe |
 |---|---|---|
-| Dia normal | `.\scripts\run_daily_signal.ps1` | ESSENCIAL |
+| Dia normal | `.\scripts\signal.ps1` | ESSENCIAL |
 | Fim da tarde | `.\scripts\review.ps1` | UTIL |
-| Treino eventual | `.\scripts\run_daily_train.ps1` | ESSENCIAL |
-| Fim de semana | `.\scripts\run_weekend_full.ps1` | ESSENCIAL |
+| Treino eventual | `.\scripts\train.ps1` | ESSENCIAL |
+| Fim de semana | `.\scripts\weekend.ps1` | ESSENCIAL |
 | Diagnostico rapido | `python -m pymercator diag` | DIAGNOSTICO |
 | Auditoria de fontes | `python -m pymercator context sources` | DIAGNOSTICO |
 
 ## Scripts PowerShell
 
-### `scripts/run_daily_signal.ps1`
+### `scripts/signal.ps1`
 
 Classe: ESSENCIAL.
 
@@ -58,8 +58,8 @@ Outputs principais:
 Exemplos:
 
 ```powershell
-.\scripts\run_daily_signal.ps1
-.\scripts\run_daily_signal.ps1 -Color
+.\scripts\signal.ps1
+.\scripts\signal.ps1 -Color
 ```
 
 ### `scripts/review.ps1`
@@ -103,14 +103,14 @@ Exemplos:
 .\scripts\review.ps1 -SkipUpdate
 ```
 
-### `scripts/run_daily_review.ps1`
+### `scripts/review.ps1`
 
 Classe: UTIL.
 
 Finalidade: implementacao completa usada por `scripts/review.ps1`. Pode ser
 chamada diretamente, mas a rotina simples recomendada e `review.ps1`.
 
-### `scripts/run_daily_train.ps1`
+### `scripts/train.ps1`
 
 Classe: ESSENCIAL.
 
@@ -129,11 +129,11 @@ Parametros principais:
 Exemplos:
 
 ```powershell
-.\scripts\run_daily_train.ps1
-.\scripts\run_daily_train.ps1 -Color
+.\scripts\train.ps1
+.\scripts\train.ps1 -Color
 ```
 
-### `scripts/run_weekend_full.ps1`
+### `scripts/weekend.ps1`
 
 Classe: ESSENCIAL.
 
@@ -145,8 +145,8 @@ Quando usar: validacao semanal ou apos mudancas maiores.
 Exemplos:
 
 ```powershell
-.\scripts\run_weekend_full.ps1
-.\scripts\run_weekend_full.ps1 -Color
+.\scripts\weekend.ps1
+.\scripts\weekend.ps1 -Color
 ```
 
 ### `scripts/ops_common.ps1`
@@ -236,7 +236,7 @@ Defaults importantes:
 Arquivos gerados: contexto consolidado, universo, matriz Feature Factory v2,
 auditoria de features e logs quando chamado pelos scripts.
 
-Quando nao usar: para tomada de decisao isolada; use `run_daily_signal.ps1`.
+Quando nao usar: para tomada de decisao isolada; use `signal.ps1`.
 
 ### `python -m pymercator train`
 
@@ -441,7 +441,7 @@ Estes comandos nao existem mais no parser atual:
 | `daily-real` | Sobreposto pelos scripts principais e por `update/run`. |
 | `real-pack` | Variante redundante de pack operacional antigo. |
 | `scenario-pack` | Sobreposto por `scenario run` e pelos scripts. |
-| `daily-auto` | Workflow antigo redundante com `run_daily_signal.ps1`. |
+| `daily-auto` | Workflow antigo redundante com `signal.ps1`. |
 | `packs` | Listagem de artefatos do ecossistema pack removido. |
 | `board` | Dashboard do ecossistema pack removido. |
 | `confirm --pack` | Registro antigo em pack; a exigencia de confirmacao humana continua na politica operacional. |

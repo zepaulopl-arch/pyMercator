@@ -23,9 +23,9 @@ def test_operational_scripts_use_ops_common_and_runtime_config():
     assert runtime_config["schema_version"] == "runtime_config.v1"
 
     for script_name in (
-        "run_daily_signal.ps1",
-        "run_daily_train.ps1",
-        "run_weekend_full.ps1",
+        "signal.ps1",
+        "train.ps1",
+        "weekend.ps1",
     ):
         text = (ROOT / "scripts" / script_name).read_text(encoding="utf-8")
         assert "ops_common.ps1" in text
@@ -35,7 +35,7 @@ def test_operational_scripts_use_ops_common_and_runtime_config():
         assert "$null = Invoke-" in text
         assert "C:\\Users\\zepau\\anaconda3\\python.exe" not in text
         assert "--no-color" not in text
-        if script_name == "run_daily_train.ps1":
+        if script_name == "train.ps1":
             assert "Show-PyMercatorProfileSummary" in text
 
     ops_common = (ROOT / "scripts" / "ops_common.ps1").read_text(encoding="utf-8")
@@ -50,7 +50,7 @@ def test_operational_scripts_use_ops_common_and_runtime_config():
     assert "Show-PyMercatorSignals" in common
     assert "PYMERCATOR SIGNALS" in common
 
-    daily_signal = (ROOT / "scripts" / "run_daily_signal.ps1").read_text(encoding="utf-8")
+    daily_signal = (ROOT / "scripts" / "signal.ps1").read_text(encoding="utf-8")
     assert "Show-PyMercatorSignals" in daily_signal
 
 

@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import Any
 
 from pymercator.artifact_metadata import artifact_metadata
+from pymercator.data.prices_csv import read_price_rows_csv
 from pymercator.domain import DailyReport
 from pymercator.explain import decision_codes, decision_label
 
@@ -25,6 +26,80 @@ def _convert(value: Any) -> Any:
         return [_convert(item) for item in value]
 
     return _enum_to_value(value)
+
+
+def _as_float(value: Any, default: float = 0.0) -> float:
+    try:
+        if value is None or value == "":
+            return default
+        return float(value)
+    except (TypeError, ValueError):
+        return default
+
+
+def _as_text(value: Any, default: str = "") -> str:
+    text = "" if value is None else str(value).strip()
+    return text or default
+
+
+def _normalize_ticker(ticker: Any) -> str:
+    return _as_text(ticker, "").upper().replace(".SA", "")
+
+
+def _price_file_for_ticker(prices_dir: str | Path, ticker: str) -> Path:
+    base = Path(prices_dir)
+    clean = _normalize_ticker(ticker)
+    candidates = [
+        base / f"{clean}.SA.csv",
+        base / f"{clean}.csv",
+        base / f"{clean.lower()}.SA.csv",
+        base / f"{clean.lower()}.csv",
+    ]
+    for path in candidates:
+        if path.exists():
+            return path
+    return candidates[0]
+
+
+def _latest_reference_from_prices(
+    ticker: str,
+    prices_dir: str | Path,
+    signal_ts: str,
+) -> dict[str, Any]:
+    try:
+        price_path = _price_file_for_ticker(prices_dir, ticker)
+        rows = read_price_rows_csv(price_path)
+    except Exception:
+        return {
+            "ref_price": None,
+            "ref_date": None,
+            "ref_ts": None,
+            "ref_source": "DATA_MISSING",
+        }
+
+    last_date = None
+    last_close = 0.0
+    for row in rows:
+        date = _as_text(row.get("date"), "")
+        close = _as_float(row.get("close"), default=0.0)
+        if date and close > 0:
+            last_date = date
+            last_close = close
+
+    if not last_date or last_close <= 0:
+        return {
+            "ref_price": None,
+            "ref_date": None,
+            "ref_ts": None,
+            "ref_source": "DATA_MISSING",
+        }
+
+    return {
+        "ref_price": round(last_close, 4),
+        "ref_date": last_date,
+        "ref_ts": signal_ts,
+        "ref_source": str(price_path),
+    }
 
 
 def _prediction_global(prediction: dict[str, Any] | None) -> dict[str, Any]:
@@ -74,24 +149,31 @@ def _prediction_for_decision(prediction: dict[str, Any] | None) -> dict[str, Any
 
 
 def _generated_ts() -> str:
-    return datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    return (
+        datetime.now(timezone.utc).isoformat(timespec="seconds").replace("+00:00", "Z")
+    )
 
 
-def _reference_fields(ref_price: float, signal_ts: str) -> dict[str, Any]:
-    return {
-        "ref_price": round(float(ref_price), 4),
-        "ref_ts": signal_ts,
-        "ref_source": "daily_report.asset.last_close",
-    }
+def _reference_fields(
+    ticker: str,
+    signal_ts: str,
+    prices_dir: str | Path,
+) -> dict[str, Any]:
+    return _latest_reference_from_prices(ticker, prices_dir, signal_ts)
 
 
 def _attach_reference(
     row: dict[str, Any],
     reference_by_ticker: dict[str, dict[str, Any]],
+    prices_dir: str | Path,
+    signal_ts: str,
 ) -> dict[str, Any]:
     result = dict(row)
     ticker = str(result.get("ticker", "")).upper().replace(".SA", "")
     reference = reference_by_ticker.get(ticker)
+    if not reference and ticker:
+        reference = _latest_reference_from_prices(ticker, prices_dir, signal_ts)
+        reference_by_ticker[ticker] = reference
     if reference and result.get("ref_price") in (None, ""):
         result.update(reference)
     return result
@@ -100,11 +182,13 @@ def _attach_reference(
 def _attach_references_to_rows(
     rows: Any,
     reference_by_ticker: dict[str, dict[str, Any]],
+    prices_dir: str | Path,
+    signal_ts: str,
 ) -> list[dict[str, Any]]:
     if not isinstance(rows, list):
         return []
     return [
-        _attach_reference(row, reference_by_ticker)
+        _attach_reference(row, reference_by_ticker, prices_dir, signal_ts)
         for row in rows
         if isinstance(row, dict)
     ]
@@ -120,6 +204,7 @@ def daily_report_to_dict(
     observation_candidates: list[dict[str, Any]] | None = None,
     position_actions: dict[str, Any] | None = None,
     market_context: dict[str, Any] | None = None,
+    prices_dir: str | Path = "data/prices",
 ) -> dict[str, Any]:
     signal_ts = _generated_ts()
     raw = _convert(asdict(report))
@@ -130,11 +215,11 @@ def daily_report_to_dict(
     decision_prediction = _prediction_for_decision(prediction)
     reference_by_ticker = {
         decision.asset.ticker.upper().replace(".SA", ""): _reference_fields(
-            decision.asset.last_close,
+            decision.asset.ticker,
             signal_ts,
+            prices_dir,
         )
         for decision in report.decisions
-        if decision.asset.last_close > 0
     }
 
     if global_prediction:
@@ -192,6 +277,8 @@ def daily_report_to_dict(
         raw["observation_candidates"] = _attach_references_to_rows(
             _convert(observation_candidates),
             reference_by_ticker,
+            prices_dir,
+            signal_ts,
         )
     else:
         raw["observation_candidates"] = []
@@ -202,20 +289,28 @@ def daily_report_to_dict(
         converted_actions["short_candidates"] = _attach_references_to_rows(
             converted_actions.get("short_candidates", []),
             reference_by_ticker,
+            prices_dir,
+            signal_ts,
         )
         converted_actions["short_observation_candidates"] = _attach_references_to_rows(
             converted_actions.get("short_observation_candidates", []),
             reference_by_ticker,
+            prices_dir,
+            signal_ts,
         )
         converted_actions["short_book"] = _attach_references_to_rows(
             converted_actions.get("short_book", []),
             reference_by_ticker,
+            prices_dir,
+            signal_ts,
         )
         defensive_book = converted_actions.get("defensive_book", {})
         if isinstance(defensive_book, dict):
             defensive_book["short_candidates"] = _attach_references_to_rows(
                 defensive_book.get("short_candidates", []),
                 reference_by_ticker,
+                prices_dir,
+                signal_ts,
             )
             converted_actions["defensive_book"] = defensive_book
         raw["position_actions"] = converted_actions
@@ -233,7 +328,9 @@ def daily_report_to_dict(
 
     for index, decision in enumerate(report.decisions):
         ticker = decision.asset.ticker
-        raw["decisions"][index].update(reference_by_ticker.get(ticker.upper().replace(".SA", ""), {}))
+        raw["decisions"][index].update(
+            reference_by_ticker.get(ticker.upper().replace(".SA", ""), {})
+        )
         raw["decisions"][index]["decision_codes"] = list(decision_codes(decision))
         raw["decisions"][index]["decision_label"] = decision_label(decision)
         raw["decisions"][index]["blocker_reasons"] = list(
@@ -256,6 +353,7 @@ def render_daily_report_json(
     observation_candidates: list[dict[str, Any]] | None = None,
     position_actions: dict[str, Any] | None = None,
     market_context: dict[str, Any] | None = None,
+    prices_dir: str | Path = "data/prices",
 ) -> str:
     payload = daily_report_to_dict(
         report,
@@ -267,6 +365,7 @@ def render_daily_report_json(
         observation_candidates=observation_candidates,
         position_actions=position_actions,
         market_context=market_context,
+        prices_dir=prices_dir,
     )
     return json.dumps(payload, ensure_ascii=False, indent=indent)
 
@@ -282,6 +381,7 @@ def write_daily_report_json(
     observation_candidates: list[dict[str, Any]] | None = None,
     position_actions: dict[str, Any] | None = None,
     market_context: dict[str, Any] | None = None,
+    prices_dir: str | Path = "data/prices",
 ) -> None:
     output_path = Path(path)
     output_path.parent.mkdir(parents=True, exist_ok=True)
@@ -296,6 +396,7 @@ def write_daily_report_json(
             observation_candidates=observation_candidates,
             position_actions=position_actions,
             market_context=market_context,
+            prices_dir=prices_dir,
         ),
         encoding="utf-8",
     )

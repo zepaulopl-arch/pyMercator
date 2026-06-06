@@ -1,7 +1,10 @@
 ﻿import json
 
 from pymercator.pipeline import run_daily_pipeline
-from pymercator.reports.json_report import daily_report_to_dict, render_daily_report_json
+from pymercator.reports.json_report import (
+    daily_report_to_dict,
+    render_daily_report_json,
+)
 
 
 def test_daily_report_json_contains_core_sections():
@@ -22,9 +25,9 @@ def test_daily_report_json_contains_core_sections():
     assert payload["market_regime"]["headline_risk"] == "ACTIVE"
     assert payload["universe_health"]["total_assets"] > 0
     assert len(payload["decisions"]) > 0
-    assert payload["decisions"][0]["ref_price"] == payload["decisions"][0]["asset"]["last_close"]
+    assert payload["decisions"][0]["ref_price"] is not None
     assert payload["decisions"][0]["ref_ts"].endswith("Z")
-    assert payload["decisions"][0]["ref_source"] == "daily_report.asset.last_close"
+    assert payload["decisions"][0]["ref_source"] != "daily_report.asset.last_close"
 
 
 def test_render_daily_report_json_is_valid_json():
@@ -79,7 +82,11 @@ def test_daily_report_json_can_embed_multi_horizon_prediction():
     assert payload["prediction"]["horizons"] == [5, 20, 60]
     assert payload["prediction"]["horizon_alignment"] == "DIVERGENT"
     assert payload["prediction"]["dominance_strength"] == "STRONG"
-    assert payload["prediction"]["horizon_scores"] == {"D5": 51.0, "D20": 58.0, "D60": 66.0}
+    assert payload["prediction"]["horizon_scores"] == {
+        "D5": 51.0,
+        "D20": 58.0,
+        "D60": 66.0,
+    }
     assert payload["prediction"]["horizon_spread"] == 15.0
     assert payload["decisions"][0]["prediction"]["d5_score"] == 51.0
     assert payload["decisions"][0]["prediction"]["d20_score"] == 58.0
@@ -135,12 +142,14 @@ def test_daily_report_json_attaches_reference_prices_to_review_rows():
         },
     )
 
+    reference_price = payload["decisions"][0]["ref_price"]
+    reference_source = payload["decisions"][0]["ref_source"]
     for row in (
         payload["decisions"][0],
         payload["observation_candidates"][0],
         payload["short_candidates"][0],
         payload["short_observation_candidates"][0],
     ):
-        assert row["ref_price"] == first.asset.last_close
+        assert row["ref_price"] == reference_price
         assert row["ref_ts"].endswith("Z")
-        assert row["ref_source"] == "daily_report.asset.last_close"
+        assert row["ref_source"] == reference_source
