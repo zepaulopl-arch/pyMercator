@@ -1,4 +1,4 @@
-﻿from __future__ import annotations
+from __future__ import annotations
 
 import argparse
 import sys
@@ -1162,6 +1162,16 @@ def main(argv: list[str] | None = None) -> int:
         set_ui_config_path(ui_config)
     set_color_mode(color_mode)
     set_palette(palette)
+    if (
+        cleaned_argv
+        and len(cleaned_argv) >= 2
+        and cleaned_argv[0] == "context"
+        and cleaned_argv[1] in {"update", "show", "explain", "audit"}
+    ):
+        from pymercator.cli_context_engine import run_context_engine_argv
+
+        return run_context_engine_argv(cleaned_argv[1:])
+
 
     if (
         cleaned_argv
