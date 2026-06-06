@@ -890,6 +890,18 @@ def build_parser() -> argparse.ArgumentParser:
         audit_system_parser.add_argument("--root", default=".")
         audit_system_parser.add_argument("--json", action="store_true")
 
+        audit_functions_parser = audit_subparsers.add_parser(
+            "functions",
+            help="Catalog project functions and classify operational domains",
+        )
+        audit_functions_parser.set_defaults(audit_command="functions")
+        audit_functions_parser.add_argument("--root", default=".")
+        audit_functions_parser.add_argument("--json", action="store_true")
+        audit_functions_parser.add_argument(
+            "--output",
+            default="storage/audit/latest_function_catalog.json",
+        )
+
         execution_parser = subparsers.add_parser(
             "execution",
             help="Execution policy utilities",
