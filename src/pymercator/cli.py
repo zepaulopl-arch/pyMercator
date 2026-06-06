@@ -105,6 +105,12 @@ def _run_mtm_command(args: argparse.Namespace) -> int:
     return run_mtm_command(args)
 
 
+def _run_audit_command(args: argparse.Namespace) -> int:
+    from pymercator.cli_audit import run_audit_command
+
+    return run_audit_command(args)
+
+
 def _run_update_command(args: argparse.Namespace) -> int:
     from pymercator.cli_update import run_update_command
 
@@ -873,6 +879,16 @@ def build_parser() -> argparse.ArgumentParser:
 
         add_context_parser(subparsers)
 
+        audit_parser = subparsers.add_parser("audit", help="Audit Aurum system")
+        audit_parser.set_defaults(command="audit")
+        audit_subparsers = audit_parser.add_subparsers(dest="audit_command")
+        audit_system_parser = audit_subparsers.add_parser(
+            "system",
+            help="Audit project commands, scripts, modules, configs, and reports",
+        )
+        audit_system_parser.set_defaults(audit_command="system")
+        audit_system_parser.add_argument("--root", default=".")
+        audit_system_parser.add_argument("--json", action="store_true")
 
         execution_parser = subparsers.add_parser(
             "execution",
@@ -1189,6 +1205,9 @@ def main(argv: list[str] | None = None) -> int:
 
         if args.command == "context":
             return _run_context_command(args)
+
+        if args.command == "audit":
+            return _run_audit_command(args)
 
         if args.command == "execution":
             return _run_execution_command(args)
