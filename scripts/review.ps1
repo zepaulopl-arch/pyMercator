@@ -64,7 +64,7 @@ if (-not (Test-Path -LiteralPath $reportJson)) {
     throw "Report JSON not found: $reportJson"
 }
 
-Write-PyMercatorRuntimeHeader -Title "PYMERCATOR DAILY REVIEW"
+Write-PyMercatorRuntimeHeader -Title "AURUM DAILY REVIEW"
 
 if (-not $SkipUpdate) {
     $updateResult = Invoke-PyMercatorStep `
