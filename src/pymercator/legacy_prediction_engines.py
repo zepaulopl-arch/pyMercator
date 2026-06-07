@@ -2008,6 +2008,74 @@ def _evaluate_ridge_ensemble_temporal(
     }
 
 
+
+def _select_canonical_active_feature_columns(
+    rows: list[dict[str, Any]],
+    horizon: int,
+) -> tuple[list[str], dict[str, Any]]:
+    cols = list(_infer_feature_columns(rows, horizon))
+    try:
+        meta = _aurum_feature_selection_meta(rows, horizon)
+    except Exception:
+        meta = {
+            "mode": "canonical_infer_wrapper",
+            "status": "UNKNOWN",
+            "raw_features": len(cols),
+            "canonical_features": len(cols),
+            "removed_features": 0,
+            "removed": [],
+        }
+    return cols, meta
+
+
+# ---------------------------------------------------------------------------
+# AURUM Etapa 4.1
+# Force canonical feature selection at the legacy feature inference layer.
+# This keeps every training path aligned with storage/features/latest_canonical_features.json.
+# ---------------------------------------------------------------------------
+
+_AURUM_RAW_INFER_FEATURE_COLUMNS = _infer_feature_columns
+
+
+def _infer_feature_columns(
+    rows: list[dict[str, Any]],
+    horizon: int | None = None,
+) -> list[str]:
+    raw_cols = list(_AURUM_RAW_INFER_FEATURE_COLUMNS(rows, horizon))
+
+    try:
+        from pymercator.features.training_selector import load_canonical_feature_names
+        from pymercator.features.groups import is_duplicate_alias
+
+        wanted = load_canonical_feature_names()
+        selected = [c for c in wanted if c in raw_cols]
+
+        if selected:
+            return selected
+
+        return [c for c in raw_cols if not is_duplicate_alias(c)]
+
+    except Exception:
+        return raw_cols
+
+
+def _aurum_feature_selection_meta(
+    rows: list[dict[str, Any]],
+    horizon: int | None = None,
+) -> dict[str, Any]:
+    raw_cols = list(_AURUM_RAW_INFER_FEATURE_COLUMNS(rows, horizon))
+    canonical_cols = list(_infer_feature_columns(rows, horizon))
+    removed = [c for c in raw_cols if c not in canonical_cols]
+
+    return {
+        "mode": "canonical_infer_wrapper",
+        "status": "OK",
+        "raw_features": len(raw_cols),
+        "canonical_features": len(canonical_cols),
+        "removed_features": len(removed),
+        "removed": removed,
+    }
+
 def evaluate_legacy_walk_forward(
     *,
     rows: list[dict[str, Any]],
@@ -2030,7 +2098,7 @@ def evaluate_legacy_walk_forward(
         rows,
         key=lambda row: (str(row.get("date", "")), str(row.get("ticker", ""))),
     )
-    _ACTIVE_FEATURE_COLUMNS = _infer_feature_columns(rows, horizon)
+    _ACTIVE_FEATURE_COLUMNS, feature_selection_meta = _select_canonical_active_feature_columns(rows, horizon)
 
     if uses_ridge_ensemble:
         payload = _evaluate_ridge_ensemble_temporal(
@@ -2048,6 +2116,11 @@ def evaluate_legacy_walk_forward(
         )
         payload["feature_columns"] = list(_ACTIVE_FEATURE_COLUMNS)
         payload["features_used"] = len(_ACTIVE_FEATURE_COLUMNS)
+        payload["feature_selection"] = dict(feature_selection_meta)
+        payload["feature_selection_mode"] = str(feature_selection_meta.get("mode", "unknown"))
+        payload["raw_features"] = int(feature_selection_meta.get("raw_features", len(_ACTIVE_FEATURE_COLUMNS)))
+        payload["canonical_features"] = int(feature_selection_meta.get("canonical_features", len(_ACTIVE_FEATURE_COLUMNS)))
+        payload["removed_features"] = int(feature_selection_meta.get("removed_features", 0))
         return payload
 
     target_return_column = f"target_return_{horizon}d"

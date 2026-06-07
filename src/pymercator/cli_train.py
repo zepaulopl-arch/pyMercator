@@ -59,6 +59,113 @@ OPERATIONAL_ENGINE_REASON = (
 )
 
 
+
+# ---------------------------------------------------------------------------
+# AURUM Etapa 4.1
+# Normalize feature metadata from evaluation payloads.
+# Prefer canonical training metadata produced by legacy_prediction_engines.
+# ---------------------------------------------------------------------------
+
+
+# ---------------------------------------------------------------------------
+# AURUM Etapa 4.1
+# Force canonical feature metadata on final train payloads.
+# This is a final payload normalizer; it does not alter model predictions.
+# ---------------------------------------------------------------------------
+
+def _aurum_force_payload_canonical_features(payload):
+    if not isinstance(payload, dict):
+        return payload
+
+    try:
+        from pymercator.features.training_selector import load_canonical_feature_names
+        from pymercator.features.groups import is_duplicate_alias
+
+        raw_cols = payload.get("feature_columns") or []
+
+        if not isinstance(raw_cols, list):
+            raw_cols = []
+
+        wanted = load_canonical_feature_names()
+        canonical_cols = [c for c in wanted if c in raw_cols]
+
+        if not canonical_cols and raw_cols:
+            canonical_cols = [c for c in raw_cols if not is_duplicate_alias(c)]
+
+        if not raw_cols:
+            return payload
+
+        removed = [c for c in raw_cols if c not in canonical_cols]
+
+        payload["feature_columns_raw"] = list(raw_cols)
+        payload["feature_columns"] = list(canonical_cols)
+        payload["features_used"] = len(canonical_cols)
+        payload["feature_selection_mode"] = "canonical_final_payload"
+        payload["raw_features"] = len(raw_cols)
+        payload["canonical_features"] = len(canonical_cols)
+        payload["removed_features"] = len(removed)
+        payload["feature_selection"] = {
+            "mode": "canonical_final_payload",
+            "status": "OK",
+            "raw_features": len(raw_cols),
+            "canonical_features": len(canonical_cols),
+            "removed_features": len(removed),
+            "removed": removed,
+        }
+
+    except Exception as exc:
+        payload["feature_selection_mode"] = "canonical_final_payload_failed"
+        payload["feature_selection_error"] = str(exc)
+
+    return payload
+
+def _aurum_feature_metadata_from_evaluation(payload):
+    if not isinstance(payload, dict):
+        return {}
+
+    fs = payload.get("feature_selection")
+    if isinstance(fs, dict):
+        columns = payload.get("feature_columns") or fs.get("canonical") or []
+        return {
+            "feature_selection": fs,
+            "feature_selection_mode": payload.get("feature_selection_mode") or fs.get("mode"),
+            "features_used": payload.get("features_used") or fs.get("canonical_features") or len(columns),
+            "feature_columns": columns,
+            "raw_features": payload.get("raw_features") or fs.get("raw_features"),
+            "canonical_features": payload.get("canonical_features") or fs.get("canonical_features"),
+            "removed_features": payload.get("removed_features") or fs.get("removed_features"),
+        }
+
+    out = {}
+    for key in (
+        "feature_selection_mode",
+        "features_used",
+        "feature_columns",
+        "raw_features",
+        "canonical_features",
+        "removed_features",
+    ):
+        if key in payload:
+            out[key] = payload.get(key)
+
+    return out
+
+
+def _aurum_apply_canonical_feature_metadata(target, source):
+    if not isinstance(target, dict) or not isinstance(source, dict):
+        return target
+
+    meta = _aurum_feature_metadata_from_evaluation(source)
+
+    if not meta:
+        return target
+
+    for key, value in meta.items():
+        if value is not None:
+            target[key] = value
+
+    return target
+
 def engine_availability() -> dict[str, bool]:
     return {
         "sklearn_available": bool(SKLEARN_AVAILABLE),
@@ -366,6 +473,136 @@ def _observer_summary(
         ],
         "status": "OK" if scores else "FAIL",
     }
+
+
+# ---------------------------------------------------------------------------
+# AURUM Etapa 5
+# Adaptive horizon observer.
+# Penalizes weak horizons and boosts strong horizons before combined_score.
+# ---------------------------------------------------------------------------
+
+_aurum_original_observer_summary = _observer_summary
+
+
+def _aurum_normalize_weights(weights: dict[str, float]) -> dict[str, float]:
+    clean: dict[str, float] = {}
+
+    for key in ("D5", "D20", "D60"):
+        try:
+            value = float(weights.get(key, 0.0) or 0.0)
+        except Exception:
+            value = 0.0
+        clean[key] = max(0.0, value)
+
+    total = sum(clean.values())
+
+    if total <= 0:
+        return {"D5": 0.25, "D20": 0.35, "D60": 0.40}
+
+    return {key: clean[key] / total for key in ("D5", "D20", "D60")}
+
+
+def _aurum_adaptive_observer_weights(
+    scores: dict[str, float],
+    base_weights: dict[str, float],
+) -> tuple[dict[str, float], dict[str, list[str]]]:
+    adjusted: dict[str, float] = {}
+    reasons: dict[str, list[str]] = {}
+
+    for hz in ("D5", "D20", "D60"):
+        score = float(scores.get(hz, 0.0) or 0.0)
+        weight = float(base_weights.get(hz, 0.0) or 0.0)
+        hz_reasons: list[str] = []
+
+        # Score aqui Ã© ACC*100. Abaixo de 50 equivale edge negativo.
+        if score < 50.0:
+            weight *= 0.25
+            hz_reasons.append("edge_negative")
+
+        # Muito ruim: praticamente contraindicador.
+        if score < 40.0:
+            weight *= 0.50
+            hz_reasons.append("deep_weak")
+
+        # Levemente positivo, mas ainda nÃ£o forte.
+        if 50.0 <= score < 56.0:
+            weight *= 0.80
+            hz_reasons.append("modest_edge")
+
+        # Forte.
+        if score >= 58.0:
+            weight *= 1.50
+            hz_reasons.append("strong_quality")
+
+        # Muito forte.
+        if score >= 62.0:
+            weight *= 1.20
+            hz_reasons.append("very_strong_quality")
+
+        adjusted[hz] = weight
+        reasons[hz] = hz_reasons or ["neutral"]
+
+    return _aurum_normalize_weights(adjusted), reasons
+
+
+def _observer_summary(*args, **kwargs):
+    observer = _aurum_original_observer_summary(*args, **kwargs)
+
+    score_by_horizon = kwargs.get("score_by_horizon")
+    observer_config = kwargs.get("observer_config")
+
+    if score_by_horizon is None and args:
+        score_by_horizon = args[0]
+
+    if observer_config is None:
+        if len(args) >= 2:
+            observer_config = args[1]
+        else:
+            observer_config = {}
+
+    if score_by_horizon is None:
+        score_by_horizon = {}
+
+    if observer_config is None:
+        observer_config = {}
+
+    if not isinstance(observer, dict):
+        return observer
+
+    scores = observer.get("scores") or observer.get("horizon_scores") or score_by_horizon or {}
+    if not isinstance(scores, dict):
+        return observer
+
+    base_weights = observer.get("weights") or observer_config.get("weights", {})
+    if not isinstance(base_weights, dict):
+        base_weights = {}
+
+    normalized_base = _aurum_normalize_weights(base_weights)
+    adaptive_weights, adjustments = _aurum_adaptive_observer_weights(scores, normalized_base)
+
+    combined_score = round(
+        sum(float(scores.get(hz, 0.0) or 0.0) * adaptive_weights.get(hz, 0.0) for hz in ("D5", "D20", "D60")),
+        6,
+    )
+
+    dominant_horizon = max(scores, key=lambda key: float(scores.get(key, 0.0) or 0.0)) if scores else "-"
+
+    observer["base_weights"] = {
+        key: round(value, 6) for key, value in normalized_base.items()
+    }
+    observer["weights"] = {
+        key: round(value, 6) for key, value in adaptive_weights.items()
+    }
+    observer["adaptive_weights"] = {
+        key: round(value, 6) for key, value in adaptive_weights.items()
+    }
+    observer["observer_adjustments"] = adjustments
+    observer["combined_score"] = combined_score
+    observer["dominant_horizon"] = dominant_horizon
+    observer["mode"] = "adaptive_weighted"
+
+    return observer
+
 
 
 def _weighted_metric(
@@ -1341,11 +1578,27 @@ def run_train_flow(
 
     multi_output = Path(files["multi_horizon_evaluation"])
     multi_output.parent.mkdir(parents=True, exist_ok=True)
+
+    # AURUM Etapa 4.1: prefer canonical feature metadata from horizon evaluations.
+    try:
+        for _hz_payload in final_payload.get("horizons", {}).values():
+            if isinstance(_hz_payload, dict):
+                _aurum_apply_canonical_feature_metadata(final_payload, _hz_payload)
+                break
+        for _hz_payload in final_payload.get("horizon_results", {}).values():
+            if isinstance(_hz_payload, dict):
+                _aurum_apply_canonical_feature_metadata(final_payload, _hz_payload)
+                break
+    except Exception:
+        pass
+
+    final_payload = _aurum_force_payload_canonical_features(final_payload)
     multi_output.write_text(
         json.dumps(final_payload, ensure_ascii=False, indent=2),
         encoding="utf-8",
     )
     Path(evaluation_output).parent.mkdir(parents=True, exist_ok=True)
+    final_payload = _aurum_force_payload_canonical_features(final_payload)
     Path(evaluation_output).write_text(
         json.dumps(final_payload, ensure_ascii=False, indent=2),
         encoding="utf-8",
@@ -2553,6 +2806,78 @@ def render_train_detail_report(
         lines.extend(["", *section])
 
     return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# AURUM Etapa 4.1 visual wrapper
+# Inserts FEATURE SELECTION into train --details without touching table builders.
+# ---------------------------------------------------------------------------
+
+_aurum_original_train_detail_renderer = render_train_detail_report
+
+
+def _aurum_feature_selection_visual_lines() -> list[str]:
+    try:
+        import json as _json
+        from pathlib import Path as _Path
+
+        p = _Path("storage/prediction/latest_multi_horizon_evaluation.json")
+        data = _json.loads(p.read_text(encoding="utf-8")) if p.exists() else {}
+    except Exception:
+        data = {}
+
+    selection = data.get("feature_selection") if isinstance(data, dict) else {}
+    if not isinstance(selection, dict):
+        selection = {}
+
+    mode = data.get("feature_selection_mode") or selection.get("mode") or "unknown"
+    raw_features = data.get("raw_features") or selection.get("raw_features") or data.get("features_used") or 0
+    canonical_features = data.get("canonical_features") or selection.get("canonical_features") or data.get("features_used") or 0
+    removed_features = data.get("removed_features") or selection.get("removed_features") or 0
+    removed = selection.get("removed") or []
+    if not isinstance(removed, list):
+        removed = []
+
+    lines = [
+        "FEATURE SELECTION",
+        "-" * 80,
+        f"{'mode':<20} {mode}",
+        f"{'raw_features':<20} {raw_features}",
+        f"{'canonical_features':<20} {canonical_features}",
+        f"{'removed_features':<20} {removed_features}",
+    ]
+
+    if removed:
+        shown = ", ".join(str(x) for x in removed[:12])
+        if len(removed) > 12:
+            shown += ", ..."
+        lines.append(f"{'removed':<20} {shown}")
+
+    return lines
+
+
+def render_train_detail_report(*args, **kwargs):
+    rendered = _aurum_original_train_detail_renderer(*args, **kwargs)
+
+    block = "\n".join(_aurum_feature_selection_visual_lines()) + "\n\n"
+
+    if isinstance(rendered, str):
+        if "FEATURE SELECTION" in rendered:
+            return rendered
+        if "HORIZON SCOREBOARD" in rendered:
+            return rendered.replace("HORIZON SCOREBOARD", block + "HORIZON SCOREBOARD", 1)
+        return rendered + "\n\n" + block.rstrip()
+
+    if isinstance(rendered, list):
+        if any(str(x) == "FEATURE SELECTION" for x in rendered):
+            return rendered
+        for i, item in enumerate(rendered):
+            if str(item) == "HORIZON SCOREBOARD":
+                return rendered[:i] + _aurum_feature_selection_visual_lines() + [""] + rendered[i:]
+        return rendered + [""] + _aurum_feature_selection_visual_lines()
+
+    return rendered
+
 
 
 def _load_train_detail_payload(path: str | Path, fallback: dict[str, Any]) -> dict[str, Any]:
