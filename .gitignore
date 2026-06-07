@@ -67,3 +67,7 @@ storage/runs/
 !storage/prediction/.gitkeep
 !storage/features/.gitkeep
 !storage/baskets/.gitkeep
+
+# Local planning/audit artifacts
+scripts/Plano de ação fechado — Aurum 2.0.txt
+storage/audit/
