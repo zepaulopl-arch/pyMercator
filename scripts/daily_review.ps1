@@ -33,6 +33,7 @@ $code = @'
 import json
 import os
 import sys
+from datetime import date
 from pathlib import Path
 
 from aurum.core import run_review
@@ -65,9 +66,15 @@ except FileNotFoundError as exc:
             file=sys.stderr,
         )
     else:
+        today = date.today().isoformat()
         print(
             "Rode scripts\\daily_signal.ps1 primeiro para criar "
             "storage\\signals\\YYYY-MM-DD\\PROFILE_LIST_signal.json.",
+            file=sys.stderr,
+        )
+        print(
+            f"Se for revisar o sinal gerado hoje, rode depois: "
+            f"scripts\\daily_review.ps1 -SignalDate {today}",
             file=sys.stderr,
         )
     raise SystemExit(2)
