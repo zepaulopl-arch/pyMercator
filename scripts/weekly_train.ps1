@@ -52,9 +52,14 @@ else:
 '@
 
 try {
-    & $PY -c $code
+    $tempPy = Join-Path ([System.IO.Path]::GetTempPath()) ("aurum_weekly_train_{0}.py" -f ([guid]::NewGuid().ToString("N")))
+    Set-Content -LiteralPath $tempPy -Value $code -Encoding UTF8
+    & $PY $tempPy
     $exitCode = $LASTEXITCODE
 } finally {
+    if ($tempPy -and (Test-Path -LiteralPath $tempPy)) {
+        Remove-Item -LiteralPath $tempPy -Force -ErrorAction SilentlyContinue
+    }
     Remove-Item Env:\AURUM_CORE_ARGS -ErrorAction SilentlyContinue
 }
 

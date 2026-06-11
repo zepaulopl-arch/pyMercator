@@ -36,6 +36,8 @@ def test_operational_scripts_use_ops_common_and_runtime_config():
         assert function_import in text
         assert "python -m aurum" not in text
         assert "-m aurum" not in text
+        assert "-c $code" not in text
+        assert "Set-Content -LiteralPath $tempPy" in text
         assert "C:\\Users\\zepau\\anaconda3\\python.exe" not in text
         assert "--no-color" not in text
 
