@@ -56,6 +56,10 @@ def test_operational_scripts_use_ops_common_and_runtime_config():
     daily_signal = (ROOT / "scripts" / "daily_signal.ps1").read_text(encoding="utf-8")
     assert "run_daily(**args)" in daily_signal
 
+    daily_review = (ROOT / "scripts" / "daily_review.ps1").read_text(encoding="utf-8")
+    assert "except FileNotFoundError" in daily_review
+    assert "AURUM REVIEW | SNAPSHOT NOT FOUND" in daily_review
+
 
 def test_ops_common_creates_runtime_manifest():
     powershell = shutil.which("powershell")
