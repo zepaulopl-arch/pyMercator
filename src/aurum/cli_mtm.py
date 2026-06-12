@@ -20,6 +20,7 @@ def run_mtm_command(args: Any) -> int:
             review_date=getattr(args, "review_date", "") or None,
             signals_dir=getattr(args, "signals_dir", "storage/signals"),
             prices_dir=args.prices_dir,
+            review_limit=getattr(args, "review_limit", 10),
         )
 
         if getattr(args, "json", False):

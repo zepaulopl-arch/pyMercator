@@ -4,7 +4,8 @@ param(
     [string]$List = "IBOV",
     [double]$Capital = 100000.0,
     [int]$Slots = 5,
-    [int]$Top = 10,
+    [int]$Limit = 10,
+    [int]$Top = 0,
     [string]$SignalDate = "",
     [string]$SignalsDir = "storage/signals",
     [string]$PricesDir = "data/prices",
@@ -22,12 +23,14 @@ $scriptName = Split-Path -Leaf $PSCommandPath
 $PY = Initialize-AurumScript -RequestedPython $PY -ScriptName $scriptName
 Set-AurumColorMode -Enabled $Color.IsPresent
 
+$displayLimit = if ($Top -gt 0) { $Top } else { $Limit }
+
 $argsPayload = @{
     profile = $Profile
     list_name = $List
     capital = $Capital
     slots = $Slots
-    table_limit = $Top
+    display_limit = $displayLimit
     signal_date = $SignalDate
     signals_dir = $SignalsDir
     prices_dir = $PricesDir

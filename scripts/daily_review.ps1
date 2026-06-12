@@ -6,6 +6,7 @@ param(
     [string]$ReviewDate = "",
     [string]$SignalsDir = "storage/signals",
     [string]$PricesDir = "data/prices",
+    [int]$ReviewLimit = 10,
     [switch]$Json,
     [switch]$Color
 )
@@ -25,6 +26,7 @@ $argsPayload = @{
     review_date = $ReviewDate
     signals_dir = $SignalsDir
     prices_dir = $PricesDir
+    review_limit = $ReviewLimit
     emit_json = $Json.IsPresent
 } | ConvertTo-Json -Compress
 

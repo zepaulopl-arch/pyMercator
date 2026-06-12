@@ -9,6 +9,7 @@ from typing import Any
 
 TABLE_KEYS = ("real_long", "real_short", "obs_long", "obs_short")
 DEFAULT_TABLE_LIMIT = 10
+DEFAULT_REVIEW_LIMIT = 10
 TABLE_TITLES = {
     "real_long": "REAL LONG",
     "real_short": "REAL SHORT",
@@ -218,13 +219,119 @@ def limit_tables(
     *,
     limit: int = DEFAULT_TABLE_LIMIT,
 ) -> dict[str, list[dict[str, Any]]]:
-    """Keep only the best rows from each operational table."""
+    """Return display rows without changing the complete snapshot tables."""
     resolved_limit = max(0, int(limit or 0))
     out: dict[str, list[dict[str, Any]]] = {}
     for key in TABLE_KEYS:
         rows = _sort_table([row for row in tables.get(key, []) if isinstance(row, dict)])
         out[key] = rows[:resolved_limit] if resolved_limit else rows
     return _ensure_tables(out)
+
+
+def _capital_per_slot(capital: Any, slots: Any) -> float:
+    slot_count = max(1, int(slots or 1))
+    return round(_as_float(capital) / slot_count, 4)
+
+
+def _market_regime_from_raw(raw_payload: dict[str, Any]) -> str:
+    report = raw_payload.get("report") if isinstance(raw_payload.get("report"), dict) else {}
+    for value in (
+        _nested(raw_payload, "market", "regime"),
+        _nested(report, "market_regime", "regime"),
+        _nested(report, "market", "regime"),
+    ):
+        text = _as_text(value)
+        if text:
+            return text
+    return "-"
+
+
+def _model_from_raw(raw_payload: dict[str, Any]) -> str:
+    report = raw_payload.get("report") if isinstance(raw_payload.get("report"), dict) else {}
+    prediction = raw_payload.get("prediction") if isinstance(raw_payload.get("prediction"), dict) else {}
+    report_prediction = report.get("prediction") if isinstance(report.get("prediction"), dict) else {}
+    for payload in (prediction, report_prediction):
+        for key in ("engine_used", "engine", "model", "meta_model"):
+            text = _as_text(payload.get(key))
+            if text:
+                return text
+    return "-"
+
+
+def _with_missing_entry_reason(row: dict[str, Any], reason: str) -> dict[str, Any]:
+    item = dict(row)
+    item.setdefault("original_status", item.get("status", "-"))
+    item["status"] = "NOT_REVIEWABLE"
+    item["review_status"] = "NOT_REVIEWABLE"
+    current_reason = _as_text(item.get("reason"), "-")
+    item["reason"] = reason if current_reason in {"", "-"} else f"{current_reason}; {reason}"
+    return item
+
+
+def _display_limit(value: Any, default: int = DEFAULT_TABLE_LIMIT) -> int:
+    if value in (None, ""):
+        return max(0, int(default))
+    try:
+        return max(0, int(value))
+    except (TypeError, ValueError):
+        return max(0, int(default))
+
+
+def _full_snapshot_file(payload: dict[str, Any]) -> str:
+    files = payload.get("files", {}) if isinstance(payload.get("files"), dict) else {}
+    return _as_text(
+        files.get("snapshot_json") or files.get("signal_source_file"),
+        "-",
+    )
+
+
+def _clip(value: Any, width: int) -> str:
+    text = _as_text(value, "-")
+    if len(text) <= width:
+        return text
+    if width <= 1:
+        return text[:width]
+    return text[: width - 1] + "~"
+
+
+def _fmt_score(value: Any) -> str:
+    try:
+        return f"{float(value):.2f}"
+    except Exception:
+        return "-"
+
+
+def _fmt_qty(value: Any) -> str:
+    try:
+        number = float(value)
+    except Exception:
+        return "-"
+    if abs(number) >= 1000:
+        return f"{number:,.0f}"
+    if abs(number) >= 10:
+        return f"{number:,.2f}"
+    return f"{number:,.4f}"
+
+
+def _review_verdict(*, trades: int, pnl: float) -> str:
+    if trades <= 0:
+        return "NO_REAL_TRADES"
+    if pnl > 0:
+        return "PROFIT"
+    if pnl < 0:
+        return "LOSS"
+    return "FLAT"
+
+
+def _row_outcome(amount: Any) -> str:
+    if amount is None:
+        return "NOT_REVIEWABLE"
+    pnl = _as_float(amount)
+    if pnl > 0:
+        return "GAIN"
+    if pnl < 0:
+        return "LOSS"
+    return "FLAT"
 
 
 def update_data(
@@ -613,6 +720,48 @@ def _latest_price(
     }
 
 
+def _hydrate_entries_for_review(
+    tables: dict[str, list[dict[str, Any]]],
+    *,
+    prices_dir: str | Path,
+    signal_date: str | None,
+) -> dict[str, list[dict[str, Any]]]:
+    hydrated: dict[str, list[dict[str, Any]]] = {}
+    for key in TABLE_KEYS:
+        hydrated[key] = []
+        for row in tables.get(key, []) or []:
+            if not isinstance(row, dict):
+                continue
+            item = dict(row)
+            entry = _as_float(item.get("entry_price") or item.get("ref_price"))
+            if entry > 0:
+                item["entry_price"] = round(entry, 4)
+                item.setdefault("entry_status", "OK")
+                hydrated[key].append(item)
+                continue
+
+            latest = _latest_price(
+                item.get("ticker", ""),
+                prices_dir=prices_dir,
+                max_date=signal_date,
+            )
+            latest_price = _as_float(latest.get("price"))
+            if latest_price > 0:
+                item["entry_price"] = round(latest_price, 4)
+                item["ref_price"] = item.get("ref_price") or round(latest_price, 4)
+                item["ref_date"] = item.get("ref_date") or latest.get("date")
+                item["ref_source"] = item.get("ref_source") or latest.get("source")
+                item["entry_status"] = "OK_FROM_LOCAL_PRICE"
+            else:
+                item = _with_missing_entry_reason(
+                    item,
+                    "missing entry price; no local price available",
+                )
+                item["entry_status"] = latest.get("status") or "DATA_MISSING"
+            hydrated[key].append(item)
+    return _ensure_tables(hydrated)
+
+
 def _review_row(
     row: dict[str, Any],
     *,
@@ -626,24 +775,47 @@ def _review_row(
     latest_price = _as_float(latest.get("price"))
     is_short = table.endswith("short")
     is_real = table.startswith("real_")
+    reasons: list[str] = []
+    if entry <= 0:
+        reasons.append("missing entry price")
+    if notional <= 0:
+        reasons.append("missing capital/notional")
+    if latest.get("status") != "OK" or latest_price <= 0:
+        reasons.append(f"latest price unavailable ({latest.get('status') or 'DATA_MISSING'})")
+
     ret = None
     amount = None
-    if entry > 0 and latest_price > 0 and notional > 0:
+    reviewable = not reasons
+    if reviewable:
         ret = (entry - latest_price) / entry if is_short else (latest_price - entry) / entry
         amount = round(notional * ret, 4)
+    current_reason = _as_text(row.get("reason"), "-")
+    if reasons:
+        detail = "; ".join(reasons)
+        reason = detail if current_reason in {"", "-"} else f"{current_reason}; {detail}"
+    else:
+        reason = current_reason
+    review_status = _row_outcome(amount) if reviewable else "NOT_REVIEWABLE"
     result = dict(row)
     result.update(
         {
             "review_date": review_date,
+            "entry_price": round(entry, 4) if entry > 0 else row.get("entry_price"),
             "latest_price": latest.get("price"),
             "latest_date": latest.get("date"),
             "latest_source": latest.get("source"),
             "data_status": latest.get("status"),
+            "review_status": review_status,
+            "reviewable": reviewable,
             "return_pct": round(ret * 100, 4) if ret is not None else None,
             "pnl": amount if is_real else None,
             "would_pnl": amount if not is_real else None,
+            "reason": reason,
         }
     )
+    if not reviewable:
+        result.setdefault("original_status", result.get("status", "-"))
+        result["status"] = "NOT_REVIEWABLE"
     return result
 
 
@@ -652,8 +824,10 @@ def review_four_tables(
     *,
     review_date: str | None = None,
     prices_dir: str | Path = "data/prices",
+    review_limit: int = DEFAULT_REVIEW_LIMIT,
 ) -> dict[str, Any]:
     resolved_review_date = review_date or _today()
+    resolved_review_limit = _display_limit(review_limit, DEFAULT_REVIEW_LIMIT)
     source_files = snapshot.get("files", {}) if isinstance(snapshot.get("files"), dict) else {}
     reviewed_tables: dict[str, list[dict[str, Any]]] = {}
     summary: dict[str, dict[str, Any]] = {}
@@ -669,9 +843,15 @@ def review_four_tables(
         real_total = round(sum(_as_float(row.get("pnl")) for row in rows), 4)
         obs_total = round(sum(_as_float(row.get("would_pnl")) for row in rows), 4)
         returns = [row.get("return_pct") for row in rows if row.get("return_pct") is not None]
+        reviewable_items = sum(1 for row in rows if row.get("reviewable"))
         summary[key] = {
             "title": TABLE_TITLES[key],
             "items": len(rows),
+            "shown_items": min(len(rows), resolved_review_limit) if resolved_review_limit else len(rows),
+            "total_items": len(rows),
+            "review_scope": "FULL_SNAPSHOT",
+            "reviewable_items": reviewable_items,
+            "not_reviewable_items": len(rows) - reviewable_items,
             "data_missing": sum(1 for row in rows if row.get("data_status") != "OK"),
             "notional_per_item": rows[0].get("notional") if rows else 0.0,
             "real_pnl": real_total if key.startswith("real_") else 0.0,
@@ -681,6 +861,58 @@ def review_four_tables(
             if returns
             else None,
         }
+
+    real_long_pnl = round(_as_float(summary.get("real_long", {}).get("real_pnl")), 4)
+    real_short_pnl = round(_as_float(summary.get("real_short", {}).get("real_pnl")), 4)
+    real_total_pnl = round(real_long_pnl + real_short_pnl, 4)
+    real_trades = int(summary.get("real_long", {}).get("items", 0)) + int(
+        summary.get("real_short", {}).get("items", 0)
+    )
+    real_reviewable_trades = int(summary.get("real_long", {}).get("reviewable_items", 0)) + int(
+        summary.get("real_short", {}).get("reviewable_items", 0)
+    )
+    if real_trades > 0 and real_reviewable_trades == 0:
+        real_verdict = "REAL_NOT_REVIEWABLE"
+    else:
+        real_verdict = _review_verdict(trades=real_trades, pnl=real_total_pnl)
+
+    obs_long_pnl = round(_as_float(summary.get("obs_long", {}).get("would_pnl")), 4)
+    obs_short_pnl = round(_as_float(summary.get("obs_short", {}).get("would_pnl")), 4)
+    obs_total_pnl = round(obs_long_pnl + obs_short_pnl, 4)
+    obs_items = int(summary.get("obs_long", {}).get("items", 0)) + int(
+        summary.get("obs_short", {}).get("items", 0)
+    )
+    obs_reviewable_items = int(summary.get("obs_long", {}).get("reviewable_items", 0)) + int(
+        summary.get("obs_short", {}).get("reviewable_items", 0)
+    )
+    price_dates = [
+        _as_text(row.get("latest_date"))
+        for rows in reviewed_tables.values()
+        for row in rows
+        if _as_text(row.get("latest_date"))
+    ]
+    operational_result = {
+        "real_long_pnl": real_long_pnl,
+        "real_short_pnl": real_short_pnl,
+        "real_total_pnl": real_total_pnl,
+        "real_trades": real_trades,
+        "real_reviewable_trades": real_reviewable_trades,
+        "real_verdict": real_verdict,
+    }
+    observation_result = {
+        "obs_long_pnl": obs_long_pnl,
+        "obs_short_pnl": obs_short_pnl,
+        "obs_total_pnl": obs_total_pnl,
+        "obs_items": obs_items,
+        "obs_reviewable_items": obs_reviewable_items,
+        "obs_not_reviewable_items": obs_items - obs_reviewable_items,
+        "obs_verdict": "STUDY_ONLY",
+    }
+    final = {
+        "operational_pnl": real_total_pnl if real_trades else 0.0,
+        "paper_pnl": obs_total_pnl,
+        "final_verdict": real_verdict,
+    }
 
     payload = {
         "schema_version": "aurum_review.v1",
@@ -692,11 +924,21 @@ def review_four_tables(
         "prices_dir": str(prices_dir),
         "signal_source_file": source_files.get("signal_source_file")
         or source_files.get("snapshot_json"),
+        "full_snapshot_file": source_files.get("signal_source_file")
+        or source_files.get("snapshot_json"),
+        "prices_last_date": max(price_dates) if price_dates else "-",
         "capital": snapshot.get("capital"),
         "slots": snapshot.get("slots"),
+        "capital_per_slot": snapshot.get("capital_per_slot")
+        or _capital_per_slot(snapshot.get("capital"), snapshot.get("slots")),
         "sizing_mode": snapshot.get("sizing_mode", "per_slot"),
+        "review_limit": resolved_review_limit,
+        "review_scope": "FULL_SNAPSHOT",
         "tables": reviewed_tables,
         "summary": summary,
+        "operational_result": operational_result,
+        "observation_result": observation_result,
+        "final": final,
     }
     payload["text"] = render_review_report(payload)
     return payload
@@ -716,29 +958,52 @@ def _fmt_pct(value: Any) -> str:
         return "-"
 
 
+def _daily_table_header() -> str:
+    return (
+        f"{'#':>2}  {'TICKER':<10} {'SCORE':>7} {'ENTRY':>12} "
+        f"{'CAPITAL':>12} {'QTY':>12} {'STATUS':<16} {'REASON':<48}"
+    )
+
+
+def _review_table_header() -> str:
+    return (
+        f"{'#':>2}  {'TICKER':<10} {'ENTRY':>12} {'LATEST':>12} "
+        f"{'RET':>9} {'PNL':>12} {'STATUS':<16} {'REASON':<48}"
+    )
+
+
 def _render_signal_table(
     lines: list[str],
     title: str,
     rows: list[dict[str, Any]],
     *,
-    raw_count: int,
+    total_count: int,
     limit: int,
+    full_snapshot_file: str,
 ) -> None:
-    lines.extend([f"{title} | TOP {limit}", "-" * 80])
-    lines.append(f"shown={len(rows)} total_candidates={raw_count}")
+    shown_count = len(rows)
+    lines.extend([f"{title} | TOP {shown_count} OF {total_count}", "-" * 120])
+    lines.append(
+        f"shown_items={shown_count} total_items={total_count} "
+        f"review_scope=FULL_SNAPSHOT full_snapshot_file={full_snapshot_file}"
+    )
+    lines.append("Full list saved in snapshot.")
     if not rows:
         lines.extend(["NO ITEMS", ""])
         return
+    header = _daily_table_header()
+    lines.extend([header, "-" * len(header)])
     for index, row in enumerate(rows, start=1):
         lines.append(
-            f"{index:02d} {row.get('ticker', '-'):<8} "
-            f"score={_as_float(row.get('score')):>6.2f} "
-            f"entry={_fmt_money(row.get('entry_price')):>12} "
-            f"notional={_fmt_money(row.get('notional')):>12} "
-            f"qty={_fmt_money(row.get('quantity')):>12} "
-            f"status={row.get('status', '-')}"
+            f"{index:>2}  "
+            f"{_clip(row.get('ticker'), 10):<10} "
+            f"{_fmt_score(row.get('score')):>7} "
+            f"{_fmt_money(row.get('entry_price')):>12} "
+            f"{_fmt_money(row.get('notional')):>12} "
+            f"{_fmt_qty(row.get('quantity')):>12} "
+            f"{_clip(row.get('status'), 16):<16} "
+            f"{_clip(row.get('reason'), 48):<48}"
         )
-        lines.append(f"   reason={row.get('reason', '-')}")
     lines.append("")
 
 
@@ -746,43 +1011,66 @@ def render_daily_report(snapshot: dict[str, Any]) -> str:
     tables = snapshot.get("tables", {}) if isinstance(snapshot.get("tables"), dict) else {}
     counts = {key: len(tables.get(key, []) or []) for key in TABLE_KEYS}
     raw_counts = snapshot.get("raw_counts", {}) if isinstance(snapshot.get("raw_counts"), dict) else counts
-    limit = int(snapshot.get("table_limit") or DEFAULT_TABLE_LIMIT)
+    limit = _display_limit(snapshot.get("display_limit", snapshot.get("table_limit")), DEFAULT_TABLE_LIMIT)
+    display_tables = limit_tables(tables, limit=limit)
+    shown_counts = {key: len(display_tables.get(key, []) or []) for key in TABLE_KEYS}
+    snapshot_json = _full_snapshot_file(snapshot)
+    capital_per_slot = snapshot.get("capital_per_slot") or _capital_per_slot(
+        snapshot.get("capital"),
+        snapshot.get("slots"),
+    )
     lines = [
-        "AURUM DAILY | TOP SIGNAL TABLES",
-        "-" * 80,
-        f"profile={snapshot.get('profile', '-')} list={snapshot.get('list', '-')} "
-        f"signal_date={snapshot.get('signal_date', '-')}",
-        f"capital={_fmt_money(snapshot.get('capital'))} slots={snapshot.get('slots', '-')} "
-        f"sizing={snapshot.get('sizing_mode', '-')}",
-        f"table_limit={limit}",
+        "AURUM DAILY SIGNALS",
+        "-" * 120,
+        f"date={snapshot.get('signal_date', '-')}",
+        f"profile={snapshot.get('profile', '-')}",
+        f"list={snapshot.get('list', '-')}",
+        f"capital={_fmt_money(snapshot.get('capital'))}",
+        f"slots={snapshot.get('slots', '-')}",
+        f"capital_per_slot={_fmt_money(capital_per_slot)}",
+        f"market_regime={snapshot.get('market_regime', '-')}",
+        f"model={snapshot.get('model', '-')}",
+        f"snapshot_json={snapshot_json}",
+        f"display_limit={limit}",
+        "review_scope=FULL_SNAPSHOT",
         "",
         "BOARD",
-        "-" * 80,
-        " | ".join(
-            f"{TABLE_TITLES[key]}={counts[key]}/{raw_counts.get(key, counts[key])}"
-            for key in TABLE_KEYS
-        ),
-        "",
+        "-" * 120,
     ]
+    for key in TABLE_KEYS:
+        total = int(raw_counts.get(key, counts[key]) or counts[key])
+        lines.append(
+            f"{TABLE_TITLES[key]}: shown_items={shown_counts[key]} "
+            f"total_items={total} review_scope=FULL_SNAPSHOT "
+            f"full_snapshot_file={snapshot_json}"
+        )
+    lines.append("")
     for key in TABLE_KEYS:
         _render_signal_table(
             lines,
             TABLE_TITLES[key],
-            tables.get(key, []),
-            raw_count=int(raw_counts.get(key, counts[key]) or 0),
+            display_tables.get(key, []),
+            total_count=int(raw_counts.get(key, counts[key]) or counts[key]),
             limit=limit,
+            full_snapshot_file=snapshot_json,
         )
     lines.extend(
         [
             "SUMMARY",
-            "-" * 80,
-            " | ".join(
-                f"{TABLE_TITLES[key]}={counts[key]}/{raw_counts.get(key, counts[key])}"
-                for key in TABLE_KEYS
-            ),
+            "-" * 120,
+        ]
+    )
+    for key in TABLE_KEYS:
+        total = int(raw_counts.get(key, counts[key]) or counts[key])
+        lines.append(
+            f"{TABLE_TITLES[key]} shown_items={shown_counts[key]} "
+            f"total_items={total} review_scope=FULL_SNAPSHOT"
+        )
+    lines.extend(
+        [
             "",
             "FILES",
-            "-" * 80,
+            "-" * 120,
         ]
     )
     files = snapshot.get("files", {}) if isinstance(snapshot.get("files"), dict) else {}
@@ -791,20 +1079,38 @@ def render_daily_report(snapshot: dict[str, Any]) -> str:
     return "\n".join(lines).rstrip() + "\n"
 
 
-def _render_review_table(lines: list[str], title: str, rows: list[dict[str, Any]]) -> None:
-    lines.extend([title, "-" * 80])
+def _render_review_table(
+    lines: list[str],
+    title: str,
+    rows: list[dict[str, Any]],
+    *,
+    total_count: int,
+    review_limit: int,
+    full_snapshot_file: str,
+) -> None:
+    display_rows = rows[:review_limit] if review_limit else rows
+    shown_count = len(display_rows)
+    lines.extend([f"{title} | TOP {shown_count} OF {total_count}", "-" * 120])
+    lines.append(
+        f"shown_items={shown_count} total_items={total_count} "
+        f"review_scope=FULL_SNAPSHOT full_snapshot_file={full_snapshot_file}"
+    )
     if not rows:
         lines.extend(["NO ITEMS", ""])
         return
-    for index, row in enumerate(rows, start=1):
+    header = _review_table_header()
+    lines.extend([header, "-" * len(header)])
+    for index, row in enumerate(display_rows, start=1):
         amount = row.get("pnl") if row.get("pnl") is not None else row.get("would_pnl")
         lines.append(
-            f"{index:02d} {row.get('ticker', '-'):<8} "
-            f"entry={_fmt_money(row.get('entry_price')):>12} "
-            f"latest={_fmt_money(row.get('latest_price')):>12} "
-            f"ret={_fmt_pct(row.get('return_pct')):>9} "
-            f"pnl={_fmt_money(amount):>12} "
-            f"data={row.get('data_status', '-')}"
+            f"{index:>2}  "
+            f"{_clip(row.get('ticker'), 10):<10} "
+            f"{_fmt_money(row.get('entry_price')):>12} "
+            f"{_fmt_money(row.get('latest_price')):>12} "
+            f"{_fmt_pct(row.get('return_pct')):>9} "
+            f"{_fmt_money(amount):>12} "
+            f"{_clip(row.get('review_status'), 16):<16} "
+            f"{_clip(row.get('reason'), 48):<48}"
         )
     lines.append("")
 
@@ -812,25 +1118,62 @@ def _render_review_table(lines: list[str], title: str, rows: list[dict[str, Any]
 def render_review_report(review: dict[str, Any]) -> str:
     tables = review.get("tables", {}) if isinstance(review.get("tables"), dict) else {}
     summary = review.get("summary", {}) if isinstance(review.get("summary"), dict) else {}
+    operational = review.get("operational_result", {}) if isinstance(review.get("operational_result"), dict) else {}
+    observation = review.get("observation_result", {}) if isinstance(review.get("observation_result"), dict) else {}
+    final = review.get("final", {}) if isinstance(review.get("final"), dict) else {}
+    review_limit = _display_limit(review.get("review_limit"), DEFAULT_REVIEW_LIMIT)
+    full_snapshot_file = _as_text(review.get("full_snapshot_file") or review.get("signal_source_file"), "-")
     lines = [
         "AURUM REVIEW",
-        "-" * 80,
-        f"profile={review.get('profile', '-')} list={review.get('list', '-')} "
-        f"signal_date={review.get('signal_date', '-')} review_date={review.get('review_date', '-')}",
+        "-" * 120,
+        f"signal_date={review.get('signal_date', '-')}",
+        f"review_date={review.get('review_date', '-')}",
         f"signal_source_file={review.get('signal_source_file', '-')}",
+        f"prices_last_date={review.get('prices_last_date', '-')}",
+        f"capital={_fmt_money(review.get('capital'))}",
+        f"slots={review.get('slots', '-')}",
+        f"capital_per_slot={_fmt_money(review.get('capital_per_slot'))}",
+        f"profile={review.get('profile', '-')} list={review.get('list', '-')}",
+        f"review_limit={review_limit}",
+        "review_scope=FULL_SNAPSHOT",
         "",
     ]
     for key in TABLE_KEYS:
-        _render_review_table(lines, REVIEW_TITLES[key], tables.get(key, []))
-    real_total = sum(_as_float(summary.get(key, {}).get("real_pnl")) for key in ("real_long", "real_short"))
-    obs_total = sum(_as_float(summary.get(key, {}).get("would_pnl")) for key in ("obs_long", "obs_short"))
+        rows = tables.get(key, []) or []
+        total = int(summary.get(key, {}).get("total_items") or len(rows))
+        _render_review_table(
+            lines,
+            REVIEW_TITLES[key],
+            rows,
+            total_count=total,
+            review_limit=review_limit,
+            full_snapshot_file=full_snapshot_file,
+        )
     lines.extend(
         [
-            "SUMMARY",
-            "-" * 80,
-            f"REAL TOTAL={_fmt_money(real_total)}",
-            f"OBS TOTAL={_fmt_money(obs_total)}",
-            f"FINAL TOTAL={_fmt_money(real_total + obs_total)}",
+            "OPERATIONAL RESULT",
+            "-" * 120,
+            f"real_long_pnl={_fmt_money(operational.get('real_long_pnl'))}",
+            f"real_short_pnl={_fmt_money(operational.get('real_short_pnl'))}",
+            f"real_total_pnl={_fmt_money(operational.get('real_total_pnl'))}",
+            f"real_trades={operational.get('real_trades', 0)}",
+            f"real_verdict={operational.get('real_verdict', '-')}",
+            "",
+            "OBSERVATION RESULT",
+            "-" * 120,
+            f"obs_long_pnl={_fmt_money(observation.get('obs_long_pnl'))}",
+            f"obs_short_pnl={_fmt_money(observation.get('obs_short_pnl'))}",
+            f"obs_total_pnl={_fmt_money(observation.get('obs_total_pnl'))}",
+            f"obs_items={observation.get('obs_items', 0)}",
+            f"obs_reviewable_items={observation.get('obs_reviewable_items', 0)}",
+            f"obs_not_reviewable_items={observation.get('obs_not_reviewable_items', 0)}",
+            f"obs_verdict={observation.get('obs_verdict', 'STUDY_ONLY')}",
+            "",
+            "FINAL",
+            "-" * 120,
+            f"operational_pnl={_fmt_money(final.get('operational_pnl'))}",
+            f"paper_pnl={_fmt_money(final.get('paper_pnl'))}",
+            f"final_verdict={final.get('final_verdict', '-')}",
         ]
     )
     return "\n".join(lines).rstrip() + "\n"
@@ -847,12 +1190,17 @@ def run_daily(
     prices_dir: str = "data/prices",
     update: bool = True,
     force: bool = False,
-    table_limit: int = DEFAULT_TABLE_LIMIT,
+    display_limit: int = DEFAULT_TABLE_LIMIT,
+    table_limit: int | None = None,
     raw_payload: dict[str, Any] | None = None,
     update_payload: dict[str, Any] | None = None,
     **signal_kwargs: Any,
 ) -> dict[str, Any]:
     resolved_signal_date = signal_date or _today()
+    resolved_display_limit = _display_limit(
+        table_limit if table_limit is not None else display_limit,
+        DEFAULT_TABLE_LIMIT,
+    )
     resolved_update = update_payload
     features: dict[str, Any] = {}
     if update and resolved_update is None:
@@ -870,13 +1218,18 @@ def run_daily(
     )
     raw_tables = classify_into_four_tables(raw)
     raw_counts = {key: len(raw_tables.get(key, [])) for key in TABLE_KEYS}
-    limited_tables = limit_tables(raw_tables, limit=table_limit)
+    review_ready_tables = _hydrate_entries_for_review(
+        raw_tables,
+        prices_dir=prices_dir,
+        signal_date=resolved_signal_date,
+    )
     tables = size_positions(
-        limited_tables,
+        review_ready_tables,
         capital=capital,
         slots=slots,
         sizing_mode="per_slot",
     )
+    counts = {key: len(tables.get(key, [])) for key in TABLE_KEYS}
     snapshot = {
         "schema_version": "aurum_signal_snapshot.v1",
         "created_at": _now_ts(),
@@ -885,14 +1238,23 @@ def run_daily(
         "list": list_name.upper(),
         "capital": float(capital),
         "slots": max(1, int(slots or 1)),
+        "capital_per_slot": _capital_per_slot(capital, slots),
         "sizing_mode": "per_slot",
-        "table_limit": max(0, int(table_limit or 0)),
+        "display_limit": resolved_display_limit,
+        "table_limit": resolved_display_limit,
+        "review_scope": "FULL_SNAPSHOT",
+        "market_regime": _market_regime_from_raw(raw) if isinstance(raw, dict) else "-",
+        "model": _model_from_raw(raw) if isinstance(raw, dict) else "-",
         "raw_status": raw.get("status") if isinstance(raw, dict) else "-",
         "update": resolved_update or {},
         "features": features,
         "tables": tables,
-        "counts": {key: len(tables.get(key, [])) for key in TABLE_KEYS},
+        "counts": counts,
         "raw_counts": raw_counts,
+        "shown_counts": {
+            key: min(counts[key], resolved_display_limit) if resolved_display_limit else counts[key]
+            for key in TABLE_KEYS
+        },
         "files": {},
     }
     files = save_signal_snapshot(snapshot, signals_dir=signals_dir, force=force)
@@ -909,6 +1271,7 @@ def run_review(
     review_date: str | None = None,
     signals_dir: str | Path = "storage/signals",
     prices_dir: str | Path = "data/prices",
+    review_limit: int = DEFAULT_REVIEW_LIMIT,
 ) -> dict[str, Any]:
     snapshot = load_signal_snapshot(
         profile=profile,
@@ -917,7 +1280,12 @@ def run_review(
         review_date=review_date,
         signals_dir=signals_dir,
     )
-    return review_four_tables(snapshot, review_date=review_date, prices_dir=prices_dir)
+    return review_four_tables(
+        snapshot,
+        review_date=review_date,
+        prices_dir=prices_dir,
+        review_limit=review_limit,
+    )
 
 
 def train_models(**kwargs: Any) -> dict[str, Any]:

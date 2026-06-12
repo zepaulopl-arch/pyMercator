@@ -480,13 +480,12 @@ def _run_daily_command(args: argparse.Namespace) -> int:
             list_name=getattr(args, "list", "") or args.universe_name or "IBOV",
             capital=args.capital,
             slots=args.slots,
-            table_limit=args.top,
+            display_limit=args.limit or args.top or 10,
             signal_date=args.signal_date or None,
             signals_dir=args.signals_dir,
             prices_dir=args.prices_dir,
             update=not args.no_update,
             force=args.force,
-            limit=args.limit or 20,
             context=args.context or "storage/context/latest_market_context.json",
         )
         if getattr(args, "json", False):
@@ -865,6 +864,7 @@ def build_parser() -> argparse.ArgumentParser:
             mtm_parser.add_argument("--prices-dir", default="data/prices")
             mtm_parser.add_argument("--profile", default="CON")
             mtm_parser.add_argument("--slots", type=int, default=5)
+            mtm_parser.add_argument("--review-limit", type=int, default=10)
             mtm_parser.add_argument(
                 "--relevance-pct",
                 type=float,

@@ -88,6 +88,23 @@ def _raw_payload() -> dict:
     }
 
 
+def _many_obs_payload(count: int = 12) -> dict:
+    decisions = []
+    for index in range(count):
+        score = 100 - index
+        decisions.append(
+            {
+                "asset": {"ticker": f"OBS{index:02d}", "last_close": 10.0 + index},
+                "permission": {"status": "BLOCKED"},
+                "ranking": {"context_score": score},
+                "ref_price": 10.0 + index,
+                "ref_date": "2026-06-05",
+                "reason": "ranking test",
+            }
+        )
+    return {"status": "OK", "report": {"decisions": decisions}}
+
+
 def _write_price(prices_dir: Path, ticker: str, latest: float) -> None:
     prices_dir.mkdir(parents=True, exist_ok=True)
     (prices_dir / f"{ticker}.SA.csv").write_text(
@@ -135,7 +152,7 @@ def _review(tmp_path: Path) -> dict:
     )
 
 
-def test_daily_outputs_four_tables(tmp_path: Path) -> None:
+def test_daily_always_prints_four_tables(tmp_path: Path) -> None:
     snapshot = _daily(tmp_path)
 
     assert set(snapshot["tables"]) == set(core.TABLE_KEYS)
@@ -143,38 +160,41 @@ def test_daily_outputs_four_tables(tmp_path: Path) -> None:
     assert [row["ticker"] for row in snapshot["tables"]["real_short"]] == ["SHORT1"]
     assert {row["ticker"] for row in snapshot["tables"]["obs_long"]} == {"OBS1", "OBS2"}
     assert {row["ticker"] for row in snapshot["tables"]["obs_short"]} == {"SOBS1", "SOBS2"}
+    for title in core.TABLE_TITLES.values():
+        assert title in snapshot["text"]
 
 
-def test_daily_limits_each_table_to_top_10_best_scores(tmp_path: Path) -> None:
-    decisions = []
-    for index in range(12):
-        score = 100 - index
-        decisions.append(
-            {
-                "asset": {"ticker": f"OBS{index:02d}", "last_close": 10.0 + index},
-                "permission": {"status": "BLOCKED"},
-                "ranking": {"context_score": score},
-                "ref_price": 10.0 + index,
-                "reason": "ranking test",
-            }
-        )
+def test_daily_tables_are_aligned(tmp_path: Path) -> None:
+    snapshot = _daily(tmp_path)
 
+    header = core._daily_table_header()
+    assert snapshot["text"].count(header) == 4
+    assert "score=" not in snapshot["text"]
+    assert "entry=" not in snapshot["text"]
+    assert "notional=" not in snapshot["text"]
+
+
+def test_daily_shown_items_not_confused_with_total_items(tmp_path: Path) -> None:
     snapshot = core.run_daily(
         profile="CON",
         list_name="IBOV",
         signal_date="2026-06-05",
         signals_dir=tmp_path / "signals",
         update=False,
-        raw_payload={"status": "OK", "report": {"decisions": decisions}},
+        display_limit=10,
+        raw_payload=_many_obs_payload(),
     )
 
     rows = snapshot["tables"]["obs_long"]
-    assert len(rows) == 10
-    assert [row["ticker"] for row in rows] == [f"OBS{index:02d}" for index in range(10)]
-    assert snapshot["counts"]["obs_long"] == 10
+    assert len(rows) == 12
+    assert [row["ticker"] for row in rows[:10]] == [f"OBS{index:02d}" for index in range(10)]
+    assert snapshot["counts"]["obs_long"] == 12
     assert snapshot["raw_counts"]["obs_long"] == 12
-    assert "OBS LONG=10/12" in snapshot["text"]
-    assert "OBS LONG | TOP 10" in snapshot["text"]
+    assert snapshot["shown_counts"]["obs_long"] == 10
+    assert "OBS LONG: shown_items=10 total_items=12 review_scope=FULL_SNAPSHOT" in snapshot["text"]
+    assert "OBS LONG | TOP 10 OF 12" in snapshot["text"]
+    assert "Full list saved in snapshot." in snapshot["text"]
+    assert "snapshot_json=" in snapshot["text"]
 
 
 def test_daily_saves_immutable_snapshot(tmp_path: Path) -> None:
@@ -193,6 +213,123 @@ def test_review_loads_previous_market_day_snapshot(tmp_path: Path) -> None:
     assert review["signal_date"] == "2026-06-05"
     assert review["review_date"] == "2026-06-08"
     assert review["signal_source_file"].endswith("CON_IBOV_signal.json")
+
+
+def test_review_always_prints_four_tables(tmp_path: Path) -> None:
+    core.run_daily(
+        profile="CON",
+        list_name="IBOV",
+        signal_date="2026-06-05",
+        signals_dir=tmp_path / "signals",
+        update=False,
+        raw_payload={"status": "OK", "report": {"decisions": []}},
+    )
+
+    review = core.run_review(
+        profile="CON",
+        list_name="IBOV",
+        review_date="2026-06-08",
+        signals_dir=tmp_path / "signals",
+        prices_dir=tmp_path / "prices",
+    )
+
+    for title in core.REVIEW_TITLES.values():
+        assert title in review["text"]
+    assert review["text"].count("NO ITEMS") == 4
+
+
+def test_review_uses_snapshot_total_items(tmp_path: Path) -> None:
+    snapshot = core.run_daily(
+        profile="CON",
+        list_name="IBOV",
+        signal_date="2026-06-05",
+        signals_dir=tmp_path / "signals",
+        update=False,
+        display_limit=10,
+        raw_payload=_many_obs_payload(),
+    )
+    prices_dir = tmp_path / "prices"
+    for index in range(12):
+        _write_price(prices_dir, f"OBS{index:02d}", 11.0 + index)
+
+    review = core.run_review(
+        profile="CON",
+        list_name="IBOV",
+        review_date="2026-06-08",
+        signals_dir=tmp_path / "signals",
+        prices_dir=prices_dir,
+        review_limit=10,
+    )
+
+    assert len(snapshot["tables"]["obs_long"]) == 12
+    assert len(review["tables"]["obs_long"]) == 12
+    assert review["summary"]["obs_long"]["total_items"] == 12
+    assert review["summary"]["obs_long"]["shown_items"] == 10
+    assert "OBS LONG REVIEW | TOP 10 OF 12" in review["text"]
+
+
+def test_review_does_not_count_obs_as_final_operational_pnl(tmp_path: Path) -> None:
+    core.run_daily(
+        profile="CON",
+        list_name="IBOV",
+        capital=100000.0,
+        slots=10,
+        signal_date="2026-06-05",
+        signals_dir=tmp_path / "signals",
+        update=False,
+        raw_payload={
+            "status": "OK",
+            "observation_candidates": [
+                {
+                    "ticker": "OBS_ONLY",
+                    "score": 90.0,
+                    "class": "OBS_FAVORABLE",
+                    "reason": "study setup",
+                    "ref_price": 10.0,
+                    "ref_date": "2026-06-05",
+                }
+            ],
+        },
+    )
+    prices_dir = tmp_path / "prices"
+    _write_price(prices_dir, "OBS_ONLY", 11.0)
+
+    review = core.run_review(
+        profile="CON",
+        list_name="IBOV",
+        review_date="2026-06-08",
+        signals_dir=tmp_path / "signals",
+        prices_dir=prices_dir,
+    )
+
+    assert review["observation_result"]["obs_total_pnl"] == 1000.0
+    assert review["final"]["operational_pnl"] == 0.0
+    assert review["final"]["paper_pnl"] == 1000.0
+    assert review["final"]["final_verdict"] == "NO_REAL_TRADES"
+    assert "FINAL TOTAL" not in review["text"]
+
+
+def test_review_no_real_trades_final_verdict(tmp_path: Path) -> None:
+    core.run_daily(
+        profile="CON",
+        list_name="IBOV",
+        signal_date="2026-06-05",
+        signals_dir=tmp_path / "signals",
+        update=False,
+        raw_payload={"status": "OK", "report": {"decisions": []}},
+    )
+
+    review = core.run_review(
+        profile="CON",
+        list_name="IBOV",
+        review_date="2026-06-08",
+        signals_dir=tmp_path / "signals",
+        prices_dir=tmp_path / "prices",
+    )
+
+    assert review["operational_result"]["real_trades"] == 0
+    assert review["final"]["operational_pnl"] == 0.0
+    assert review["final"]["final_verdict"] == "NO_REAL_TRADES"
 
 
 def test_review_reviews_real_long(tmp_path: Path) -> None:
@@ -229,6 +366,60 @@ def test_review_reviews_obs_short(tmp_path: Path) -> None:
     assert rows["SOBS2"]["pnl"] is None
 
 
+def test_obs_short_with_missing_entry_is_not_reviewable(tmp_path: Path) -> None:
+    snapshot = core.run_daily(
+        profile="CON",
+        list_name="IBOV",
+        capital=100000.0,
+        slots=10,
+        signal_date="2026-06-05",
+        signals_dir=tmp_path / "signals",
+        prices_dir=tmp_path / "prices",
+        update=False,
+        raw_payload={
+            "status": "OK",
+            "short_observation_candidates": [
+                {
+                    "ticker": "MISSENTRY",
+                    "score": 80.0,
+                    "short_permission": "SHORT_BLOCKED",
+                    "executable": False,
+                    "reason": "watch short without price",
+                }
+            ],
+        },
+    )
+
+    daily_row = snapshot["tables"]["obs_short"][0]
+    assert daily_row["status"] == "NOT_REVIEWABLE"
+    assert daily_row["quantity"] is None
+    assert "missing entry price" in daily_row["reason"]
+
+    review = core.run_review(
+        profile="CON",
+        list_name="IBOV",
+        review_date="2026-06-08",
+        signals_dir=tmp_path / "signals",
+        prices_dir=tmp_path / "prices",
+    )
+    row = review["tables"]["obs_short"][0]
+
+    assert row["review_status"] == "NOT_REVIEWABLE"
+    assert row["return_pct"] is None
+    assert row["would_pnl"] is None
+    assert "missing entry price" in row["reason"]
+
+
+def test_obs_short_with_entry_has_return_and_pnl(tmp_path: Path) -> None:
+    review = _review(tmp_path)
+    row = {item["ticker"]: item for item in review["tables"]["obs_short"]}["SOBS2"]
+
+    assert row["entry_price"] == 10.0
+    assert row["return_pct"] == 10.0
+    assert row["would_pnl"] == 1000.0
+    assert row["review_status"] == "GAIN"
+
+
 def test_review_does_not_mix_real_and_obs(tmp_path: Path) -> None:
     review = _review(tmp_path)
 
@@ -236,6 +427,19 @@ def test_review_does_not_mix_real_and_obs(tmp_path: Path) -> None:
     assert review["summary"]["obs_long"]["real_pnl"] == 0.0
     assert review["summary"]["real_short"]["would_pnl"] == 0.0
     assert review["summary"]["obs_short"]["would_pnl"] == 0.0
+
+
+def test_summary_separates_real_and_observation(tmp_path: Path) -> None:
+    review = _review(tmp_path)
+
+    assert review["operational_result"]["real_long_pnl"] == 1000.0
+    assert review["operational_result"]["real_short_pnl"] == 1000.0
+    assert review["operational_result"]["real_total_pnl"] == 2000.0
+    assert review["operational_result"]["real_trades"] == 2
+    assert review["observation_result"]["obs_total_pnl"] == 2000.0
+    assert review["observation_result"]["obs_verdict"] == "STUDY_ONLY"
+    assert review["final"]["operational_pnl"] == 2000.0
+    assert review["final"]["paper_pnl"] == 2000.0
 
 
 def test_review_uses_per_slot_sizing(tmp_path: Path) -> None:
@@ -316,7 +520,10 @@ def test_commands_call_core_functions(tmp_path: Path, monkeypatch: pytest.Monkey
     assert "CORE REVIEW" in output
     assert "CORE WEEKLY" in output
     assert calls["daily"]["update"] is False
+    assert calls["daily"]["display_limit"] == 10
+    assert "limit" not in calls["daily"]
     assert calls["review"]["signals_dir"] == str(tmp_path / "signals")
+    assert calls["review"]["review_limit"] == 10
     assert calls["weekly"]["train"] is False
 
     for script in ("daily_signal.ps1", "daily_review.ps1", "weekly_train.ps1"):
